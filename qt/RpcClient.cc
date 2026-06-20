@@ -41,7 +41,7 @@ char constexpr const* const RequestFutureinterfacePropertyKey{ "requestReplyFutu
     return id++;
 }
 
-[[nodiscard]] std::pair<tr_variant, int64_t> buildRequest(tr_quark const method, tr_variant* params)
+[[nodiscard]] std::pair<tr_variant, int64_t> buildRequest(tr_quark const method, tr_variant::Map params)
 {
     auto const id = nextId();
 
@@ -49,9 +49,9 @@ char constexpr const* const RequestFutureinterfacePropertyKey{ "requestReplyFutu
     req.try_emplace(TR_KEY_jsonrpc, tr_variant::unmanaged_string(JsonRpc::Version));
     req.try_emplace(TR_KEY_method, tr_variant::unmanaged_string(method));
     req.try_emplace(TR_KEY_id, id);
-    if (params != nullptr)
+    if (!std::empty(params))
     {
-        req.try_emplace(TR_KEY_params, params->clone());
+        req.try_emplace(TR_KEY_params, std::move(params));
     }
 
     return { std::move(req), id };
@@ -87,9 +87,9 @@ void RpcClient::start(QUrl const& url)
     url_is_loopback_ = QHostAddress{ url_.host() }.isLoopback();
 }
 
-RpcResponseFuture RpcClient::exec(tr_quark const method, tr_variant* args)
+RpcResponseFuture RpcClient::exec(tr_quark const method, tr_variant::Map args)
 {
-    auto [req, id] = buildRequest(method, args);
+    auto [req, id] = buildRequest(method, std::move(args));
 
     auto promise = QFutureInterface<RpcResponse>{};
     promise.setExpectedResultCount(1);
@@ -110,6 +110,19 @@ RpcResponseFuture RpcClient::exec(tr_quark const method, tr_variant* args)
     }
 
     return promise.future();
+}
+
+RpcResponseFuture RpcClient::exec(tr_quark const method, tr_variant* args)
+{
+    if (args != nullptr)
+    {
+        if (auto* const args_map = args->get_if<tr_variant::Map>())
+        {
+            return exec(method, args_map->clone());
+        }
+    }
+
+    return exec(method);
 }
 
 void RpcClient::sendNetworkRequest(QByteArray const& body, QFutureInterface<RpcResponse> const& promise)

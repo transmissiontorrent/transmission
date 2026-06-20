@@ -74,6 +74,7 @@ public:
     void start(tr_session* session);
     void start(QUrl const& url);
 
+    RpcResponseFuture exec(tr_quark method, tr_variant::Map args = {});
     RpcResponseFuture exec(tr_quark method, tr_variant* args);
 
 signals:
