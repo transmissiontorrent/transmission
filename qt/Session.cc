@@ -362,18 +362,6 @@ void Session::addOptionalIds(tr_variant::Map& params, torrent_ids_t const& torre
     }
 }
 
-void Session::addOptionalIds(tr_variant* args_dict, torrent_ids_t const& torrent_ids) const
-{
-    if (&torrent_ids == &RecentlyActiveIDs)
-    {
-        dictAdd(args_dict, TR_KEY_ids, tr_quark_get_string_view(TR_KEY_recently_active));
-    }
-    else if (!std::empty(torrent_ids))
-    {
-        dictAdd(args_dict, TR_KEY_ids, torrent_ids);
-    }
-}
-
 Session::Tag Session::torrentSetImpl(tr_variant::Map params)
 {
     auto* const q = new RpcQueue{};
@@ -389,27 +377,23 @@ Session::Tag Session::torrentSetImpl(tr_variant::Map params)
 
 void Session::torrentSetLocation(torrent_ids_t const& torrent_ids, QString const& path, bool do_move)
 {
-    tr_variant args;
-    tr_variantInitDict(&args, 3);
-    addOptionalIds(&args, torrent_ids);
-    dictAdd(&args, TR_KEY_location, path);
-    dictAdd(&args, TR_KEY_move, do_move);
-
-    exec(TR_KEY_torrent_set_location, &args);
+    if (!torrent_ids.empty())
+    {
+        exec(TR_KEY_torrent_set_location, makeParams(torrent_ids, TR_KEY_location, path, TR_KEY_move, do_move));
+    }
 }
 
 void Session::torrentRenamePath(torrent_ids_t const& torrent_ids, QString const& oldpath, QString const& newname)
 {
-    tr_variant args;
-    tr_variantInitDict(&args, 2);
-    addOptionalIds(&args, torrent_ids);
-    dictAdd(&args, TR_KEY_path, oldpath);
-    dictAdd(&args, TR_KEY_name, newname);
+    if (torrent_ids.empty())
+    {
+        return;
+    }
 
     auto* q = new RpcQueue{};
-
     q->add(
-        [this, &args]() { return exec(TR_KEY_torrent_rename_path, &args); },
+        [this, params = makeParams(torrent_ids, TR_KEY_path, oldpath, TR_KEY_name, newname)]() mutable
+        { return exec(TR_KEY_torrent_rename_path, std::move(params)); },
         [](RpcResponse const& r)
         {
             auto const path = dictFind<QString>(r.args.get(), TR_KEY_path).value_or(QStringLiteral("(unknown)"));
@@ -642,13 +626,9 @@ void Session::refreshExtraStats(torrent_ids_t const& ids)
 
 void Session::sendTorrentRequest(tr_quark const method, torrent_ids_t const& torrent_ids)
 {
-    tr_variant args;
-    tr_variantInitDict(&args, 1);
-    addOptionalIds(&args, torrent_ids);
-
     auto* q = new RpcQueue{};
 
-    q->add([this, method, &args]() { return exec(method, &args); });
+    q->add([this, method, params = makeParams(torrent_ids)]() mutable { return exec(method, std::move(params)); });
 
     q->add([this, torrent_ids]() { refreshTorrents(torrent_ids, TorrentProperties::MainStats); });
 
@@ -977,12 +957,7 @@ void Session::removeTorrents(torrent_ids_t const& ids, bool delete_files)
 {
     if (!ids.empty())
     {
-        tr_variant args;
-        tr_variantInitDict(&args, 2);
-        addOptionalIds(&args, ids);
-        dictAdd(&args, TR_KEY_delete_local_data, delete_files);
-
-        exec(TR_KEY_torrent_remove, &args);
+        exec(TR_KEY_torrent_remove, makeParams(ids, TR_KEY_delete_local_data, delete_files));
     }
 }
 
@@ -990,11 +965,7 @@ void Session::verifyTorrents(torrent_ids_t const& ids)
 {
     if (!ids.empty())
     {
-        tr_variant args;
-        tr_variantInitDict(&args, 1);
-        addOptionalIds(&args, ids);
-
-        exec(TR_KEY_torrent_verify, &args);
+        exec(TR_KEY_torrent_verify, makeParams(ids));
     }
 }
 
@@ -1002,11 +973,7 @@ void Session::reannounceTorrents(torrent_ids_t const& ids)
 {
     if (!ids.empty())
     {
-        tr_variant args;
-        tr_variantInitDict(&args, 1);
-        addOptionalIds(&args, ids);
-
-        exec(TR_KEY_torrent_reannounce, &args);
+        exec(TR_KEY_torrent_reannounce, makeParams(ids));
     }
 }
 

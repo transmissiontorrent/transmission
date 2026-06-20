@@ -6,6 +6,7 @@
 #pragma once
 
 #include <array>
+#include <cstddef> // size_t
 #include <cstdint> // int64_t
 #include <map>
 #include <optional>
@@ -20,6 +21,7 @@
 
 #include <libtransmission/transmission.h>
 #include <libtransmission/quark.h>
+#include <libtransmission/serializer.h>
 
 #include "Prefs.h"
 #include "RpcClient.h"
@@ -105,13 +107,10 @@ public:
 
     using Tag = RpcQueue::Tag;
 
-    template<typename T>
-    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key, T const& value)
+    template<typename T, typename... Rest>
+    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key1, T const& val1, Rest const&... rest)
     {
-        auto params = tr_variant::Map{ 2U };
-        addOptionalIds(params, torrent_ids);
-        params.insert_or_assign(key, tr::serializer::to_variant(value));
-        return torrentSetImpl(std::move(params));
+        return torrentSetImpl(makeParams(torrent_ids, key1, val1, rest...));
     }
 
     void torrentSetLocation(torrent_ids_t const& torrent_ids, QString const& path, bool do_move);
@@ -169,6 +168,40 @@ private slots:
     void onDuplicatesTimer();
 
 private:
+    [[nodiscard]] tr_variant::Map makeParams(torrent_ids_t const& torrent_ids) const
+    {
+        auto params = tr_variant::Map{ 1U };
+        addOptionalIds(params, torrent_ids);
+        return params;
+    }
+
+    template<typename T, typename... Rest>
+    static void addTorrentSetParamPairs(tr_variant::Map& params, tr_quark const key, T const& val, Rest const&... rest)
+    {
+        params.insert_or_assign(key, tr::serializer::to_variant(val));
+
+        if constexpr (sizeof...(rest) != 0U)
+        {
+            addTorrentSetParamPairs(params, rest...);
+        }
+    }
+
+    template<typename T, typename... Rest>
+    [[nodiscard]] tr_variant::Map makeParams(
+        torrent_ids_t const& torrent_ids,
+        tr_quark const key1,
+        T const& val1,
+        Rest const&... rest) const
+    {
+        static_assert(sizeof...(rest) % 2U == 0U, "Expected key/value argument pairs");
+
+        auto params = tr_variant::Map{ 2U + static_cast<size_t>(sizeof...(rest) / 2U) };
+        addOptionalIds(params, torrent_ids);
+        addTorrentSetParamPairs(params, key1, val1, rest...);
+
+        return params;
+    }
+
     void start();
 
     void updateStats(tr_variant* args_dict);
@@ -183,7 +216,6 @@ private:
     static void updateStats(tr_variant const& args_dict, tr_session_stats& stats);
 
     void addOptionalIds(tr_variant::Map& params, torrent_ids_t const& torrent_ids) const;
-    void addOptionalIds(tr_variant* args_dict, torrent_ids_t const& torrent_ids) const;
 
     QString const config_dir_;
     Prefs& prefs_;
