@@ -207,41 +207,6 @@ bool change(TrackerStat& setme, tr_variant const* value)
 
 ///
 
-void variantInit(tr_variant* init_me, bool value)
-{
-    *init_me = value;
-}
-
-void variantInit(tr_variant* init_me, int64_t value)
-{
-    *init_me = value;
-}
-
-void variantInit(tr_variant* init_me, int value)
-{
-    *init_me = value;
-}
-
-void variantInit(tr_variant* init_me, double value)
-{
-    *init_me = value;
-}
-
-void variantInit(tr_variant* init_me, QByteArray const& value)
-{
-    *init_me = std::string_view{ value.constData(), static_cast<size_t>(value.size()) };
-}
-
-void variantInit(tr_variant* init_me, QString const& value)
-{
-    *init_me = value.toStdString();
-}
-
-void variantInit(tr_variant* init_me, std::string_view value)
-{
-    *init_me = value;
-}
-
 namespace
 {
 bool toInt(tr_variant const& src, int* tgt)

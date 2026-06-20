@@ -202,38 +202,4 @@ auto dictFind(tr_variant* dict, tr_quark key)
 
     return ret;
 }
-
-///
-
-void variantInit(tr_variant* init_me, bool value);
-void variantInit(tr_variant* init_me, int64_t value);
-void variantInit(tr_variant* init_me, int value);
-void variantInit(tr_variant* init_me, double value);
-void variantInit(tr_variant* init_me, QByteArray const& value);
-void variantInit(tr_variant* init_me, QString const& value);
-void variantInit(tr_variant* init_me, std::string_view value);
-void variantInit(tr_variant* init_me, char const* value) = delete; // use string_view
-
-template<typename C, typename T = typename C::value_type>
-void variantInit(tr_variant* init_me, C const& value)
-{
-    tr_variantInitList(init_me, std::size(value));
-    for (auto const& item : value)
-    {
-        variantInit(tr_variantListAdd(init_me), item);
-    }
-}
-
-template<typename T>
-void listAdd(tr_variant* list, T const& value)
-{
-    variantInit(tr_variantListAdd(list), value);
-}
-
-template<typename T>
-void dictAdd(tr_variant* dict, tr_quark key, T const& value)
-{
-    variantInit(tr_variantDictAdd(dict, key), value);
-}
-
 } // namespace trqt::variant_helpers

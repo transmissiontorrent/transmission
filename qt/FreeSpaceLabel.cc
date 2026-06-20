@@ -21,7 +21,6 @@
 #include "Session.h"
 #include "VariantHelpers.h"
 
-using ::trqt::variant_helpers::dictAdd;
 using ::trqt::variant_helpers::dictFind;
 
 namespace
