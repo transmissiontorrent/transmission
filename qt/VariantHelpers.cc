@@ -8,7 +8,6 @@
 #include <cmath>
 #include <cstdint>
 #include <limits>
-#include <mutex>
 #include <string_view>
 
 #include <QDateTime>
@@ -267,18 +266,41 @@ tr_variant fromQString(QString const& val)
 }
 } // namespace
 
-void register_qt_converters()
+} // namespace trqt::variant_helpers
+
+// ---
+// `Converter<T>` out-of-line definitions for Qt-side types. Each forwards
+// to the matching helper in the unnamed namespace above.
+
+namespace tr::serializer
 {
-    static auto once = std::once_flag{};
-    std::call_once(
-        once,
-        []
-        {
-            using namespace tr::serializer;
-            Converters::add(toInt, fromInt);
-            Converters::add(toQDateTime, fromQDateTime);
-            Converters::add(toQString, fromQString);
-        });
+namespace vh = trqt::variant_helpers;
+
+tr_variant Converter<int>::serialize(int const& src)
+{
+    return vh::fromInt(src);
+}
+bool Converter<int>::deserialize(tr_variant const& src, int* tgt)
+{
+    return vh::toInt(src, tgt);
 }
 
-} // namespace trqt::variant_helpers
+tr_variant Converter<QDateTime>::serialize(QDateTime const& src)
+{
+    return vh::fromQDateTime(src);
+}
+bool Converter<QDateTime>::deserialize(tr_variant const& src, QDateTime* tgt)
+{
+    return vh::toQDateTime(src, tgt);
+}
+
+tr_variant Converter<QString>::serialize(QString const& src)
+{
+    return vh::fromQString(src);
+}
+bool Converter<QString>::deserialize(tr_variant const& src, QString* tgt)
+{
+    return vh::toQString(src, tgt);
+}
+
+} // namespace tr::serializer

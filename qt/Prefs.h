@@ -23,9 +23,11 @@
 #include <libtransmission/serializer.h>
 #include <libtransmission/variant.h>
 
+#include <libtransmission-app/converters.h>
 #include <libtransmission-app/display-modes.h>
 
 #include "UserMetaType.h"
+#include "VariantHelpers.h" // Converter<int>/<QString>/<QDateTime> declarations
 
 class Prefs : public QObject
 {

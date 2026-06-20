@@ -24,6 +24,21 @@
 #include "libtransmission/types.h"
 #include "libtransmission/variant.h"
 
+// `Converter<T>` specialization for the one bespoke serializable type owned
+// by `SessionSettings`. Declared here (rather than in `serializer.h`) so the
+// serializer header does not have to pull in `<small/vector.hpp>`.
+namespace tr::serializer
+{
+template<>
+struct Converter<small::max_size_vector<tr_preferred_transport, PreferredTransportCount>>
+{
+    static tr_variant serialize(small::max_size_vector<tr_preferred_transport, PreferredTransportCount> const& src);
+    static bool deserialize(
+        tr_variant const& src,
+        small::max_size_vector<tr_preferred_transport, PreferredTransportCount>* tgt);
+};
+} // namespace tr::serializer
+
 namespace tr
 {
 

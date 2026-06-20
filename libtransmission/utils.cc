@@ -43,7 +43,6 @@
 
 #include "libtransmission/env.h"
 #include "libtransmission/mime-types.h"
-#include "libtransmission/serializer.h"
 #include "libtransmission/string-utils.h"
 #include "libtransmission/tr-assert.h"
 #include "libtransmission/tr-strbuf.h"
@@ -424,14 +423,7 @@ std::unique_ptr<tr_net_init_mgr> tr_net_init_mgr::instance;
 void tr_lib_init()
 {
     static auto once = std::once_flag{};
-    std::call_once(
-        once,
-        []
-        {
-            tr_net_init_impl::tr_net_init_mgr::create();
-
-            tr::serializer::Converters::ensure_default_converters();
-        });
+    std::call_once(once, [] { tr_net_init_impl::tr_net_init_mgr::create(); });
 }
 
 // --- mime-type

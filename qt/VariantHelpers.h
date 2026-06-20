@@ -15,11 +15,13 @@
 
 #include <QString>
 
+#include <libtransmission/serializer.h>
 #include <libtransmission/variant.h>
 
 #include "QtCompat.h"
 
 class QByteArray;
+class QDateTime;
 
 class Speed;
 class TorrentHash;
@@ -27,10 +29,36 @@ struct Peer;
 struct TorrentFile;
 struct TrackerStat;
 
+// `Converter<T>` specializations for Qt-side types. Must be visible to any
+// TU that uses `tr::serializer::to_variant`, `to_value`, `Field<>`, etc. on
+// these types — notably `Prefs.cc`, which holds them as `Field<>` members.
+
+namespace tr::serializer
+{
+template<>
+struct Converter<int>
+{
+    static tr_variant serialize(int const& src);
+    static bool deserialize(tr_variant const& src, int* tgt);
+};
+
+template<>
+struct Converter<QDateTime>
+{
+    static tr_variant serialize(QDateTime const& src);
+    static bool deserialize(tr_variant const& src, QDateTime* tgt);
+};
+
+template<>
+struct Converter<QString>
+{
+    static tr_variant serialize(QString const& src);
+    static bool deserialize(tr_variant const& src, QString* tgt);
+};
+} // namespace tr::serializer
+
 namespace trqt::variant_helpers
 {
-void register_qt_converters();
-
 template<typename T>
 auto getValue(tr_variant const* variant)
     requires std::is_same_v<T, bool>

@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <libtransmission-app/converters.h>
+
 #include <libtransmission/transmission.h> /* tr_variant, tr_session */
 #include <libtransmission/quark.h>
 #include <libtransmission/serializer.h>

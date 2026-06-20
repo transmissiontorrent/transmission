@@ -5,9 +5,45 @@
 
 #pragma once
 
-namespace tr::app::detail
+#include <chrono>
+
+#include <libtransmission/serializer.h>
+#include <libtransmission/variant.h>
+
+#include "libtransmission-app/display-modes.h"
+
+// Declarations of the `Converter<T>` specializations owned by
+// `libtransmission-app`. Each TU that uses `tr::serializer::to_variant`,
+// `to_value`, `Field<>`, etc. with one of these types must include this
+// header so the specialization is visible at the instantiation site.
+
+namespace tr::serializer
 {
+template<>
+struct Converter<tr::app::ShowMode>
+{
+    static tr_variant serialize(tr::app::ShowMode const& src);
+    static bool deserialize(tr_variant const& src, tr::app::ShowMode* tgt);
+};
 
-void register_app_converters();
+template<>
+struct Converter<tr::app::SortMode>
+{
+    static tr_variant serialize(tr::app::SortMode const& src);
+    static bool deserialize(tr_variant const& src, tr::app::SortMode* tgt);
+};
 
-} // namespace tr::app::detail
+template<>
+struct Converter<tr::app::StatsMode>
+{
+    static tr_variant serialize(tr::app::StatsMode const& src);
+    static bool deserialize(tr_variant const& src, tr::app::StatsMode* tgt);
+};
+
+template<>
+struct Converter<std::chrono::sys_seconds>
+{
+    static tr_variant serialize(std::chrono::sys_seconds const& src);
+    static bool deserialize(tr_variant const& src, std::chrono::sys_seconds* tgt);
+};
+} // namespace tr::serializer

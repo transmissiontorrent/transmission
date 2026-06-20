@@ -5,21 +5,25 @@
 
 #pragma once
 
+#include <chrono>
 #include <cmath>
 #include <array>
 #include <concepts>
 #include <cstddef>
+#include <cstdint>
+#include <ctime>
 #include <iterator>
 #include <optional>
+#include <string>
 #include <tuple>
 #include <type_traits>
-#include <typeinfo>
 #include <utility>
 
-#include <fmt/core.h>
-
 #include "libtransmission/quark.h"
+#include "libtransmission/types.h"
 #include "libtransmission/variant.h"
+
+struct tr_pex;
 
 namespace tr::serializer
 {
@@ -125,27 +129,55 @@ void reserve_if_possible(C& /*c*/, ...) // NOLINT(cert-dcl50-cpp)
 } // namespace detail
 
 /**
- * Registry for `tr_variant` <-> `T` converters.
- * Used by the `serializable` helpers to load/save fields in a class.
+ * Customization point for converting `tr_variant` to/from a value of type `T`.
+ *
+ * Specialize this template for each supported type, providing:
+ *   - `static tr_variant serialize(T const& src);`
+ *   - `static bool deserialize(tr_variant const& src, T* tgt);`
+ *
+ * The primary template is intentionally undefined; an attempt to call
+ * `Converters::serialize/deserialize` on an unsupported type produces
+ * a compile error (rather than a runtime "no converter registered").
+ *
+ * Specializations for libtransmission's built-in types are declared in this
+ * header (see below); specializations for app/UI types live in the relevant
+ * binary's converter header.
+ */
+template<typename T>
+struct Converter;
+
+namespace detail
+{
+
+// True iff `Converter<T>` is specialized with the expected static methods.
+template<typename T>
+concept HasConverter = requires(T const& src, tr_variant const& var, T* tgt) {
+    { Converter<T>::serialize(src) } -> std::same_as<tr_variant>;
+    { Converter<T>::deserialize(var, tgt) } -> std::same_as<bool>;
+};
+
+} // namespace detail
+
+/**
+ * Compile-time dispatcher: routes `tr_variant` <-> `T` conversion to
+ * `Converter<T>` if specialized, otherwise to the generic container fallbacks
+ * (push-back ranges, insert ranges, std::array, std::optional).
+ *
+ * `Converters` is a thin namespace-like shell kept for source-compat with
+ * existing call sites of `Converters::serialize` / `Converters::deserialize`.
+ * The actual customization point is `Converter<T>` above.
  */
 class Converters
 {
 public:
     template<typename T>
-    using Deserialize = bool (*)(tr_variant const& src, T* ptgt);
-
-    template<typename T>
-    using Serialize = tr_variant (*)(T const& src);
-
-    template<typename T>
     static tr_variant serialize(T const& src)
     {
-        if (converter_storage<T>.serialize != nullptr)
+        if constexpr (detail::HasConverter<T>)
         {
-            return converter_storage<T>.serialize(src);
+            return Converter<T>::serialize(src);
         }
-
-        if constexpr (detail::is_push_back_range_v<T>)
+        else if constexpr (detail::is_push_back_range_v<T>)
         {
             return detail::from_push_back_range(src);
         }
@@ -163,20 +195,18 @@ public:
         }
         else
         {
-            fmt::print(stderr, "ERROR: No serializer registered for type '{}'\n", typeid(T).name());
-            return {};
+            static_assert(detail::HasConverter<T>, "No Converter<T> specialization for this type");
         }
     }
 
     template<typename T>
     static bool deserialize(tr_variant const& src, T* const ptgt)
     {
-        if (converter_storage<T>.deserialize != nullptr)
+        if constexpr (detail::HasConverter<T>)
         {
-            return converter_storage<T>.deserialize(src, ptgt);
+            return Converter<T>::deserialize(src, ptgt);
         }
-
-        if constexpr (detail::is_push_back_range_v<T>)
+        else if constexpr (detail::is_push_back_range_v<T>)
         {
             return detail::to_push_back_range(src, ptgt);
         }
@@ -194,30 +224,134 @@ public:
         }
         else
         {
-            fmt::print(stderr, "ERROR: No deserializer registered for type '{}'\n", typeid(T).name());
+            static_assert(detail::HasConverter<T>, "No Converter<T> specialization for this type");
             return false;
         }
     }
+};
 
-    // register a new tr_variant<->T converter.
-    template<typename T>
-    static void add(Deserialize<T> deserialize, Serialize<T> serialize)
+// ---
+// Built-in `Converter<T>` specializations defined in `serializer.cc`.
+
+template<>
+struct Converter<bool>
+{
+    static tr_variant serialize(bool const& src);
+    static bool deserialize(tr_variant const& src, bool* tgt);
+};
+
+template<>
+struct Converter<double>
+{
+    static tr_variant serialize(double const& src);
+    static bool deserialize(tr_variant const& src, double* tgt);
+};
+
+// Generic integer specialization. Covers int64_t, uint64_t, uint32_t, size_t,
+// time_t, etc. — including platform-dependent aliases (e.g. on Linux
+// int64_t == long == time_t, uint64_t == unsigned long == size_t).
+//
+// `bool` and `uint16_t` are excluded:
+//   - `bool` has its own specialization above.
+//   - `uint16_t` is aliased by `tr_mode_t`, which needs octal-string handling.
+template<typename T>
+    requires(
+        std::integral<T> && !std::is_same_v<T, bool> && !std::is_same_v<T, uint16_t> && !std::is_same_v<T, char> &&
+        !std::is_same_v<T, signed char> && !std::is_same_v<T, unsigned char> && !std::is_same_v<T, wchar_t> &&
+        !std::is_same_v<T, char16_t> && !std::is_same_v<T, char32_t>)
+struct Converter<T>
+{
+    static tr_variant serialize(T const& src)
     {
-        converter_storage<T> = { deserialize, serialize };
+        return src;
     }
 
-    static void ensure_default_converters();
-
-private:
-    template<typename T>
-    struct ConverterStorage
+    static bool deserialize(tr_variant const& src, T* const tgt)
     {
-        Deserialize<T> deserialize = nullptr;
-        Serialize<T> serialize = nullptr;
-    };
+        if (auto const val = src.value_if<T>())
+        {
+            *tgt = *val;
+            return true;
+        }
+        return false;
+    }
+};
 
-    template<typename T>
-    static inline ConverterStorage<T> converter_storage;
+template<>
+struct Converter<std::string>
+{
+    static tr_variant serialize(std::string const& src);
+    static bool deserialize(tr_variant const& src, std::string* tgt);
+};
+
+template<>
+struct Converter<std::chrono::milliseconds>
+{
+    static tr_variant serialize(std::chrono::milliseconds const& src);
+    static bool deserialize(tr_variant const& src, std::chrono::milliseconds* tgt);
+};
+
+template<>
+struct Converter<tr_diffserv_t>
+{
+    static tr_variant serialize(tr_diffserv_t const& src);
+    static bool deserialize(tr_variant const& src, tr_diffserv_t* tgt);
+};
+
+template<>
+struct Converter<tr_encryption_mode>
+{
+    static tr_variant serialize(tr_encryption_mode const& src);
+    static bool deserialize(tr_variant const& src, tr_encryption_mode* tgt);
+};
+
+template<>
+struct Converter<tr_file_preallocation>
+{
+    static tr_variant serialize(tr_file_preallocation const& src);
+    static bool deserialize(tr_variant const& src, tr_file_preallocation* tgt);
+};
+
+template<>
+struct Converter<tr_log_level>
+{
+    static tr_variant serialize(tr_log_level const& src);
+    static bool deserialize(tr_variant const& src, tr_log_level* tgt);
+};
+
+template<>
+struct Converter<tr_mode_t>
+{
+    static tr_variant serialize(tr_mode_t const& src);
+    static bool deserialize(tr_variant const& src, tr_mode_t* tgt);
+};
+
+template<>
+struct Converter<tr_pex>
+{
+    static tr_variant serialize(tr_pex const& src);
+    static bool deserialize(tr_variant const& src, tr_pex* tgt);
+};
+
+template<>
+struct Converter<tr_port>
+{
+    static tr_variant serialize(tr_port const& src);
+    static bool deserialize(tr_variant const& src, tr_port* tgt);
+};
+
+template<>
+struct Converter<tr_sched_day>
+{
+    static tr_variant serialize(tr_sched_day const& src);
+    static bool deserialize(tr_variant const& src, tr_sched_day* tgt);
+};
+
+template<>
+struct Converter<tr_verify_added_mode>
+{
+    static tr_variant serialize(tr_verify_added_mode const& src);
+    static bool deserialize(tr_variant const& src, tr_verify_added_mode* tgt);
 };
 
 template<typename T>

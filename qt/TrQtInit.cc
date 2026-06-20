@@ -7,15 +7,12 @@
 
 #include <libtransmission-app/app.h>
 
-#include "VariantHelpers.h"
-
 namespace trqt
 {
 
 void trqt_init()
 {
     tr::app::init();
-    trqt::variant_helpers::register_qt_converters();
 }
 
 } // namespace trqt

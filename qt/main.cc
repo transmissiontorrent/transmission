@@ -162,7 +162,6 @@ bool tryDelegate(QStringList const& filenames)
 int tr_main(int argc, char** argv)
 {
     tr::app::init();
-    trqt::variant_helpers::register_qt_converters();
 
     // parse the command-line arguments
     bool minimized = false;

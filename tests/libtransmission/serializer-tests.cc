@@ -7,7 +7,6 @@
 #include <climits>
 #include <cstdint>
 #include <list>
-#include <mutex>
 #include <limits>
 #include <optional>
 #include <string>
@@ -44,9 +43,25 @@ struct Rect
     }
 };
 
-void registerRectConverter()
+} // namespace
+
+// Custom `Converter<Rect>` specialization — illustrates how downstream code
+// would add a converter for its own type.
+template<>
+struct tr::serializer::Converter<Rect>
 {
-    static auto const ToRect = [](tr_variant const& src, Rect* tgt)
+    static tr_variant serialize(Rect const& r)
+    {
+        auto v = tr_variant::Vector{};
+        v.reserve(4U);
+        v.emplace_back(int64_t{ r.x });
+        v.emplace_back(int64_t{ r.y });
+        v.emplace_back(int64_t{ r.width });
+        v.emplace_back(int64_t{ r.height });
+        return v;
+    }
+
+    static bool deserialize(tr_variant const& src, Rect* tgt)
     {
         auto const* const v = src.get_if<tr_variant::Vector>();
         if (v == nullptr || std::size(*v) != 4U)
@@ -71,22 +86,11 @@ void registerRectConverter()
             .height = static_cast<int>(*h),
         };
         return true;
-    };
+    }
+};
 
-    static auto const FromRect = [](Rect const& r) -> tr_variant
-    {
-        auto v = tr_variant::Vector{};
-        v.reserve(4U);
-        v.emplace_back(int64_t{ r.x });
-        v.emplace_back(int64_t{ r.y });
-        v.emplace_back(int64_t{ r.width });
-        v.emplace_back(int64_t{ r.height });
-        return v;
-    };
-
-    static std::once_flag once;
-    std::call_once(once, [] { Converters::add<Rect>(ToRect, FromRect); });
-}
+namespace
+{
 
 TEST_F(SerializerTest, usesBuiltins)
 {
@@ -191,8 +195,6 @@ TEST_F(SerializerTest, usesTrPex)
 
 TEST_F(SerializerTest, usesCustomTypes)
 {
-    registerRectConverter();
-
     static constexpr Rect Expected{ .x = 10, .y = 20, .width = 640, .height = 480 };
     auto const var = Converters::serialize(Expected);
 
@@ -237,8 +239,6 @@ TEST_F(SerializerTest, usesVectors)
 
 TEST_F(SerializerTest, usesVectorsOfCustom)
 {
-    registerRectConverter();
-
     auto const expected = std::vector<Rect>{
         { .x = 1, .y = 2, .width = 3, .height = 4 },
         { .x = 10, .y = 20, .width = 640, .height = 480 },
@@ -325,8 +325,6 @@ TEST_F(SerializerTest, usesNullOptional)
 
 TEST_F(SerializerTest, usesOptionalOfCustom)
 {
-    registerRectConverter();
-
     constexpr auto Expected = std::optional{ Rect{ .x = 1, .y = 2, .width = 3, .height = 4 } };
     auto const var = Converters::serialize(Expected);
 

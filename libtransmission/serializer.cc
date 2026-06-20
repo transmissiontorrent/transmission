@@ -9,7 +9,6 @@
 #include <cstddef> // size_t
 #include <cstdint> // int64_t, uint32_t, uint64_t
 #include <limits>
-#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -24,6 +23,7 @@
 #include "libtransmission/log.h" // for tr_log_level
 #include "libtransmission/peer-mgr.h" // tr_pex
 #include "libtransmission/serializer.h"
+#include "libtransmission/session-settings.h" // Converter<small::max_size_vector<...>>
 #include "libtransmission/string-utils.h"
 #include "libtransmission/utils.h" // for tr_strv_strip(), tr_strlower()
 #include "libtransmission/variant.h"
@@ -132,25 +132,7 @@ tr_variant from_double(double const& val)
 
 // ---
 
-template<std::integral T>
-bool to_int(tr_variant const& src, T* tgt)
-{
-    static_assert(!std::is_same_v<T, bool>);
-    if (auto const val = src.value_if<T>())
-    {
-        *tgt = *val;
-        return true;
-    }
-
-    return false;
-}
-
-template<std::integral T>
-tr_variant from_int(T const& val)
-{
-    static_assert(!std::is_same_v<T, bool>);
-    return val;
-}
+// (Integer Converter<T> specializations are inline in serializer.h.)
 
 // ---
 
@@ -544,34 +526,43 @@ tr_variant from_pex(tr_pex const& val)
 }
 } // unnamed namespace
 
-void Converters::ensure_default_converters()
-{
-    static auto once = std::once_flag{};
-    std::call_once(
-        once,
-        []
-        {
-            Converters::add(to_bool, from_bool);
-            Converters::add(to_diffserv_t, from_diffserv_t);
-            Converters::add(to_double, from_double);
-            Converters::add(to_encryption_mode, from_encryption_mode);
-            Converters::add(to_int<int64_t>, from_int<int64_t>);
-            Converters::add(to_int<size_t>, from_int<size_t>);
-            Converters::add(to_int<time_t>, from_int<time_t>);
-            Converters::add(to_int<uint16_t>, from_int<uint16_t>);
-            Converters::add(to_int<uint32_t>, from_int<uint32_t>);
-            Converters::add(to_int<uint64_t>, from_int<uint64_t>);
-            Converters::add(to_log_level, from_log_level);
-            Converters::add(to_mode_t, from_mode_t);
-            Converters::add(to_msec, from_msec);
-            Converters::add(to_pex, from_pex);
-            Converters::add(to_port, from_port);
-            Converters::add(to_preallocation_mode, from_preallocation_mode);
-            Converters::add(to_preferred_transport, from_preferred_transport);
-            Converters::add(to_sched_day, from_sched_day);
-            Converters::add(to_string, from_string);
-            Converters::add(to_verify_added_mode, from_verify_added_mode);
-        });
-}
+// ---
+// `Converter<T>` out-of-line definitions for libtransmission's built-in
+// types. Each one is a thin forwarder to the matching helper in the
+// unnamed namespace above. Adding a new type is just three lines here
+// plus three in `serializer.h`.
+
+// NOLINTBEGIN(bugprone-macro-parentheses)
+#define TR_DEFINE_CONVERTER(T, to_fn, from_fn) \
+    tr_variant Converter<T>::serialize(T const& src) \
+    { \
+        return from_fn(src); \
+    } \
+    bool Converter<T>::deserialize(tr_variant const& src, T* tgt) \
+    { \
+        return to_fn(src, tgt); \
+    }
+// NOLINTEND(bugprone-macro-parentheses)
+
+TR_DEFINE_CONVERTER(bool, to_bool, from_bool)
+TR_DEFINE_CONVERTER(double, to_double, from_double)
+TR_DEFINE_CONVERTER(std::string, to_string, from_string)
+TR_DEFINE_CONVERTER(std::chrono::milliseconds, to_msec, from_msec)
+TR_DEFINE_CONVERTER(tr_diffserv_t, to_diffserv_t, from_diffserv_t)
+TR_DEFINE_CONVERTER(tr_encryption_mode, to_encryption_mode, from_encryption_mode)
+TR_DEFINE_CONVERTER(tr_file_preallocation, to_preallocation_mode, from_preallocation_mode)
+TR_DEFINE_CONVERTER(tr_log_level, to_log_level, from_log_level)
+TR_DEFINE_CONVERTER(tr_mode_t, to_mode_t, from_mode_t)
+TR_DEFINE_CONVERTER(tr_pex, to_pex, from_pex)
+TR_DEFINE_CONVERTER(tr_port, to_port, from_port)
+TR_DEFINE_CONVERTER(tr_sched_day, to_sched_day, from_sched_day)
+TR_DEFINE_CONVERTER(tr_verify_added_mode, to_verify_added_mode, from_verify_added_mode)
+
+// `small::max_size_vector<tr_preferred_transport, ...>` Converter is declared
+// in `session-settings.h`, where the type itself is used.
+using PreferredTransports = small::max_size_vector<tr_preferred_transport, PreferredTransportCount>;
+TR_DEFINE_CONVERTER(PreferredTransports, to_preferred_transport, from_preferred_transport)
+
+#undef TR_DEFINE_CONVERTER
 
 } // namespace tr::serializer

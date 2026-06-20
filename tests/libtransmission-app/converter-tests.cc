@@ -14,6 +14,7 @@
 #include <libtransmission/serializer.h>
 #include <libtransmission/variant.h>
 
+#include "libtransmission-app/converters.h"
 #include "libtransmission-app/display-modes.h"
 
 #include "test-fixtures.h"

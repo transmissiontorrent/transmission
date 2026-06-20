@@ -6,7 +6,6 @@
 #include <array>
 #include <chrono>
 #include <ctime>
-#include <mutex>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -382,19 +381,34 @@ tr_variant from_sys_seconds(std::chrono::sys_seconds const& src)
 }
 } // unnamed namespace
 
-void register_app_converters()
-{
-    static auto once = std::once_flag{};
-    std::call_once(
-        once,
-        []
-        {
-            using Converters = tr::serializer::Converters;
-            Converters::add(to_show_mode, from_show_mode);
-            Converters::add(to_sort_mode, from_sort_mode);
-            Converters::add(to_stats_mode, from_stats_mode);
-            Converters::add(to_sys_seconds, from_sys_seconds);
-        });
-}
-
 } // namespace tr::app::detail
+
+// ---
+// `Converter<T>` out-of-line definitions for the types owned by
+// `libtransmission-app`. Each one forwards to the matching helper in
+// `tr::app::detail` above.
+
+namespace tr::serializer
+{
+namespace ad = tr::app::detail;
+
+// NOLINTBEGIN(bugprone-macro-parentheses)
+#define TR_DEFINE_APP_CONVERTER(T, to_fn, from_fn) \
+    tr_variant Converter<T>::serialize(T const& src) \
+    { \
+        return ad::from_fn(src); \
+    } \
+    bool Converter<T>::deserialize(tr_variant const& src, T* tgt) \
+    { \
+        return ad::to_fn(src, tgt); \
+    }
+// NOLINTEND(bugprone-macro-parentheses)
+
+TR_DEFINE_APP_CONVERTER(tr::app::ShowMode, to_show_mode, from_show_mode)
+TR_DEFINE_APP_CONVERTER(tr::app::SortMode, to_sort_mode, from_sort_mode)
+TR_DEFINE_APP_CONVERTER(tr::app::StatsMode, to_stats_mode, from_stats_mode)
+TR_DEFINE_APP_CONVERTER(std::chrono::sys_seconds, to_sys_seconds, from_sys_seconds)
+
+#undef TR_DEFINE_APP_CONVERTER
+
+} // namespace tr::serializer
