@@ -8,13 +8,17 @@
 #include <concepts>
 #include <cstddef>
 #include <optional>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
 #include "libtransmission/converters.h"
 #include "libtransmission/quark.h"
+#include "libtransmission/types.h"
 #include "libtransmission/variant.h"
+
+struct tr_pex;
 
 namespace tr::serializer
 {
