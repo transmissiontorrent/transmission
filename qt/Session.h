@@ -11,6 +11,7 @@
 #include <map>
 #include <optional>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 #include <QObject>
@@ -110,7 +111,7 @@ public:
     template<typename T, typename... Rest>
     Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key1, T const& val1, Rest const&... rest)
     {
-        return torrentSetImpl(makeParams(torrent_ids, key1, val1, rest...));
+        return torrentSetImpl(makeParams(TR_KEY_ids, torrent_ids, key1, val1, rest...));
     }
 
     void torrentSetLocation(torrent_ids_t const& torrent_ids, QString const& path, bool do_move);
@@ -168,36 +169,42 @@ private slots:
     void onDuplicatesTimer();
 
 private:
-    [[nodiscard]] tr_variant::Map makeParams(torrent_ids_t const& torrent_ids) const
-    {
-        auto params = tr_variant::Map{ 1U };
-        addOptionalIds(params, torrent_ids);
-        return params;
-    }
+    [[nodiscard]] static tr_variant getTorrentIdsVariant(torrent_ids_t const& torrent_ids);
 
-    template<typename T, typename... Rest>
-    static void addTorrentSetParamPairs(tr_variant::Map& params, tr_quark const key, T const& val, Rest const&... rest)
+    template<typename T>
+    static void addParamPair(tr_variant::Map& params, tr_quark const key, T const& val)
     {
-        params.insert_or_assign(key, tr::serializer::to_variant(val));
-
-        if constexpr (sizeof...(rest) != 0U)
+        if constexpr (std::is_same_v<std::remove_cvref_t<T>, torrent_ids_t>)
         {
-            addTorrentSetParamPairs(params, rest...);
+            if (auto var = getTorrentIdsVariant(val); var.has_value())
+            {
+                params.insert_or_assign(key, std::move(var));
+            }
+        }
+        else
+        {
+            params.insert_or_assign(key, tr::serializer::to_variant(val));
         }
     }
 
     template<typename T, typename... Rest>
-    [[nodiscard]] tr_variant::Map makeParams(
-        torrent_ids_t const& torrent_ids,
-        tr_quark const key1,
-        T const& val1,
-        Rest const&... rest) const
+    static void addParamPairs(tr_variant::Map& params, tr_quark const key, T const& val, Rest const&... rest)
+    {
+        addParamPair(params, key, val);
+
+        if constexpr (sizeof...(rest) != 0U)
+        {
+            addParamPairs(params, rest...);
+        }
+    }
+
+    template<typename T, typename... Rest>
+    [[nodiscard]] static tr_variant::Map makeParams(tr_quark const key1, T const& val1, Rest const&... rest)
     {
         static_assert(sizeof...(rest) % 2U == 0U, "Expected key/value argument pairs");
 
-        auto params = tr_variant::Map{ 2U + static_cast<size_t>(sizeof...(rest) / 2U) };
-        addOptionalIds(params, torrent_ids);
-        addTorrentSetParamPairs(params, key1, val1, rest...);
+        auto params = tr_variant::Map{ 1U + static_cast<size_t>(sizeof...(rest) / 2U) };
+        addParamPairs(params, key1, val1, rest...);
 
         return params;
     }
@@ -214,8 +221,6 @@ private:
     void refreshTorrents(torrent_ids_t const& ids, TorrentProperties props);
 
     static void updateStats(tr_variant const& args_dict, tr_session_stats& stats);
-
-    void addOptionalIds(tr_variant::Map& params, torrent_ids_t const& torrent_ids) const;
 
     QString const config_dir_;
     Prefs& prefs_;
