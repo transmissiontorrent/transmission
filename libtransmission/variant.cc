@@ -353,19 +353,6 @@ void tr_variantInitDict(tr_variant* initme, size_t n_reserve)
     *initme = tr_variant::Map{ n_reserve };
 }
 
-tr_variant* tr_variantListAdd(tr_variant* const var)
-{
-    TR_ASSERT(var != nullptr);
-    TR_ASSERT(var->holds_alternative<tr_variant::Vector>());
-
-    if (auto* const vec = var != nullptr ? var->get_if<tr_variant::VectorIndex>() : nullptr; vec != nullptr)
-    {
-        return &vec->emplace_back();
-    }
-
-    return nullptr;
-}
-
 size_t tr_variantListSize(tr_variant const* const var)
 {
     if (var != nullptr)
