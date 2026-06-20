@@ -10,8 +10,9 @@
 #include <QString>
 #include <QWidget>
 
-#include <libtransmission/transmission.h>
 #include <libtransmission/quark.h>
+#include <libtransmission/serializer.h>
+#include <libtransmission/types.h>
 #include <libtransmission/variant.h>
 
 #include "Formatter.h"
@@ -70,13 +71,12 @@ void FreeSpaceLabel::onTimer()
         return;
     }
 
-    tr_variant args;
-    tr_variantInitDict(&args, 1);
-    dictAdd(&args, TR_KEY_path, path_);
+    auto params = tr_variant::Map{ 1U };
+    params.insert_or_assign(TR_KEY_path, tr::serializer::to_variant(path_));
 
     auto* q = new RpcQueue{ this };
 
-    q->add([this, &args]() { return session_->exec(TR_KEY_free_space, &args); });
+    q->add([this, params = std::move(params)]() mutable { return session_->exec(TR_KEY_free_space, std::move(params)); });
 
     q->add(
         [this](RpcResponse const& r)
