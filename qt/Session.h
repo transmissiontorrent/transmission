@@ -101,14 +101,18 @@ public:
     }
 
     RpcResponseFuture exec(tr_quark method, tr_variant* args);
+    RpcResponseFuture exec(tr_quark method, tr_variant::Map params);
 
     using Tag = RpcQueue::Tag;
-    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark key, bool val);
-    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark key, int val);
-    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark key, double val);
-    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark key, QString const& val);
-    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark key, std::vector<int> const& val);
-    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark key, QStringList const& val);
+
+    template<typename T>
+    Tag torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key, T const& value)
+    {
+        auto params = tr_variant::Map{ 2U };
+        addOptionalIds(params, torrent_ids);
+        params.insert_or_assign(key, tr::serializer::to_variant(value));
+        return torrentSetImpl(std::move(params));
+    }
 
     void torrentSetLocation(torrent_ids_t const& torrent_ids, QString const& path, bool do_move);
     void torrentRenamePath(torrent_ids_t const& torrent_ids, QString const& oldpath, QString const& newname);
@@ -170,7 +174,7 @@ private:
     void updateStats(tr_variant* args_dict);
     void updateInfo(tr_variant* args_dict);
 
-    Tag torrentSetImpl(tr_variant* args);
+    Tag torrentSetImpl(tr_variant::Map params);
     void sessionSet(tr_quark key, tr_variant val);
     void pumpRequests();
     void sendTorrentRequest(tr_quark method, torrent_ids_t const& torrent_ids);

@@ -374,71 +374,17 @@ void Session::addOptionalIds(tr_variant* args_dict, torrent_ids_t const& torrent
     }
 }
 
-Session::Tag Session::torrentSetImpl(tr_variant* args)
+Session::Tag Session::torrentSetImpl(tr_variant::Map params)
 {
     auto* const q = new RpcQueue{};
     auto const tag = q->tag();
 
-    q->add([this, args]() { return rpc_.exec(TR_KEY_torrent_set, args); });
+    q->add([this, params = std::move(params)]() mutable { return rpc_.exec(TR_KEY_torrent_set, std::move(params)); });
     q->add([this, tag]() { emit sessionCalled(tag); });
     q->setTolerateErrors();
     q->run();
 
     return tag;
-}
-
-Session::Tag Session::torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key, double value)
-{
-    tr_variant args;
-    tr_variantInitDict(&args, 2);
-    addOptionalIds(&args, torrent_ids);
-    dictAdd(&args, key, value);
-    return torrentSetImpl(&args);
-}
-
-Session::Tag Session::torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key, int value)
-{
-    tr_variant args;
-    tr_variantInitDict(&args, 2);
-    addOptionalIds(&args, torrent_ids);
-    dictAdd(&args, key, value);
-    return torrentSetImpl(&args);
-}
-
-Session::Tag Session::torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key, bool value)
-{
-    tr_variant args;
-    tr_variantInitDict(&args, 2);
-    addOptionalIds(&args, torrent_ids);
-    dictAdd(&args, key, value);
-    return torrentSetImpl(&args);
-}
-
-Session::Tag Session::torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key, QString const& value)
-{
-    tr_variant args;
-    tr_variantInitDict(&args, 2);
-    addOptionalIds(&args, torrent_ids);
-    dictAdd(&args, key, value);
-    return torrentSetImpl(&args);
-}
-
-Session::Tag Session::torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key, QStringList const& value)
-{
-    tr_variant args;
-    tr_variantInitDict(&args, 2);
-    addOptionalIds(&args, torrent_ids);
-    dictAdd(&args, key, value);
-    return torrentSetImpl(&args);
-}
-
-Session::Tag Session::torrentSet(torrent_ids_t const& torrent_ids, tr_quark const key, std::vector<int> const& value)
-{
-    tr_variant args;
-    tr_variantInitDict(&args, 2);
-    addOptionalIds(&args, torrent_ids);
-    dictAdd(&args, key, value);
-    return torrentSetImpl(&args);
 }
 
 void Session::torrentSetLocation(torrent_ids_t const& torrent_ids, QString const& path, bool do_move)
@@ -809,6 +755,11 @@ void Session::updateBlocklist()
 RpcResponseFuture Session::exec(tr_quark method, tr_variant* args)
 {
     return rpc_.exec(method, args);
+}
+
+RpcResponseFuture Session::exec(tr_quark method, tr_variant::Map params)
+{
+    return rpc_.exec(method, std::move(params));
 }
 
 void Session::updateStats(tr_variant const& args_dict, tr_session_stats& stats)
