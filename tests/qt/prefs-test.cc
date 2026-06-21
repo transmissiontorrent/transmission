@@ -92,6 +92,10 @@ class PrefsTest
         auto serde = tr_variant_serde::json();
         auto const var = serde.parse(json_object_str);
         QVERIFY(var.has_value());
+        if (!var.has_value())
+        {
+            return;
+        }
         auto const* const map = var->get_if<tr_variant::Map>();
         QVERIFY(map);
         if (map)
@@ -110,7 +114,7 @@ class PrefsTest
     }
 
 private slots:
-    void initializes_typed_defaults()
+    static void initializes_typed_defaults()
     {
         auto prefs = Prefs{};
 
@@ -377,7 +381,7 @@ private slots:
 
         auto const custom_value = saved.value_if<int64_t>(custom_key);
         QVERIFY(custom_value.has_value());
-        QCOMPARE_EQ(*custom_value, 123);
+        QCOMPARE_EQ(custom_value, 123);
 
         auto round_tripped = Prefs{ saved };
         QCOMPARE_EQ(round_tripped.get<QString>(TR_KEY_download_dir), download_dir);
