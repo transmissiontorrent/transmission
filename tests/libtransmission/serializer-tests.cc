@@ -48,9 +48,12 @@ struct Rect
 
 // Custom `Converter<Rect>` specialization — illustrates how downstream code
 // would add a converter for its own type.
+// `to_variant`/`to_value` names are dictated by the Converter<T> interface,
+// so suppress the ClassMethodCase check from .clang-tidy.
 template<>
 struct tr::serializer::Converter<Rect>
 {
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static tr_variant to_variant(Rect const& r)
     {
         auto v = tr_variant::Vector{};
@@ -62,6 +65,7 @@ struct tr::serializer::Converter<Rect>
         return v;
     }
 
+    // NOLINTNEXTLINE(readability-identifier-naming)
     static bool to_value(tr_variant const& src, Rect* tgt)
     {
         auto const* const v = src.get_if<tr_variant::Vector>();
