@@ -301,11 +301,6 @@ bool tr_variantGetStrView(tr_variant const* const var, std::string_view* setme)
     return value_if(var, setme);
 }
 
-bool tr_variantGetBool(tr_variant const* const var, bool* setme)
-{
-    return value_if(var, setme);
-}
-
 bool tr_variantGetReal(tr_variant const* const var, double* setme)
 {
     return value_if(var, setme);
