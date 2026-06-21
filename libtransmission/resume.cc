@@ -16,6 +16,7 @@
 
 #include "libtransmission/api-compat.h"
 #include "libtransmission/bitfield.h"
+#include "libtransmission/converters.h"
 #include "libtransmission/error.h"
 #include "libtransmission/file-utils.h"
 #include "libtransmission/file.h"
@@ -25,7 +26,6 @@
 #include "libtransmission/quark.h"
 #include "libtransmission/resume.h"
 #include "libtransmission/session.h"
-#include "libtransmission/serializer.h"
 #include "libtransmission/string-utils.h"
 #include "libtransmission/torrent-ctor.h"
 #include "libtransmission/torrent-metainfo.h"

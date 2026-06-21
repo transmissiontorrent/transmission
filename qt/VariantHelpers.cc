@@ -13,7 +13,7 @@
 #include <QDateTime>
 #include <QUrl>
 
-#include <libtransmission/serializer.h>
+#include <libtransmission/converters.h>
 #include <libtransmission/web-utils.h>
 
 #include "Application.h" // qApp

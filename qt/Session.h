@@ -20,9 +20,9 @@
 #include <QNetworkReply>
 #include <QTimer>
 
-#include <libtransmission/transmission.h>
+#include <libtransmission/converters.h>
 #include <libtransmission/quark.h>
-#include <libtransmission/serializer.h>
+#include <libtransmission/transmission.h>
 
 #include "Prefs.h"
 #include "RpcClient.h"

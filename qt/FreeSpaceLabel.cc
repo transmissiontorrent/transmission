@@ -10,8 +10,8 @@
 #include <QString>
 #include <QWidget>
 
+#include <libtransmission/converters.h>
 #include <libtransmission/quark.h>
-#include <libtransmission/serializer.h>
 #include <libtransmission/types.h>
 #include <libtransmission/variant.h>
 

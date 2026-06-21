@@ -7,7 +7,7 @@
 
 #include <chrono>
 
-#include <libtransmission/serializer.h>
+#include <libtransmission/converters.h>
 #include <libtransmission/variant.h>
 
 #include "libtransmission-app/display-modes.h"

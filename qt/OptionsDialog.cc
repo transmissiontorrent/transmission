@@ -11,10 +11,10 @@
 
 #include <libtransmission/transmission.h>
 
+#include <libtransmission/converters.h>
 #include <libtransmission/quark.h>
-#include <libtransmission/serializer.h>
-#include <libtransmission/variant.h>
 #include <libtransmission/torrent-metainfo.h>
+#include <libtransmission/variant.h>
 
 #include "AddData.h"
 #include "FileTreeModel.h"
