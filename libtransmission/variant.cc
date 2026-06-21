@@ -331,13 +331,6 @@ bool tr_variantDictFindDict(tr_variant* const var, tr_quark key, tr_variant** se
 
 // ---
 
-void tr_variantInitList(tr_variant* initme, size_t n_reserve)
-{
-    auto vec = tr_variant::Vector{};
-    vec.reserve(n_reserve);
-    *initme = std::move(vec);
-}
-
 size_t tr_variantListSize(tr_variant const* const var)
 {
     if (var != nullptr)
