@@ -394,11 +394,11 @@ namespace ad = tr::app::detail;
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #define TR_DEFINE_APP_CONVERTER(T, to_fn, from_fn) \
-    tr_variant Converter<T>::serialize(T const& src) \
+    tr_variant Converter<T>::to_variant(T const& src) \
     { \
         return ad::from_fn(src); \
     } \
-    bool Converter<T>::deserialize(tr_variant const& src, T* tgt) \
+    bool Converter<T>::to_value(tr_variant const& src, T* tgt) \
     { \
         return ad::to_fn(src, tgt); \
     }

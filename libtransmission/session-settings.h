@@ -32,10 +32,8 @@ namespace tr::serializer
 template<>
 struct Converter<small::max_size_vector<tr_preferred_transport, PreferredTransportCount>>
 {
-    static tr_variant serialize(small::max_size_vector<tr_preferred_transport, PreferredTransportCount> const& src);
-    static bool deserialize(
-        tr_variant const& src,
-        small::max_size_vector<tr_preferred_transport, PreferredTransportCount>* tgt);
+    static tr_variant to_variant(small::max_size_vector<tr_preferred_transport, PreferredTransportCount> const& src);
+    static bool to_value(tr_variant const& src, small::max_size_vector<tr_preferred_transport, PreferredTransportCount>* tgt);
 };
 } // namespace tr::serializer
 

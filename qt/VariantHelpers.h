@@ -38,22 +38,22 @@ namespace tr::serializer
 template<>
 struct Converter<int>
 {
-    static tr_variant serialize(int const& src);
-    static bool deserialize(tr_variant const& src, int* tgt);
+    static tr_variant to_variant(int const& src);
+    static bool to_value(tr_variant const& src, int* tgt);
 };
 
 template<>
 struct Converter<QDateTime>
 {
-    static tr_variant serialize(QDateTime const& src);
-    static bool deserialize(tr_variant const& src, QDateTime* tgt);
+    static tr_variant to_variant(QDateTime const& src);
+    static bool to_value(tr_variant const& src, QDateTime* tgt);
 };
 
 template<>
 struct Converter<QString>
 {
-    static tr_variant serialize(QString const& src);
-    static bool deserialize(tr_variant const& src, QString* tgt);
+    static tr_variant to_variant(QString const& src);
+    static bool to_value(tr_variant const& src, QString* tgt);
 };
 } // namespace tr::serializer
 

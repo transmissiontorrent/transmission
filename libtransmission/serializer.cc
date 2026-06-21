@@ -534,11 +534,11 @@ tr_variant from_pex(tr_pex const& val)
 
 // NOLINTBEGIN(bugprone-macro-parentheses)
 #define TR_DEFINE_CONVERTER(T, to_fn, from_fn) \
-    tr_variant Converter<T>::serialize(T const& src) \
+    tr_variant Converter<T>::to_variant(T const& src) \
     { \
         return from_fn(src); \
     } \
-    bool Converter<T>::deserialize(tr_variant const& src, T* tgt) \
+    bool Converter<T>::to_value(tr_variant const& src, T* tgt) \
     { \
         return to_fn(src, tgt); \
     }

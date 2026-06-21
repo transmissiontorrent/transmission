@@ -276,29 +276,29 @@ namespace tr::serializer
 {
 namespace vh = trqt::variant_helpers;
 
-tr_variant Converter<int>::serialize(int const& src)
+tr_variant Converter<int>::to_variant(int const& src)
 {
     return vh::fromInt(src);
 }
-bool Converter<int>::deserialize(tr_variant const& src, int* tgt)
+bool Converter<int>::to_value(tr_variant const& src, int* tgt)
 {
     return vh::toInt(src, tgt);
 }
 
-tr_variant Converter<QDateTime>::serialize(QDateTime const& src)
+tr_variant Converter<QDateTime>::to_variant(QDateTime const& src)
 {
     return vh::fromQDateTime(src);
 }
-bool Converter<QDateTime>::deserialize(tr_variant const& src, QDateTime* tgt)
+bool Converter<QDateTime>::to_value(tr_variant const& src, QDateTime* tgt)
 {
     return vh::toQDateTime(src, tgt);
 }
 
-tr_variant Converter<QString>::serialize(QString const& src)
+tr_variant Converter<QString>::to_variant(QString const& src)
 {
     return vh::fromQString(src);
 }
-bool Converter<QString>::deserialize(tr_variant const& src, QString* tgt)
+bool Converter<QString>::to_value(tr_variant const& src, QString* tgt)
 {
     return vh::toQString(src, tgt);
 }

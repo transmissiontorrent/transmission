@@ -28,7 +28,7 @@ struct tr_pex;
 namespace tr::serializer
 {
 
-// These type traits are used for serialize() and deserialize() to sniff
+// These type traits are used by `to_variant()` and `to_value()` to sniff
 // out containers that support `push_back()`, `insert()`, `reserve()`, etc.
 // Example uses: (de)serializing std::vector<T>, QStringList, small::set<T>
 namespace detail
@@ -132,8 +132,8 @@ void reserve_if_possible(C& /*c*/, ...) // NOLINT(cert-dcl50-cpp)
  * Customization point for converting `tr_variant` to/from a value of type `T`.
  *
  * Specialize this template for each supported type, providing:
- *   - `static tr_variant serialize(T const& src);`
- *   - `static bool deserialize(tr_variant const& src, T* tgt);`
+ *   - `static tr_variant to_variant(T const& src);`
+ *   - `static bool to_value(tr_variant const& src, T* tgt);`
  *
  * The primary template is undefined so that calling `to_variant()` or
  * `to_value()` on an unsupported type will fail to compile.
@@ -150,8 +150,8 @@ namespace detail
 // True iff `Converter<T>` is specialized with the expected static methods.
 template<typename T>
 concept HasConverter = requires(T const& src, tr_variant const& var, T* tgt) {
-    { Converter<T>::serialize(src) } -> std::same_as<tr_variant>;
-    { Converter<T>::deserialize(var, tgt) } -> std::same_as<bool>;
+    { Converter<T>::to_variant(src) } -> std::same_as<tr_variant>;
+    { Converter<T>::to_value(var, tgt) } -> std::same_as<bool>;
 };
 
 } // namespace detail
@@ -166,7 +166,7 @@ template<typename T>
 {
     if constexpr (detail::HasConverter<T>)
     {
-        return Converter<T>::serialize(src);
+        return Converter<T>::to_variant(src);
     }
     else if constexpr (detail::is_push_back_range_v<T>)
     {
@@ -202,7 +202,7 @@ bool to_value(tr_variant const& src, T* const ptgt)
 {
     if constexpr (detail::HasConverter<T>)
     {
-        return Converter<T>::deserialize(src, ptgt);
+        return Converter<T>::to_value(src, ptgt);
     }
     else if constexpr (detail::is_push_back_range_v<T>)
     {
@@ -245,15 +245,15 @@ template<typename T>
 template<>
 struct Converter<bool>
 {
-    static tr_variant serialize(bool const& src);
-    static bool deserialize(tr_variant const& src, bool* tgt);
+    static tr_variant to_variant(bool const& src);
+    static bool to_value(tr_variant const& src, bool* tgt);
 };
 
 template<>
 struct Converter<double>
 {
-    static tr_variant serialize(double const& src);
-    static bool deserialize(tr_variant const& src, double* tgt);
+    static tr_variant to_variant(double const& src);
+    static bool to_value(tr_variant const& src, double* tgt);
 };
 
 // Generic integer specialization. Covers int64_t, uint64_t, uint32_t, size_t,
@@ -270,12 +270,12 @@ template<typename T>
         !std::is_same_v<T, char16_t> && !std::is_same_v<T, char32_t>)
 struct Converter<T>
 {
-    static tr_variant serialize(T const& src)
+    static tr_variant to_variant(T const& src)
     {
         return src;
     }
 
-    static bool deserialize(tr_variant const& src, T* const tgt)
+    static bool to_value(tr_variant const& src, T* const tgt)
     {
         if (auto const val = src.value_if<T>())
         {
@@ -289,78 +289,78 @@ struct Converter<T>
 template<>
 struct Converter<std::string>
 {
-    static tr_variant serialize(std::string const& src);
-    static bool deserialize(tr_variant const& src, std::string* tgt);
+    static tr_variant to_variant(std::string const& src);
+    static bool to_value(tr_variant const& src, std::string* tgt);
 };
 
 template<>
 struct Converter<std::chrono::milliseconds>
 {
-    static tr_variant serialize(std::chrono::milliseconds const& src);
-    static bool deserialize(tr_variant const& src, std::chrono::milliseconds* tgt);
+    static tr_variant to_variant(std::chrono::milliseconds const& src);
+    static bool to_value(tr_variant const& src, std::chrono::milliseconds* tgt);
 };
 
 template<>
 struct Converter<tr_diffserv_t>
 {
-    static tr_variant serialize(tr_diffserv_t const& src);
-    static bool deserialize(tr_variant const& src, tr_diffserv_t* tgt);
+    static tr_variant to_variant(tr_diffserv_t const& src);
+    static bool to_value(tr_variant const& src, tr_diffserv_t* tgt);
 };
 
 template<>
 struct Converter<tr_encryption_mode>
 {
-    static tr_variant serialize(tr_encryption_mode const& src);
-    static bool deserialize(tr_variant const& src, tr_encryption_mode* tgt);
+    static tr_variant to_variant(tr_encryption_mode const& src);
+    static bool to_value(tr_variant const& src, tr_encryption_mode* tgt);
 };
 
 template<>
 struct Converter<tr_file_preallocation>
 {
-    static tr_variant serialize(tr_file_preallocation const& src);
-    static bool deserialize(tr_variant const& src, tr_file_preallocation* tgt);
+    static tr_variant to_variant(tr_file_preallocation const& src);
+    static bool to_value(tr_variant const& src, tr_file_preallocation* tgt);
 };
 
 template<>
 struct Converter<tr_log_level>
 {
-    static tr_variant serialize(tr_log_level const& src);
-    static bool deserialize(tr_variant const& src, tr_log_level* tgt);
+    static tr_variant to_variant(tr_log_level const& src);
+    static bool to_value(tr_variant const& src, tr_log_level* tgt);
 };
 
 template<>
 struct Converter<tr_mode_t>
 {
-    static tr_variant serialize(tr_mode_t const& src);
-    static bool deserialize(tr_variant const& src, tr_mode_t* tgt);
+    static tr_variant to_variant(tr_mode_t const& src);
+    static bool to_value(tr_variant const& src, tr_mode_t* tgt);
 };
 
 template<>
 struct Converter<tr_pex>
 {
-    static tr_variant serialize(tr_pex const& src);
-    static bool deserialize(tr_variant const& src, tr_pex* tgt);
+    static tr_variant to_variant(tr_pex const& src);
+    static bool to_value(tr_variant const& src, tr_pex* tgt);
 };
 
 template<>
 struct Converter<tr_port>
 {
-    static tr_variant serialize(tr_port const& src);
-    static bool deserialize(tr_variant const& src, tr_port* tgt);
+    static tr_variant to_variant(tr_port const& src);
+    static bool to_value(tr_variant const& src, tr_port* tgt);
 };
 
 template<>
 struct Converter<tr_sched_day>
 {
-    static tr_variant serialize(tr_sched_day const& src);
-    static bool deserialize(tr_variant const& src, tr_sched_day* tgt);
+    static tr_variant to_variant(tr_sched_day const& src);
+    static bool to_value(tr_variant const& src, tr_sched_day* tgt);
 };
 
 template<>
 struct Converter<tr_verify_added_mode>
 {
-    static tr_variant serialize(tr_verify_added_mode const& src);
-    static bool deserialize(tr_variant const& src, tr_verify_added_mode* tgt);
+    static tr_variant to_variant(tr_verify_added_mode const& src);
+    static bool to_value(tr_variant const& src, tr_verify_added_mode* tgt);
 };
 
 // ---
