@@ -154,6 +154,14 @@ concept HasConverter = requires(T const& src, tr_variant const& var, T* tgt) {
 
 } // namespace detail
 
+#define TR_DECLARE_CONVERTER(type) \
+    template<> \
+    struct Converter<type> \
+    { \
+        static tr_variant to_variant(type const& src); \
+        static bool to_value(tr_variant const& src, type* tgt); \
+    };
+
 /**
  * Compile-time dispatcher: routes `T` -> `tr_variant` conversion to
  * `Converter<T>` if specialized, otherwise to the generic container fallbacks
@@ -237,23 +245,6 @@ template<typename T>
     return {};
 }
 
-// ---
-// Built-in `Converter<T>` specializations defined in `converters.cc`.
-
-template<>
-struct Converter<bool>
-{
-    static tr_variant to_variant(bool const& src);
-    static bool to_value(tr_variant const& src, bool* tgt);
-};
-
-template<>
-struct Converter<double>
-{
-    static tr_variant to_variant(double const& src);
-    static bool to_value(tr_variant const& src, double* tgt);
-};
-
 // Generic integer specialization. Covers int64_t, uint64_t, uint32_t, size_t,
 // time_t, etc. — including platform-dependent aliases (e.g. on Linux
 // int64_t == long == time_t, uint64_t == unsigned long == size_t).
@@ -284,82 +275,21 @@ struct Converter<T>
     }
 };
 
-template<>
-struct Converter<std::string>
-{
-    static tr_variant to_variant(std::string const& src);
-    static bool to_value(tr_variant const& src, std::string* tgt);
-};
+TR_DECLARE_CONVERTER(bool)
+TR_DECLARE_CONVERTER(double)
 
-template<>
-struct Converter<std::chrono::milliseconds>
-{
-    static tr_variant to_variant(std::chrono::milliseconds const& src);
-    static bool to_value(tr_variant const& src, std::chrono::milliseconds* tgt);
-};
+TR_DECLARE_CONVERTER(std::chrono::milliseconds)
+TR_DECLARE_CONVERTER(std::string)
 
-template<>
-struct Converter<tr_diffserv_t>
-{
-    static tr_variant to_variant(tr_diffserv_t const& src);
-    static bool to_value(tr_variant const& src, tr_diffserv_t* tgt);
-};
-
-template<>
-struct Converter<tr_encryption_mode>
-{
-    static tr_variant to_variant(tr_encryption_mode const& src);
-    static bool to_value(tr_variant const& src, tr_encryption_mode* tgt);
-};
-
-template<>
-struct Converter<tr_file_preallocation>
-{
-    static tr_variant to_variant(tr_file_preallocation const& src);
-    static bool to_value(tr_variant const& src, tr_file_preallocation* tgt);
-};
-
-template<>
-struct Converter<tr_log_level>
-{
-    static tr_variant to_variant(tr_log_level const& src);
-    static bool to_value(tr_variant const& src, tr_log_level* tgt);
-};
-
-template<>
-struct Converter<tr_mode_t>
-{
-    static tr_variant to_variant(tr_mode_t const& src);
-    static bool to_value(tr_variant const& src, tr_mode_t* tgt);
-};
-
-template<>
-struct Converter<tr_pex>
-{
-    static tr_variant to_variant(tr_pex const& src);
-    static bool to_value(tr_variant const& src, tr_pex* tgt);
-};
-
-template<>
-struct Converter<tr_port>
-{
-    static tr_variant to_variant(tr_port const& src);
-    static bool to_value(tr_variant const& src, tr_port* tgt);
-};
-
-template<>
-struct Converter<tr_sched_day>
-{
-    static tr_variant to_variant(tr_sched_day const& src);
-    static bool to_value(tr_variant const& src, tr_sched_day* tgt);
-};
-
-template<>
-struct Converter<tr_verify_added_mode>
-{
-    static tr_variant to_variant(tr_verify_added_mode const& src);
-    static bool to_value(tr_variant const& src, tr_verify_added_mode* tgt);
-};
+TR_DECLARE_CONVERTER(tr_diffserv_t)
+TR_DECLARE_CONVERTER(tr_encryption_mode)
+TR_DECLARE_CONVERTER(tr_file_preallocation)
+TR_DECLARE_CONVERTER(tr_log_level)
+TR_DECLARE_CONVERTER(tr_mode_t)
+TR_DECLARE_CONVERTER(tr_pex)
+TR_DECLARE_CONVERTER(tr_port)
+TR_DECLARE_CONVERTER(tr_sched_day)
+TR_DECLARE_CONVERTER(tr_verify_added_mode)
 
 // ---
 

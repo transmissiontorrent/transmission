@@ -35,26 +35,12 @@ struct TrackerStat;
 
 namespace tr::serializer
 {
-template<>
-struct Converter<int>
-{
-    static tr_variant to_variant(int const& src);
-    static bool to_value(tr_variant const& src, int* tgt);
-};
 
-template<>
-struct Converter<QDateTime>
-{
-    static tr_variant to_variant(QDateTime const& src);
-    static bool to_value(tr_variant const& src, QDateTime* tgt);
-};
+TR_DECLARE_CONVERTER(int)
 
-template<>
-struct Converter<QString>
-{
-    static tr_variant to_variant(QString const& src);
-    static bool to_value(tr_variant const& src, QString* tgt);
-};
+TR_DECLARE_CONVERTER(QDateTime)
+TR_DECLARE_CONVERTER(QString)
+
 } // namespace tr::serializer
 
 namespace trqt::variant_helpers

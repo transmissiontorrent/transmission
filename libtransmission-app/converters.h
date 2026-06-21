@@ -19,31 +19,10 @@
 
 namespace tr::serializer
 {
-template<>
-struct Converter<tr::app::ShowMode>
-{
-    static tr_variant to_variant(tr::app::ShowMode const& src);
-    static bool to_value(tr_variant const& src, tr::app::ShowMode* tgt);
-};
 
-template<>
-struct Converter<tr::app::SortMode>
-{
-    static tr_variant to_variant(tr::app::SortMode const& src);
-    static bool to_value(tr_variant const& src, tr::app::SortMode* tgt);
-};
+TR_DECLARE_CONVERTER(tr::app::ShowMode)
+TR_DECLARE_CONVERTER(tr::app::SortMode)
+TR_DECLARE_CONVERTER(tr::app::StatsMode)
+TR_DECLARE_CONVERTER(std::chrono::sys_seconds)
 
-template<>
-struct Converter<tr::app::StatsMode>
-{
-    static tr_variant to_variant(tr::app::StatsMode const& src);
-    static bool to_value(tr_variant const& src, tr::app::StatsMode* tgt);
-};
-
-template<>
-struct Converter<std::chrono::sys_seconds>
-{
-    static tr_variant to_variant(std::chrono::sys_seconds const& src);
-    static bool to_value(tr_variant const& src, std::chrono::sys_seconds* tgt);
-};
 } // namespace tr::serializer
