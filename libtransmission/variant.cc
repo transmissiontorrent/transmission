@@ -291,11 +291,6 @@ tr_variant* tr_variantListChild(tr_variant* const var, size_t pos)
     return {};
 }
 
-bool tr_variantGetInt(tr_variant const* const var, int64_t* setme)
-{
-    return value_if(var, setme);
-}
-
 bool tr_variantGetStrView(tr_variant const* const var, std::string_view* setme)
 {
     return value_if(var, setme);
@@ -304,7 +299,7 @@ bool tr_variantGetStrView(tr_variant const* const var, std::string_view* setme)
 bool tr_variantDictFindInt(tr_variant* const var, tr_quark key, int64_t* setme)
 {
     auto const* const child = tr_variantDictFind(var, key);
-    return tr_variantGetInt(child, setme);
+    return value_if(child, setme);
 }
 
 bool tr_variantDictFindList(tr_variant* const var, tr_quark key, tr_variant** setme)
