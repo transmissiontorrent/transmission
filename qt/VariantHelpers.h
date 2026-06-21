@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <QDateTime>
 #include <QString>
 
 #include <libtransmission/converters.h>
@@ -46,113 +47,23 @@ TR_DECLARE_CONVERTER(QString)
 namespace trqt::variant_helpers
 {
 template<typename T>
-auto getValue(tr_variant const* variant)
-    requires std::is_same_v<T, bool>
+std::optional<T> getValue(tr_variant const* const var)
 {
-    std::optional<T> ret;
-
-    if (auto value = T{}; tr_variantGetBool(variant, &value))
+    if (var == nullptr)
     {
-        ret = value;
+        return std::nullopt;
     }
 
-    return ret;
-}
-
-template<typename T>
-auto getValue(tr_variant const* variant)
-    requires std::is_same_v<T, int64_t> || std::is_same_v<T, uint64_t> || std::is_same_v<T, int> || std::is_same_v<T, time_t>
-{
-    std::optional<T> ret;
-
-    if (auto value = int64_t{}; tr_variantGetInt(variant, &value))
+    if constexpr (
+        std::is_same_v<T, bool> || std::is_same_v<T, double> || std::is_same_v<T, int64_t> || std::is_same_v<T, std::string> ||
+        std::is_same_v<T, std::string_view>)
     {
-        ret = value;
+        return var->value_if<T>();
     }
-
-    return ret;
-}
-
-template<typename T>
-auto getValue(tr_variant const* variant)
-    requires std::is_same_v<T, double>
-{
-    std::optional<T> ret;
-
-    if (auto value = T{}; tr_variantGetReal(variant, &value))
+    else
     {
-        ret = value;
+        return tr::serializer::to_value<T>(*var);
     }
-
-    return ret;
-}
-
-template<typename T>
-auto getValue(tr_variant const* variant)
-    requires std::is_same_v<T, QString>
-{
-    std::optional<T> ret;
-
-    if (auto sv = std::string_view{}; tr_variantGetStrView(variant, &sv))
-    {
-        ret = QString::fromUtf8(std::data(sv), static_cast<IF_QT6(qsizetype, int)>(std::size(sv)));
-    }
-
-    return ret;
-}
-
-template<typename T>
-auto getValue(tr_variant const* variant)
-    requires std::is_same_v<T, std::string_view>
-{
-    std::optional<T> ret;
-
-    if (auto sv = std::string_view{}; tr_variantGetStrView(variant, &sv))
-    {
-        ret = std::string_view(std::data(sv), std::size(sv));
-    }
-
-    return ret;
-}
-
-template<typename T>
-auto getValue(tr_variant const* variant)
-    requires std::is_enum_v<T>
-{
-    std::optional<T> ret;
-
-    if (auto const value = getValue<int>(variant); value)
-    {
-        ret = static_cast<T>(*value);
-    }
-
-    return ret;
-}
-
-template<typename C, typename T = typename C::value_type>
-auto getValue(tr_variant const* var)
-    requires std::is_same_v<C, QStringList> || std::is_same_v<C, QList<T>> || std::is_same_v<C, std::vector<T>>
-{
-    std::optional<C> ret;
-
-    if (var != nullptr && var->holds_alternative<tr_variant::Vector>())
-    {
-        auto list = C{};
-
-        for (size_t i = 0, n = tr_variantListSize(var); i < n; ++i)
-        {
-            tr_variant* const child = tr_variantListChild(const_cast<tr_variant*>(var), i);
-            auto const value = getValue<T>(child);
-            if (value)
-            {
-                list.push_back(*value);
-            }
-        }
-
-        ret = list;
-    }
-
-    return ret;
 }
 
 template<typename T>
@@ -176,9 +87,9 @@ bool change(TorrentHash& setme, tr_variant const* value);
 bool change(TrackerStat& setme, tr_variant const* value);
 
 template<typename T>
-bool change(T& setme, tr_variant const* variant)
+bool change(T& setme, tr_variant const* const var)
 {
-    auto const value = getValue<T>(variant);
+    auto const value = getValue<T>(var);
     return value && change(setme, *value);
 }
 
