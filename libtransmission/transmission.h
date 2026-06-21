@@ -1,7 +1,7 @@
 // This file Copyright © Transmission authors and contributors.
 // It may be used under the 3-Clause BSD (SPDX: BSD-3-Clause),
 // GPLv2 (SPDX: GPL-2.0-only), GPLv3 (SPDX: GPL-3.0-only),
-// or any future license endorsed by Mnemosyne LLC.
+// or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
 // This file defines the public API for the libtransmission library.

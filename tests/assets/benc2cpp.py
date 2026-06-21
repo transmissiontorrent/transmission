@@ -4,7 +4,7 @@
 #
 # License: Same terms as Transmission itself (see COPYING). Transmission
 # permits redistribution/modification under GNU GPLv2, GPLv3, or any future
-# license endorsed by Mnemosyne LLC.
+# license endorsed by Mnemosaic LLC.
 #
 # Purpose:
 # Convert a bencoded (benc) file into a C++ concatenated string-literal
