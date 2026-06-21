@@ -154,6 +154,7 @@ concept HasConverter = requires(T const& src, tr_variant const& var, T* tgt) {
 
 } // namespace detail
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define TR_DECLARE_CONVERTER(type) \
     template<> \
     struct Converter<type> \
@@ -161,6 +162,7 @@ concept HasConverter = requires(T const& src, tr_variant const& var, T* tgt) {
         static tr_variant to_variant(type const& src); \
         static bool to_value(tr_variant const& src, type* tgt); \
     };
+// NOLINTEND(bugprone-macro-parentheses)
 
 /**
  * Compile-time dispatcher: routes `T` -> `tr_variant` conversion to
