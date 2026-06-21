@@ -338,11 +338,6 @@ void tr_variantInitList(tr_variant* initme, size_t n_reserve)
     *initme = std::move(vec);
 }
 
-void tr_variantInitDict(tr_variant* initme, size_t n_reserve)
-{
-    *initme = tr_variant::Map{ n_reserve };
-}
-
 size_t tr_variantListSize(tr_variant const* const var)
 {
     if (var != nullptr)
