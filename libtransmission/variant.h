@@ -597,7 +597,6 @@ bool tr_variantDictFindDict(tr_variant* var, tr_quark key, tr_variant** setme_va
 bool tr_variantDictFindInt(tr_variant* var, tr_quark key, int64_t* setme);
 bool tr_variantDictFindList(tr_variant* var, tr_quark key, tr_variant** setme);
 bool tr_variantGetInt(tr_variant const* var, int64_t* setme);
-bool tr_variantGetReal(tr_variant const* variant, double* value_setme);
 bool tr_variantGetStrView(tr_variant const* variant, std::string_view* setme);
 size_t tr_variantListSize(tr_variant const* var);
 tr_variant* tr_variantDictAdd(tr_variant* var, tr_quark key);
