@@ -129,16 +129,20 @@ QVariant TorrentModel::data(QModelIndex const& index, int role) const
 
 void TorrentModel::removeTorrents(tr_variant* torrent_list)
 {
-    auto torrents = torrents_t{};
-    torrents.reserve(tr_variantListSize(torrent_list));
-
-    int i = 0;
-    tr_variant const* child = nullptr;
-    while ((child = tr_variantListChild(torrent_list, i++)) != nullptr)
+    auto const* const ids = torrent_list->get_if<tr_variant::Vector>();
+    if (!ids || std::empty(*ids))
     {
-        if (auto const id = getValue<int>(child); id)
+        return;
+    }
+
+    auto torrents = torrents_t{};
+    torrents.reserve(std::size(*ids));
+
+    for (tr_variant const& child : *ids)
+    {
+        if (auto const id = tr::serializer::to_value<int64_t>(child))
         {
-            if (auto* const torrent = getTorrentFromId(*id); torrent != nullptr)
+            if (auto* const torrent = getTorrentFromId(*id))
             {
                 torrents.push_back(torrent);
             }
