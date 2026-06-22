@@ -166,6 +166,24 @@ tr_variant fromSpeed(Speed const& src)
 {
     return ser::to_variant(static_cast<int64_t>(src.base_quantity()));
 }
+
+// ---
+
+bool toTorrentHash(tr_variant const& src, TorrentHash* tgt)
+{
+    if (auto const val = src.value_if<std::string_view>())
+    {
+        *tgt = TorrentHash{ *val };
+        return true;
+    }
+
+    return false;
+}
+
+tr_variant fromTorrentHash(TorrentHash const& src)
+{
+    return ser::to_variant(src.toString());
+}
 } // namespace
 
 } // namespace trqt::variant_helpers
@@ -212,6 +230,15 @@ tr_variant Converter<Speed>::to_variant(Speed const& src)
 bool Converter<Speed>::to_value(tr_variant const& src, Speed* tgt)
 {
     return vh::toSpeed(src, tgt);
+}
+
+tr_variant Converter<TorrentHash>::to_variant(TorrentHash const& src)
+{
+    return vh::fromTorrentHash(src);
+}
+bool Converter<TorrentHash>::to_value(tr_variant const& src, TorrentHash* tgt)
+{
+    return vh::toTorrentHash(src, tgt);
 }
 
 } // namespace tr::serializer
