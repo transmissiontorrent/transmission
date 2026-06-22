@@ -62,7 +62,8 @@ bool change(std::vector<T>& setme, tr_variant const* value)
 {
     bool changed = false;
 
-    auto const n = tr_variantListSize(value);
+    auto const* const vec = value->get_if<tr_variant::Vector>();
+    auto const n = vec ? std::size(*vec) : 0;
     if (setme.size() != n)
     {
         setme.resize(n);
@@ -71,7 +72,7 @@ bool change(std::vector<T>& setme, tr_variant const* value)
 
     for (size_t i = 0; i < n; ++i)
     {
-        changed = change(setme[i], tr_variantListChild(const_cast<tr_variant*>(value), i)) || changed;
+        changed = change(setme[i], &(*vec)[i]) || changed;
     }
 
     return changed;
