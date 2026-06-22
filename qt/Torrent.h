@@ -11,6 +11,8 @@
 #include <cstdint> // uint64_t
 #include <ctime> // time_t
 #include <optional>
+#include <string_view>
+#include <tuple>
 #include <vector>
 
 #include <QIcon>
@@ -22,6 +24,7 @@
 #include <libtransmission/crypto-utils.h>
 #include <libtransmission/quark.h>
 #include <libtransmission/serializer.h>
+#include <libtransmission/types.h>
 
 #include "IconCache.h"
 #include "QtCompat.h"

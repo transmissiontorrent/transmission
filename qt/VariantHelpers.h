@@ -6,22 +6,15 @@
 #pragma once
 
 #include <cstddef> // size_t
-#include <cstdint> // int64_t
-#include <ctime>
 #include <optional>
-#include <string_view>
-#include <type_traits>
 #include <vector>
-
-#include <QString>
 
 #include <libtransmission/converters.h>
 #include <libtransmission/variant.h>
 
-#include "QtCompat.h"
-
 class QByteArray;
 class QDateTime;
+class QString;
 
 class Speed;
 class TorrentHash;
