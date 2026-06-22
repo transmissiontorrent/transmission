@@ -5,6 +5,7 @@
 
 #include "VariantHelpers.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -62,60 +63,9 @@ bool change(TorrentFile& setme, tr_variant const* value)
 
 bool change(TrackerStat& setme, tr_variant const* value)
 {
-    bool changed = false;
-    bool site_changed = false;
-
-    auto pos = size_t{ 0 };
-    auto key = tr_quark{};
-    tr_variant* child = nullptr;
-    while (tr_variantDictChild(const_cast<tr_variant*>(value), pos++, &key, &child))
-    {
-        bool field_changed = false;
-
-        switch (key)
-        {
-#define HANDLE_KEY(key) \
-    case TR_KEY_##key: \
-        field_changed = change(setme.key, child); \
-        break;
-            HANDLE_KEY(announce)
-            HANDLE_KEY(announce_state)
-            HANDLE_KEY(download_count)
-            HANDLE_KEY(has_announced)
-            HANDLE_KEY(has_scraped)
-            HANDLE_KEY(id)
-            HANDLE_KEY(is_backup)
-            HANDLE_KEY(last_announce_peer_count)
-            HANDLE_KEY(last_announce_result)
-            HANDLE_KEY(last_announce_start_time)
-            HANDLE_KEY(last_announce_succeeded)
-            HANDLE_KEY(last_announce_time)
-            HANDLE_KEY(last_announce_timed_out)
-            HANDLE_KEY(last_scrape_result)
-            HANDLE_KEY(last_scrape_start_time)
-            HANDLE_KEY(last_scrape_succeeded)
-            HANDLE_KEY(last_scrape_time)
-            HANDLE_KEY(last_scrape_timed_out)
-            HANDLE_KEY(leecher_count)
-            HANDLE_KEY(next_announce_time)
-            HANDLE_KEY(next_scrape_time)
-            HANDLE_KEY(scrape_state)
-            HANDLE_KEY(seeder_count)
-            HANDLE_KEY(sitename)
-            HANDLE_KEY(tier)
-
-#undef HANDLE_KEY
-        default:
-            break;
-        }
-
-        if (field_changed)
-        {
-            site_changed |= key == TR_KEY_announce || key == TR_KEY_sitename;
-        }
-
-        changed = true;
-    }
+    auto const changed_keys = ser::load(setme, TrackerStat::Fields, *value);
+    auto const site_changed = std::ranges::binary_search(changed_keys, TR_KEY_announce) ||
+        std::ranges::binary_search(changed_keys, TR_KEY_sitename);
 
     if (site_changed && !setme.announce.isEmpty() && trApp != nullptr)
     {
@@ -135,7 +85,7 @@ bool change(TrackerStat& setme, tr_variant const* value)
         trApp->load_favicon(setme.announce);
     }
 
-    return changed;
+    return !changed_keys.empty();
 }
 
 ///

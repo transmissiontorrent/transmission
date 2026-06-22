@@ -101,6 +101,36 @@ struct TrackerStat
     QString last_announce_result;
     QString last_scrape_result;
     QString sitename;
+
+    template<auto MemberPtr>
+    using Field = tr::serializer::Field<MemberPtr>;
+
+    static constexpr auto Fields = std::make_tuple(
+        Field<&TrackerStat::announce>{ TR_KEY_announce },
+        Field<&TrackerStat::announce_state>{ TR_KEY_announce_state },
+        Field<&TrackerStat::download_count>{ TR_KEY_download_count },
+        Field<&TrackerStat::has_announced>{ TR_KEY_has_announced },
+        Field<&TrackerStat::has_scraped>{ TR_KEY_has_scraped },
+        Field<&TrackerStat::id>{ TR_KEY_id },
+        Field<&TrackerStat::is_backup>{ TR_KEY_is_backup },
+        Field<&TrackerStat::last_announce_peer_count>{ TR_KEY_last_announce_peer_count },
+        Field<&TrackerStat::last_announce_result>{ TR_KEY_last_announce_result },
+        Field<&TrackerStat::last_announce_start_time>{ TR_KEY_last_announce_start_time },
+        Field<&TrackerStat::last_announce_succeeded>{ TR_KEY_last_announce_succeeded },
+        Field<&TrackerStat::last_announce_time>{ TR_KEY_last_announce_time },
+        Field<&TrackerStat::last_announce_timed_out>{ TR_KEY_last_announce_timed_out },
+        Field<&TrackerStat::last_scrape_result>{ TR_KEY_last_scrape_result },
+        Field<&TrackerStat::last_scrape_start_time>{ TR_KEY_last_scrape_start_time },
+        Field<&TrackerStat::last_scrape_succeeded>{ TR_KEY_last_scrape_succeeded },
+        Field<&TrackerStat::last_scrape_time>{ TR_KEY_last_scrape_time },
+        Field<&TrackerStat::last_scrape_timed_out>{ TR_KEY_last_scrape_timed_out },
+        Field<&TrackerStat::leecher_count>{ TR_KEY_leecher_count },
+        Field<&TrackerStat::next_announce_time>{ TR_KEY_next_announce_time },
+        Field<&TrackerStat::next_scrape_time>{ TR_KEY_next_scrape_time },
+        Field<&TrackerStat::scrape_state>{ TR_KEY_scrape_state },
+        Field<&TrackerStat::seeder_count>{ TR_KEY_seeder_count },
+        Field<&TrackerStat::sitename>{ TR_KEY_sitename },
+        Field<&TrackerStat::tier>{ TR_KEY_tier });
 };
 
 using TrackerStatsList = std::vector<TrackerStat>;
