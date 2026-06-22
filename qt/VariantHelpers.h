@@ -56,27 +56,21 @@ auto getValue(tr_variant const* variant)
 }
 
 template<typename T>
-bool change(T& setme, T const& value)
+bool change(T& setme, T value)
 {
-    bool const changed = setme != value;
-
-    if (changed)
-    {
-        setme = value;
-    }
-
-    return changed;
+    return tr::serializer::set(setme, std::move(value));
 }
-
-bool change(Peer& setme, tr_variant const* var);
-bool change(TorrentFile& setme, tr_variant const* var);
-bool change(TrackerStat& setme, tr_variant const* var);
 
 template<typename T>
 bool change(T& setme, tr_variant const* var)
 {
     return var && tr::serializer::set(setme, *var);
 }
+
+
+bool change(Peer& setme, tr_variant const* var);
+bool change(TorrentFile& setme, tr_variant const* var);
+bool change(TrackerStat& setme, tr_variant const* var);
 
 template<typename T>
 bool change(std::vector<T>& setme, tr_variant const* value)
