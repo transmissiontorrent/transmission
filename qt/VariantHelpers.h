@@ -40,6 +40,7 @@ TR_DECLARE_CONVERTER(int)
 
 TR_DECLARE_CONVERTER(QDateTime)
 TR_DECLARE_CONVERTER(QString)
+TR_DECLARE_CONVERTER(Speed)
 
 } // namespace tr::serializer
 

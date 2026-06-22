@@ -21,6 +21,7 @@
 
 #include <libtransmission/crypto-utils.h>
 #include <libtransmission/quark.h>
+#include <libtransmission/serializer.h>
 
 #include "IconCache.h"
 #include "QtCompat.h"
@@ -29,12 +30,6 @@
 class QPixmap;
 
 class Prefs;
-
-extern "C"
-{
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    struct tr_variant;
-}
 
 struct Peer
 {
@@ -53,6 +48,26 @@ struct Peer
     Speed rate_to_client;
     Speed rate_to_peer;
     double progress = {};
+
+    template<auto MemberPtr>
+    using Field = tr::serializer::Field<MemberPtr>;
+
+    static constexpr auto Fields = std::make_tuple(
+        Field<&Peer::address>{ TR_KEY_address },
+        Field<&Peer::client_is_choked>{ TR_KEY_client_is_choked },
+        Field<&Peer::client_is_interested>{ TR_KEY_client_is_interested },
+        Field<&Peer::client_name>{ TR_KEY_client_name },
+        Field<&Peer::flags>{ TR_KEY_flag_str },
+        Field<&Peer::is_downloading_from>{ TR_KEY_is_downloading_from },
+        Field<&Peer::is_encrypted>{ TR_KEY_is_encrypted },
+        Field<&Peer::is_incoming>{ TR_KEY_is_incoming },
+        Field<&Peer::is_uploading_to>{ TR_KEY_is_uploading_to },
+        Field<&Peer::peer_is_choked>{ TR_KEY_peer_is_choked },
+        Field<&Peer::peer_is_interested>{ TR_KEY_peer_is_interested },
+        Field<&Peer::port>{ TR_KEY_port },
+        Field<&Peer::progress>{ TR_KEY_progress },
+        Field<&Peer::rate_to_client>{ TR_KEY_rate_to_client },
+        Field<&Peer::rate_to_peer>{ TR_KEY_rate_to_peer });
 };
 
 using PeerList = std::vector<Peer>;

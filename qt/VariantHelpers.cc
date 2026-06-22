@@ -52,42 +52,7 @@ bool change(TorrentHash& setme, tr_variant const* value)
 
 bool change(Peer& setme, tr_variant const* value)
 {
-    auto changed = false;
-
-    auto pos = size_t{ 0 };
-    auto key = tr_quark{};
-    tr_variant* child = nullptr;
-    while (tr_variantDictChild(const_cast<tr_variant*>(value), pos++, &key, &child))
-    {
-        switch (key)
-        {
-#define HANDLE_KEY(key, field) \
-    case TR_KEY_##key: \
-        changed = change(setme.field, child) || changed; \
-        break;
-
-            HANDLE_KEY(address, address)
-            HANDLE_KEY(client_is_choked, client_is_choked)
-            HANDLE_KEY(client_is_interested, client_is_interested)
-            HANDLE_KEY(client_name, client_name)
-            HANDLE_KEY(flag_str, flags)
-            HANDLE_KEY(is_downloading_from, is_downloading_from)
-            HANDLE_KEY(is_encrypted, is_encrypted)
-            HANDLE_KEY(is_incoming, is_incoming)
-            HANDLE_KEY(is_uploading_to, is_uploading_to)
-            HANDLE_KEY(peer_is_choked, peer_is_choked)
-            HANDLE_KEY(peer_is_interested, peer_is_interested)
-            HANDLE_KEY(port, port)
-            HANDLE_KEY(progress, progress)
-            HANDLE_KEY(rate_to_client, rate_to_client)
-            HANDLE_KEY(rate_to_peer, rate_to_peer)
-#undef HANDLE_KEY
-        default:
-            break;
-        }
-    }
-
-    return changed;
+    return !ser::load(setme, Peer::Fields, *value).empty();
 }
 
 bool change(TorrentFile& setme, tr_variant const* value)
@@ -264,6 +229,24 @@ tr_variant fromQString(QString const& val)
 {
     return val.toStdString();
 }
+
+// ---
+
+bool toSpeed(tr_variant const& src, Speed* tgt)
+{
+    if (auto const val = ser::to_value<int64_t>(src))
+    {
+        *tgt = Speed{ *val, Speed::Units::Byps };
+        return true;
+    }
+
+    return false;
+}
+
+tr_variant fromSpeed(Speed const& src)
+{
+    return ser::to_variant(static_cast<int64_t>(src.base_quantity()));
+}
 } // namespace
 
 } // namespace trqt::variant_helpers
@@ -301,6 +284,15 @@ tr_variant Converter<QString>::to_variant(QString const& src)
 bool Converter<QString>::to_value(tr_variant const& src, QString* tgt)
 {
     return vh::toQString(src, tgt);
+}
+
+tr_variant Converter<Speed>::to_variant(Speed const& src)
+{
+    return vh::fromSpeed(src);
+}
+bool Converter<Speed>::to_value(tr_variant const& src, Speed* tgt)
+{
+    return vh::toSpeed(src, tgt);
 }
 
 } // namespace tr::serializer
