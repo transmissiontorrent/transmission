@@ -113,6 +113,16 @@ struct TorrentFile
     QString filename;
     uint64_t size = 0;
     uint64_t have = 0;
+
+    template<auto MemberPtr>
+    using Field = tr::serializer::Field<MemberPtr>;
+
+    static constexpr auto Fields = std::make_tuple(
+        Field<&TorrentFile::filename>{ TR_KEY_name },
+        Field<&TorrentFile::have>{ TR_KEY_bytes_completed },
+        Field<&TorrentFile::priority>{ TR_KEY_priority },
+        Field<&TorrentFile::size>{ TR_KEY_length },
+        Field<&TorrentFile::wanted>{ TR_KEY_wanted });
 };
 
 using FileList = std::vector<TorrentFile>;

@@ -57,38 +57,7 @@ bool change(Peer& setme, tr_variant const* value)
 
 bool change(TorrentFile& setme, tr_variant const* value)
 {
-    auto changed = false;
-
-    auto pos = size_t{ 0 };
-    auto key = tr_quark{};
-    tr_variant* child = nullptr;
-    while (tr_variantDictChild(const_cast<tr_variant*>(value), pos++, &key, &child))
-    {
-        switch (key)
-        {
-#define HANDLE_KEY(key) \
-    case TR_KEY_##key: \
-        changed = change(setme.key, child) || changed; \
-        break;
-
-            HANDLE_KEY(priority)
-            HANDLE_KEY(wanted)
-#undef HANDLE_KEY
-#define HANDLE_KEY(key, field) \
-    case TR_KEY_##key: \
-        changed = change(setme.field, child) || changed; \
-        break;
-
-            HANDLE_KEY(bytes_completed, have)
-            HANDLE_KEY(length, size)
-            HANDLE_KEY(name, filename)
-#undef HANDLE_KEY
-        default:
-            break;
-        }
-    }
-
-    return changed;
+    return !ser::load(setme, TorrentFile::Fields, *value).empty();
 }
 
 bool change(TrackerStat& setme, tr_variant const* value)
