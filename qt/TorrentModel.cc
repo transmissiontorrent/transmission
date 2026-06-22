@@ -22,8 +22,6 @@
 #include "TorrentModel.h"
 #include "VariantHelpers.h"
 
-using ::trqt::variant_helpers::getValue;
-
 /***
 ****
 ***/
@@ -176,27 +174,29 @@ void TorrentModel::updateTorrents(tr_variant* torrent_list, bool is_complete_lis
     };
 
     // build a list of the property keys
-    tr_variant* const first_child = tr_variantListChild(torrent_list, 0);
+    auto* const list = torrent_list->get_if<tr_variant::Vector>();
+    auto* const first_child = list != nullptr && !list->empty() ? &list->front() : nullptr;
     bool const table = first_child != nullptr && first_child->holds_alternative<tr_variant::Vector>();
     std::vector<tr_quark> keys;
     if (table)
     {
         // In 'table' format, the first entry in 'torrents' is an array of keys.
         // All the other entries are an array of the values for one torrent.
-        auto sv = std::string_view{};
-        size_t i = 0;
-        keys.reserve(tr_variantListSize(first_child));
-        while (tr_variantGetStrView(tr_variantListChild(first_child, i++), &sv))
+        auto const* const key_vec = first_child->get_if<tr_variant::Vector>();
+        keys.reserve(key_vec->size());
+        for (auto const& key_var : *key_vec)
         {
-            keys.push_back(tr_quark_new(sv));
+            if (auto const sv = key_var.value_if<std::string_view>())
+            {
+                keys.push_back(tr_quark_new(*sv));
+            }
         }
     }
-    else if (first_child != nullptr)
+    else if (auto const* const first_map = first_child != nullptr ? first_child->get_if<tr_variant::Map>() : nullptr)
     {
         // In 'object' format, every entry is an object with the same set of properties
-        auto key = tr_quark{};
-        tr_variant* value = nullptr;
-        for (size_t i = 0; tr_variantDictChild(first_child, i, &key, &value); ++i)
+        keys.reserve(first_map->size());
+        for (auto const& [key, value] : *first_map)
         {
             keys.push_back(key);
         }
@@ -214,48 +214,54 @@ void TorrentModel::updateTorrents(tr_variant* torrent_list, bool is_complete_lis
     // Loop through the torrent records...
     std::vector<tr_variant*> values;
     values.reserve(keys.size());
-    size_t tor_index = table ? 1 : 0;
-    processed.reserve(tr_variantListSize(torrent_list));
-    tr_variant* v = nullptr;
-    while ((v = tr_variantListChild(torrent_list, tor_index++)))
+    processed.reserve(list->size());
+    for (auto it = std::next(std::begin(*list), table ? 1 : 0); it != std::end(*list); ++it)
     {
+        tr_variant& v = *it;
+
         // Build an array of values
         values.clear();
         if (table)
         {
-            // In table mode, v is already a list of values
-            size_t i = 0;
-            tr_variant* val = nullptr;
-            while ((val = tr_variantListChild(v, i++)))
+            // In table mode, v is a list of values
+            auto* const row_vec = v.get_if<tr_variant::Vector>();
+            if (row_vec == nullptr)
             {
-                values.push_back(val);
+                continue;
+            }
+            for (auto& val : *row_vec)
+            {
+                values.push_back(&val);
             }
         }
         else
         {
             // In object mode, v is an object of torrent property key/vals
-            size_t i = 0;
-            auto key = tr_quark{};
-            tr_variant* value = nullptr;
-            while (tr_variantDictChild(v, i++, &key, &value))
+            auto* const row_map = v.get_if<tr_variant::Map>();
+            if (row_map == nullptr)
             {
-                values.push_back(value);
+                continue;
+            }
+            for (auto& [key, val] : *row_map)
+            {
+                values.push_back(&val);
             }
         }
 
         // Find the torrent id
-        auto const id = getValue<int>(values[id_pos]);
-        if (!id)
+        auto const id_val = values[id_pos]->value_if<int64_t>();
+        if (!id_val)
         {
             continue;
         }
+        auto const id = static_cast<int>(*id_val);
 
-        Torrent* tor = getTorrentFromId(*id);
+        Torrent* tor = getTorrentFromId(id);
         bool is_new = false;
 
         if (tor == nullptr)
         {
-            tor = new Torrent{ prefs_, *id };
+            tor = new Torrent{ prefs_, id };
             instantiated.push_back(tor);
             is_new = true;
         }
@@ -265,28 +271,28 @@ void TorrentModel::updateTorrents(tr_variant* torrent_list, bool is_complete_lis
         if (fields.any())
         {
             changed_fields |= fields;
-            changed.insert(*id);
+            changed.insert(id);
         }
 
         if (fields.test(Torrent::EDIT_DATE))
         {
-            edited.insert(*id);
+            edited.insert(id);
         }
 
         if (is_new && !tor->hasName())
         {
-            needinfo.insert(*id);
+            needinfo.insert(id);
         }
 
-        if (recently_added(tor) && tor->hasName() && !already_added_.contains(*id))
+        if (recently_added(tor) && tor->hasName() && !already_added_.contains(id))
         {
-            added.insert(*id);
-            already_added_.insert(*id);
+            added.insert(id);
+            already_added_.insert(id);
         }
 
         if (fields.test(Torrent::LEFT_UNTIL_DONE) && (tor->leftUntilDone() == 0) && (tor->downloadedEver() > 0))
         {
-            completed.insert(*id);
+            completed.insert(id);
         }
 
         processed.push_back(tor);

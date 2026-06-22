@@ -42,20 +42,6 @@ TR_DECLARE_CONVERTER(TorrentHash)
 namespace trqt::variant_helpers
 {
 template<typename T>
-auto getValue(tr_variant const* variant)
-    requires std::is_same_v<T, int>
-{
-    std::optional<T> ret;
-
-    if (auto value = int64_t{}; tr_variantGetInt(variant, &value))
-    {
-        ret = value;
-    }
-
-    return ret;
-}
-
-template<typename T>
 bool change(T& setme, T value)
 {
     return tr::serializer::set(setme, std::move(value));
