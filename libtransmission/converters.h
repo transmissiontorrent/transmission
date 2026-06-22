@@ -247,6 +247,26 @@ template<typename T>
     return {};
 }
 
+// returns true iff the value changed
+template<typename T>
+bool set(T& tgt, T src)
+{
+    if (detail::values_differ(tgt, src))
+    {
+        tgt = std::move(src);
+        return true;
+    }
+
+    return false;
+}
+
+template<typename T>
+bool set(T& tgt, tr_variant const& src)
+{
+    auto val = to_value<T>(src);
+    return val && set(tgt, std::move(*val));
+}
+
 // Generic integer specialization. Covers int64_t, uint64_t, uint32_t, size_t,
 // time_t, etc. — including platform-dependent aliases (e.g. on Linux
 // int64_t == long == time_t, uint64_t == unsigned long == size_t).

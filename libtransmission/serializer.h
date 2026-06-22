@@ -5,12 +5,15 @@
 
 #pragma once
 
+#include <algorithm>
 #include <concepts>
 #include <cstddef>
 #include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
+
+#include <small/vector.hpp>
 
 #include "libtransmission/converters.h"
 #include "libtransmission/quark.h"
@@ -53,14 +56,13 @@ struct Field<MemberPtr, Key>
     {
     }
 
+    // returns `true` iff the value was changed
     template<typename Derived>
-    void load(Derived* derived, tr_variant::Map const& map) const
+    [[nodiscard]] bool load(Derived* derived, tr_variant::Map const& map) const
     {
         static_assert(std::is_base_of_v<Owner, Derived>);
-        if (auto const iter = map.find(key); iter != std::end(map))
-        {
-            (void)to_value(iter->second, &(static_cast<Owner*>(derived)->*MemberPtr));
-        }
+        auto const iter = map.find(key);
+        return iter != std::end(map) && set(static_cast<Owner*>(derived)->*MemberPtr, iter->second);
     }
 
     template<typename Derived>
@@ -203,17 +205,8 @@ bool set_from_variant(S& tgt, tr_quark key, tr_variant const& value)
         }
 
         found = true;
-
         using FieldType = std::remove_cvref_t<decltype(field)>;
-        if (auto value_cast = to_value<typename FieldType::value_type>(value))
-        {
-            auto& target = tgt.*(FieldType::MemberPointer);
-            if (detail::values_differ(target, *value_cast))
-            {
-                target = std::move(*value_cast);
-                changed = true;
-            }
-        }
+        changed |= set(tgt.*(FieldType::MemberPointer), value);
     };
 
     std::apply([&](auto const&... field) { (try_field(field), ...); }, S::Fields);
@@ -238,16 +231,7 @@ bool set(S& tgt, tr_quark key, T val)
         using FieldType = std::remove_cvref_t<decltype(field)>;
         if constexpr (std::is_same_v<T, typename FieldType::value_type>)
         {
-            auto& target = tgt.*(FieldType::MemberPointer);
-            if (detail::values_differ(target, val))
-            {
-                target = std::move(val);
-                changed = true;
-            }
-            else
-            {
-                changed = false;
-            }
+            changed = set(tgt.*(FieldType::MemberPointer), std::move(val));
         }
         else
         {
@@ -262,25 +246,43 @@ bool set(S& tgt, tr_quark key, T val)
 /**
  * Load fields from a variant map into a target object.
  * Missing keys are silently ignored (fields retain their existing values).
- * If `src` is not a map, this is a no-op.
  *
- * @param tgt    The object to populate
+ * @param tgt The object to populate
  * @param fields A tuple of Field<> descriptors
- * @param src    The source variant (expected to be a Map)
+ * @param src The source variant (expected to be a Map)
+ * @return changed_keys sorted keys of fields that changed
  */
 template<typename T, typename Fields>
-void load(T& tgt, Fields const& fields, tr_variant::Map const& src)
+auto load(T& tgt, Fields const& fields, tr_variant::Map const& src)
 {
-    std::apply([&tgt, &src](auto const&... field) { (field.load(&tgt, src), ...); }, fields);
+    auto changed_keys = small::vector<tr_quark, std::tuple_size_v<Fields>>{};
+    std::apply(
+        [&tgt, &src, &changed_keys](auto const&... field)
+        {
+            (
+                [&]
+                {
+                    if (field.load(&tgt, src))
+                    {
+                        changed_keys.emplace_back(field.key);
+                    }
+                }(),
+                ...);
+        },
+        fields);
+    std::ranges::sort(changed_keys);
+    return changed_keys;
 }
 
 template<typename T, typename Fields>
-void load(T& tgt, Fields const& fields, tr_variant const& src)
+auto load(T& tgt, Fields const& fields, tr_variant const& src)
 {
-    if (auto const* map = src.get_if<tr_variant::Map>())
+    if (auto const* const map = src.get_if<tr_variant::Map>())
     {
-        load(tgt, fields, *map);
+        return load(tgt, fields, *map);
     }
+
+    return small::vector<tr_quark, std::tuple_size_v<Fields>>{};
 }
 
 /**
