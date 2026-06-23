@@ -56,15 +56,20 @@ runs:
           enable_lsan="$enable_sanitizers"
         fi
 
-        if command -v llvm-symbolizer >/dev/null 2>&1; then
-          echo "ASAN_SYMBOLIZER_PATH=$(command -v llvm-symbolizer)" >> "$GITHUB_ENV"
-          echo "LLVM_SYMBOLIZER_PATH=$(command -v llvm-symbolizer)" >> "$GITHUB_ENV"
-        elif command -v llvm-symbolizer-20 >/dev/null 2>&1; then
-          echo "ASAN_SYMBOLIZER_PATH=$(command -v llvm-symbolizer-20)" >> "$GITHUB_ENV"
-          echo "LLVM_SYMBOLIZER_PATH=$(command -v llvm-symbolizer-20)" >> "$GITHUB_ENV"
-        elif command -v llvm-symbolizer-19 >/dev/null 2>&1; then
-          echo "ASAN_SYMBOLIZER_PATH=$(command -v llvm-symbolizer-19)" >> "$GITHUB_ENV"
-          echo "LLVM_SYMBOLIZER_PATH=$(command -v llvm-symbolizer-19)" >> "$GITHUB_ENV"
+        # Respect a symbolizer path provided by the caller. The Windows ASan job
+        # sets a native path; the POSIX path that `command -v` yields under Git Bash
+        # would be unusable by the native MSVC ASan runtime.
+        if [[ -z "${ASAN_SYMBOLIZER_PATH:-}" ]]; then
+          if command -v llvm-symbolizer >/dev/null 2>&1; then
+            echo "ASAN_SYMBOLIZER_PATH=$(command -v llvm-symbolizer)" >> "$GITHUB_ENV"
+            echo "LLVM_SYMBOLIZER_PATH=$(command -v llvm-symbolizer)" >> "$GITHUB_ENV"
+          elif command -v llvm-symbolizer-20 >/dev/null 2>&1; then
+            echo "ASAN_SYMBOLIZER_PATH=$(command -v llvm-symbolizer-20)" >> "$GITHUB_ENV"
+            echo "LLVM_SYMBOLIZER_PATH=$(command -v llvm-symbolizer-20)" >> "$GITHUB_ENV"
+          elif command -v llvm-symbolizer-19 >/dev/null 2>&1; then
+            echo "ASAN_SYMBOLIZER_PATH=$(command -v llvm-symbolizer-19)" >> "$GITHUB_ENV"
+            echo "LLVM_SYMBOLIZER_PATH=$(command -v llvm-symbolizer-19)" >> "$GITHUB_ENV"
+          fi
         fi
 
         if [[ "$enable_asan" == "true" ]]; then

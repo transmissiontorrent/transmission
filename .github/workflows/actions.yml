@@ -291,7 +291,7 @@ jobs:
       - name: Make
         run: |
           cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config RelWithDebInfo --target all-tests"
-      - name: Add AddressSanitizer runtime to PATH
+      - name: Configure AddressSanitizer runtime
         run: |
           # The ASan runtime DLL ships with the MSVC toolchain; ctest runs outside
           # the vcvarsall environment, so expose its directory to later steps.
@@ -300,6 +300,20 @@ jobs:
           $AsanDir = Split-Path $AsanDll
           Write-Host "AddressSanitizer runtime: $AsanDir"
           $AsanDir | Out-File $Env:GITHUB_PATH -Append
+
+          # Point ASan at a native-path llvm-symbolizer so stacks are fully
+          # symbolized (otherwise the runtime logs 'Failed to use and restart
+          # external symbolizer!'). set-test-env honors this pre-set path.
+          $found = cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && where llvm-symbolizer.exe 2>nul" | Select-Object -First 1
+          $Symbolizer = @($found, 'C:\Program Files\LLVM\bin\llvm-symbolizer.exe') |
+            Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+          if ($Symbolizer) {
+            Write-Host "ASan symbolizer: $Symbolizer"
+            "ASAN_SYMBOLIZER_PATH=$Symbolizer" | Out-File $Env:GITHUB_ENV -Append
+            "LLVM_SYMBOLIZER_PATH=$Symbolizer" | Out-File $Env:GITHUB_ENV -Append
+          } else {
+            Write-Host '::warning::llvm-symbolizer.exe not found; ASan stacks may be partially symbolized.'
+          }
       - name: Test with AddressSanitizer
         uses: ./.github/actions/run-tests
         with:
