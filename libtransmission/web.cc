@@ -52,6 +52,34 @@ using namespace std::literals;
 
 namespace
 {
+class CurlGlobal
+{
+public:
+    CurlGlobal()
+    {
+        // try to init curl with default settings (currently ssl support + win32 sockets)
+        // but if that fails, we need to init win32 sockets as a bare minimum
+        if (curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK)
+        {
+            curl_global_init(CURL_GLOBAL_WIN32);
+        }
+    }
+    ~CurlGlobal()
+    {
+        curl_global_cleanup();
+    }
+    CurlGlobal(CurlGlobal const&) = delete;
+    CurlGlobal(CurlGlobal&&) = delete;
+    CurlGlobal& operator=(CurlGlobal const&) = delete;
+    CurlGlobal& operator=(CurlGlobal&&) = delete;
+};
+
+auto& curlGlobal()
+{
+    static CurlGlobal instance;
+    return instance;
+}
+
 namespace curl_helpers
 {
 
@@ -166,6 +194,8 @@ public:
     explicit Impl(Mediator& mediator_in)
         : mediator{ mediator_in }
     {
+        curlGlobal();
+
         auto const curl_version_num = get_curl_version();
         if (curl_version_num == 0x080901)
         {

@@ -3,7 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#include <libtransmission/utils.h> // tr_lib_init()
+#include "libtransmission/utils.h"
 
 #include "libtransmission-app/app.h"
 
@@ -11,7 +11,6 @@ namespace tr::app
 {
 void init()
 {
-    tr_lib_init();
     tr_locale_set_global("");
 }
 } // namespace tr::app

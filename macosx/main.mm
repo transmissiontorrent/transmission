@@ -10,12 +10,8 @@
 
 #include <libtransmission/transmission.h>
 
-#include <libtransmission/utils.h>
-
 int main(int argc, char** argv)
 {
-    tr_lib_init();
-
     tr_locale_set_global("");
 
     return NSApplicationMain(argc, (char const**)argv);

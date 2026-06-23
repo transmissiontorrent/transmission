@@ -326,8 +326,6 @@ void sigHandler(int signal)
 
 int tr_main(int argc, char* argv[])
 {
-    tr_lib_init();
-
     tr_locale_set_global("");
 
     printf("%s %s\n", MyReadableName, LONG_VERSION_STRING);

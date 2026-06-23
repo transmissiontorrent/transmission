@@ -152,8 +152,3 @@ constexpr void tr_timeUpdate(time_t now) noexcept
 
 /** @brief Portability wrapper for `ntohll()` that uses the system implementation if available */
 [[nodiscard]] uint64_t tr_ntohll(uint64_t netlonglong);
-
-// ---
-
-/** @brief Initialise libtransmission for each app */
-void tr_lib_init();

@@ -3622,8 +3622,6 @@ void get_host_and_port_and_rpc_url(
 
 int tr_main(int argc, char* argv[])
 {
-    tr_lib_init();
-
     tr_locale_set_global("");
 
     auto config = RemoteConfig{};

@@ -122,14 +122,7 @@ inline bool waitFor(
     }
 }
 
-class TransmissionTest : public ::testing::Test
-{
-protected:
-    static void SetUpTestSuite()
-    {
-        tr_lib_init();
-    }
-};
+using TransmissionTest = ::testing::Test;
 
 class Sandbox
 {

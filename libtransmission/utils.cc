@@ -374,58 +374,6 @@ uint64_t tr_ntohll(uint64_t netlonglong)
 #endif
 }
 
-// ---
-
-namespace
-{
-namespace tr_net_init_impl
-{
-class tr_net_init_mgr
-{
-private:
-    tr_net_init_mgr()
-    {
-        // try to init curl with default settings (currently ssl support + win32 sockets)
-        // but if that fails, we need to init win32 sockets as a bare minimum
-        if (curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK)
-        {
-            curl_global_init(CURL_GLOBAL_WIN32);
-        }
-    }
-
-public:
-    tr_net_init_mgr(tr_net_init_mgr const&) = delete;
-    tr_net_init_mgr(tr_net_init_mgr&&) = delete;
-    tr_net_init_mgr& operator=(tr_net_init_mgr const&) = delete;
-    tr_net_init_mgr& operator=(tr_net_init_mgr&&) = delete;
-    ~tr_net_init_mgr()
-    {
-        curl_global_cleanup();
-    }
-
-    static void create()
-    {
-        if (!instance)
-        {
-            instance = std::unique_ptr<tr_net_init_mgr>{ new tr_net_init_mgr };
-        }
-    }
-
-private:
-    static std::unique_ptr<tr_net_init_mgr> instance;
-};
-
-std::unique_ptr<tr_net_init_mgr> tr_net_init_mgr::instance;
-
-} // namespace tr_net_init_impl
-} // namespace
-
-void tr_lib_init()
-{
-    static auto once = std::once_flag{};
-    std::call_once(once, [] { tr_net_init_impl::tr_net_init_mgr::create(); });
-}
-
 // --- mime-type
 
 std::string_view tr_get_mime_type_for_filename(std::string_view filename)
