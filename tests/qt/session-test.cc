@@ -80,6 +80,11 @@ private slots:
 
         // setup: make a Prefs that points to a remote session
         auto prefs = Prefs{};
+        // Diagnostic (Windows-only ASan crash hunt): confirm the defaulted QString
+        // members are validly constructed before any set(). If session_remote_host_
+        // is born with a corrupt QArrayData pointer, this read-back faults here
+        // instead of at the set() below, proving construction-time corruption.
+        QCOMPARE(prefs.get<QString>(TR_KEY_remote_session_host), QStringLiteral("localhost"));
         prefs.set(TR_KEY_remote_session_enabled, true);
         prefs.set(TR_KEY_remote_session_host, QStringLiteral("example.invalid"));
         prefs.set(TR_KEY_remote_session_port, TrDefaultRpcPort);
