@@ -341,7 +341,7 @@ void Application::onTorrentsCompleted(torrent_ids_t const& torrent_ids) const
         auto const args = prefs_.get<std::vector<QString>>(TR_KEY_torrent_complete_sound_command);
         if (!args.empty())
         {
-            auto const command = args.front();
+            auto const& command = args.front();
             auto const arguments = QStringList(std::next(std::begin(args)), std::end(args));
             QProcess::execute(command, arguments);
         }
