@@ -235,6 +235,73 @@ jobs:
           build-config: Debug
           enable-sanitizers: true
 
+  sanitizer-tests-windows:
+    runs-on: windows-2022
+    needs: [ what-to-make ]
+    if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
+    steps:
+      - name: Show Configuration
+        run: |
+          echo '${{ toJSON(needs) }}'
+          echo '${{ toJSON(runner) }}'
+      - name: Get Source
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Prepare Build Deps
+        uses: ./.github/actions/prepare-deps-win32
+        with:
+          arch: x64
+          type: Deps
+      - name: Setup Visual Studio Environment
+        uses: ./.github/actions/setup-vs-env-win32
+        with:
+          arch: x64
+      - name: Configure
+        run: |
+          $CmakeArgs = @(
+            '-S .'
+            '-B obj'
+            '-G Ninja'
+            # RelWithDebInfo avoids Debug's /RTC1, which is incompatible with ASan.
+            '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
+            "-DCMAKE_PREFIX_PATH=`"$Env:DEPS_PREFIX`""
+            # MSVC AddressSanitizer is address-only (no leak/undefined sanitizers).
+            '-DCMAKE_C_FLAGS=/fsanitize=address'
+            '-DCMAKE_CXX_FLAGS=/fsanitize=address'
+            '-DENABLE_CLI=OFF'
+            '-DENABLE_DAEMON=OFF'
+            '-DENABLE_GTK=OFF'
+            '-DENABLE_MAC=OFF'
+            # Qt must be ON so the Qt unit tests are built and exercised under ASan.
+            '-DENABLE_QT=ON'
+            '-DENABLE_TESTS=ON'
+            '-DENABLE_UTILS=ON'
+            '-DREBUILD_WEB=OFF'
+            '-DRUN_CLANG_TIDY=OFF'
+            '-DUSE_SYSTEM_DEFAULT=OFF'
+          )
+          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake $($CmakeArgs -join ' ')"
+      - name: Make
+        run: |
+          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config RelWithDebInfo --target all-tests"
+      - name: Add AddressSanitizer runtime to PATH
+        run: |
+          # The ASan runtime DLL ships with the MSVC toolchain; ctest runs outside
+          # the vcvarsall environment, so expose its directory to later steps.
+          $AsanDll = cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && where clang_rt.asan_dynamic-x86_64.dll" | Select-Object -First 1
+          if (-not $AsanDll) { throw 'Could not locate the AddressSanitizer runtime DLL' }
+          $AsanDir = Split-Path $AsanDll
+          Write-Host "AddressSanitizer runtime: $AsanDir"
+          $AsanDir | Out-File $Env:GITHUB_PATH -Append
+      - name: Test with AddressSanitizer
+        uses: ./.github/actions/run-tests
+        with:
+          build-dir: obj
+          build-config: RelWithDebInfo
+          enable-asan: true
+          timeout: 600
+
   clang-tidy-libtransmission:
     runs-on: ubuntu-24.04
     needs: what-to-make

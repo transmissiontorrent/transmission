@@ -32,6 +32,10 @@ elif [[ -f /etc/os-release ]]; then
       echo "Warning: Unsupported Linux distribution: $ID"
       ;;
   esac
+elif [[ "$(uname -s)" == MINGW* || "$(uname -s)" == MSYS* || "$(uname -s)" == CYGWIN* || "${OS:-}" == "Windows_NT" ]]; then
+  OS_FAMILY="windows"
+  PKG_FAMILY="choco"
+  echo "Detected Windows"
 else
   echo "Error: Unable to detect platform"
 fi
