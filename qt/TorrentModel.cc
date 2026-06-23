@@ -140,7 +140,7 @@ void TorrentModel::removeTorrents(tr_variant* torrent_list)
     {
         if (auto const id = tr::serializer::to_value<int64_t>(child))
         {
-            if (auto* const torrent = getTorrentFromId(*id))
+            if (auto* const torrent = getTorrentFromId(static_cast<int>(*id)))
             {
                 torrents.push_back(torrent);
             }
