@@ -62,7 +62,7 @@ public:
             std::string_view old_parent,
             std::string_view parent,
             std::string_view parent_name) = 0;
-        [[nodiscard]] virtual tr_error_code_t remove(tr_torrent_id_t id, tr_torrent_remove_func remove_func) = 0;
+        [[nodiscard]] virtual tr_error_code_t remove(tr_torrent_id_t id) = 0;
         virtual void rename(
             tr_torrent_id_t id,
             std::string_view oldpath,
@@ -95,7 +95,7 @@ public:
         std::string_view parent,
         std::string_view parent_name,
         OnMove on_move);
-    void remove(tr_torrent_id_t id, tr_torrent_remove_func remove_func);
+    void remove(tr_torrent_id_t id);
     void rename(tr_torrent_id_t id, std::string_view oldpath, std::string_view newname, tr_torrent_rename_done_func callback);
     void shutdown();
     [[nodiscard]] static uint64_t enqueued_write_bytes();

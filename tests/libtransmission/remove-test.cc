@@ -214,7 +214,7 @@ TEST_F(RemoveTest, RemovesSingleFile)
     expected_tree = createFiles(files, parent.c_str());
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 
-    files.remove(parent, "tmpdir_prefix"sv, tr_sys_path_remove);
+    files.remove(parent, "tmpdir_prefix"sv, nullptr, tr_sys_path_remove);
     expected_tree = { parent };
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 }
@@ -229,7 +229,7 @@ TEST_F(RemoveTest, RemovesSubtree)
     expected_tree = createFiles(files, parent.c_str());
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 
-    files.remove(parent, "tmpdir_prefix"sv, tr_sys_path_remove);
+    files.remove(parent, "tmpdir_prefix"sv, nullptr, tr_sys_path_remove);
     expected_tree = { parent };
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 }
@@ -250,7 +250,7 @@ TEST_F(RemoveTest, RemovesLeftoverJunk)
     expected_tree.emplace(junk_file);
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 
-    files.remove(parent, "tmpdir_prefix"sv, tr_sys_path_remove);
+    files.remove(parent, "tmpdir_prefix"sv, nullptr, tr_sys_path_remove);
     expected_tree = { parent };
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 }
@@ -278,7 +278,7 @@ TEST_F(RemoveTest, LeavesSiblingsAlone)
     expected_tree.emplace(non_junk_file);
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 
-    files.remove(parent, "tmpdir_prefix"sv, tr_sys_path_remove);
+    files.remove(parent, "tmpdir_prefix"sv, nullptr, tr_sys_path_remove);
     expected_tree = { parent, junk_file.c_str(), non_junk_file.c_str() };
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 }
@@ -299,7 +299,7 @@ TEST_F(RemoveTest, LeavesNonJunkAlone)
     expected_tree.emplace(nonjunk_file);
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 
-    files.remove(parent, "tmpdir_prefix"sv, tr_sys_path_remove);
+    files.remove(parent, "tmpdir_prefix"sv, nullptr, tr_sys_path_remove);
     expected_tree = { parent, std::string{ tr_sys_path_dirname(nonjunk_file) }, nonjunk_file.c_str() };
     EXPECT_EQ(expected_tree, getSubtreeContents(parent));
 }
@@ -326,7 +326,7 @@ TEST_F(RemoveTest, PreservesDirectoryHierarchyIfPossible)
         auto const new_name = tr_pathbuf{ recycle_bin, '/', tr_sys_path_basename(old_name) };
         return tr_sys_path_rename(old_name, new_name, error);
     };
-    files.remove(parent, "tmpdir_prefix"sv, recycle_func);
+    files.remove(parent, "tmpdir_prefix"sv, nullptr, recycle_func);
 
     // after remove, the subtree should be:
     expected_tree = { parent, recycle_bin.c_str() };

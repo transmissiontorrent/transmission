@@ -70,29 +70,6 @@ static bool canChangeDownloadCheck(tr_file_view const& file)
     return file.have < file.length;
 }
 
-static bool trashDataFile(std::string_view const filename, tr_error* error)
-{
-    if (std::empty(filename))
-    {
-        return false;
-    }
-
-    @autoreleasepool
-    {
-        NSError* localError;
-        if (![Torrent trashFile:tr_strv_to_utf8_nsstring(filename) error:&localError])
-        {
-            if (error != nullptr)
-            {
-                error->set(static_cast<int>(localError.code), localError.description.UTF8String);
-            }
-            return false;
-        }
-    }
-
-    return true;
-}
-
 static tr_torrent_rename_done_func makeRenameDoneCallback(NSDictionary* contextInfo)
 {
     return [contextInfo](tr_torrent_id_t const /*tor_id*/, std::string_view const oldpath, std::string_view const newname, tr_error const& error)
@@ -138,7 +115,7 @@ static tr_torrent_rename_done_func makeRenameDoneCallback(NSDictionary* contextI
     {
         if (torrentDelete && ![self.torrentLocation isEqualToString:path])
         {
-            [Torrent trashFile:path error:nil];
+            trashFile(path);
         }
     }
     return self;
@@ -209,7 +186,7 @@ static tr_torrent_rename_done_func makeRenameDoneCallback(NSDictionary* contextI
     //allow the file to be indexed by Time Machine
     [self setTimeMachineExclude:NO];
 
-    tr_torrentRemove(self.fHandle, trashFiles, trashDataFile);
+    tr_torrentRemove(self.fHandle, trashFiles);
     _fHandle = nullptr;
 }
 
@@ -515,32 +492,6 @@ static tr_torrent_rename_done_func makeRenameDoneCallback(NSDictionary* contextI
 - (void)setPriority:(tr_priority_t)priority
 {
     return tr_torrentSetPriority(self.fHandle, priority);
-}
-
-+ (BOOL)trashFile:(NSString*)path error:(NSError**)error
-{
-    // Attempt to move to trash
-    if ([NSFileManager.defaultManager trashItemAtURL:[NSURL fileURLWithPath:path] resultingItemURL:nil error:nil])
-    {
-        NSLog(@"Old moved to Trash %@", path);
-        return YES;
-    }
-
-    // If cannot trash, just delete it (will work if it's on a remote volume)
-    NSError* localError;
-    if ([NSFileManager.defaultManager removeItemAtPath:path error:&localError])
-    {
-        NSLog(@"Old removed %@", path);
-        return YES;
-    }
-
-    NSLog(@"Old could not be trashed or removed %@: %@", path, localError.localizedDescription);
-    if (error != nil)
-    {
-        *error = localError;
-    }
-
-    return NO;
 }
 
 - (void)moveTorrentDataFileTo:(NSString*)folder

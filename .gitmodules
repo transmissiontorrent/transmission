@@ -66,4 +66,4 @@
 	url = https://github.com/transmissiontorrent/sigslot
 [submodule "third-party/librecycle"]
 	path = third-party/librecycle
-	url = https://github.com/transmissiontorrent/librecycle.git
+	url = https://github.com/transmissiontorrent/librecycle

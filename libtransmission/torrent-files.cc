@@ -238,28 +238,7 @@ bool tr_torrent_files::move(
     // after moving the files, remove any leftover empty directories
     if (!err)
     {
-        auto const remove_empty_directories = [](std::string_view const path, tr_error* /*err*/)
-        {
-            if (is_empty_folder(path))
-            {
-                // Since the files have already been moved, errors in this step
-                // are considered secondary and aren't propagated back in `err`.
-                // Log them instead.
-                if (auto log_error = tr_error{}; !tr_sys_path_remove(path, &log_error))
-                {
-                    tr_logAddWarn(
-                        fmt::format(
-                            fmt::runtime(_("Couldn't remove '{path}': {error} ({error_code})")),
-                            fmt::arg("path", path),
-                            fmt::arg("error", log_error.message()),
-                            fmt::arg("error_code", log_error.code())));
-                }
-            }
-
-            return true;
-        };
-
-        remove(old_parent, parent_name, remove_empty_directories);
+        remove(old_parent, parent_name, nullptr, tr_sys_path_remove);
     }
 
     return !err;
@@ -279,8 +258,8 @@ bool tr_torrent_files::move(
 void tr_torrent_files::remove(
     std::string_view parent_in,
     std::string_view tmpdir_prefix,
-    tr_torrent_remove_func const& func,
-    tr_error* error) const
+    tr_error* error,
+    remove_func const& func) const
 {
     auto const parent = tr_pathbuf{ parent_in };
 

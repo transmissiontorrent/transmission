@@ -188,7 +188,7 @@ public:
         return error ? error.code() : EIO;
     }
 
-    [[nodiscard]] tr_error_code_t remove(tr_torrent_id_t const id, tr_torrent_remove_func remove_func) override
+    [[nodiscard]] tr_error_code_t remove(tr_torrent_id_t const id) override
     {
         auto* const tor = torrents_.get(id);
         if (tor == nullptr)
@@ -196,13 +196,8 @@ public:
             return TR_ERROR_EINVAL;
         }
 
-        if (!remove_func)
-        {
-            remove_func = tr_sys_path_remove;
-        }
-
         auto error = tr_error{};
-        tor->files().remove(tor->current_dir(), tor->name(), remove_func, &error);
+        tor->files().remove(tor->current_dir(), tor->name(), &error);
         return error ? error.code() : 0;
     }
 
@@ -335,9 +330,9 @@ void LocalData::move(
     }
 }
 
-void LocalData::remove(tr_torrent_id_t const id, tr_torrent_remove_func remove_func)
+void LocalData::remove(tr_torrent_id_t const id)
 {
-    static_cast<void>(backend_->remove(id, std::move(remove_func)));
+    static_cast<void>(backend_->remove(id));
 }
 
 void LocalData::rename(

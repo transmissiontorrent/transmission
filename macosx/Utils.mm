@@ -4,6 +4,9 @@
 
 #include <cmath>
 
+#include <libtransmission/file.h>
+#include <libtransmission/string-utils.h>
+
 #import "Utils.h"
 
 bool isSpeedEqual(CGFloat old_speed, CGFloat new_speed)
@@ -16,4 +19,9 @@ bool isRatioEqual(CGFloat old_ratio, CGFloat new_ratio)
 {
     static CGFloat constexpr kRatioCompareEps = 0.01 / 2;
     return std::abs(new_ratio - old_ratio) < kRatioCompareEps;
+}
+
+bool trashFile(NSString* path)
+{
+    return tr_sys_path_recycle_or_remove(tr_strv_to_utf8_string(path));
 }

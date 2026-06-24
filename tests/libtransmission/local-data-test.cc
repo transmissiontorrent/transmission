@@ -64,9 +64,7 @@ public:
         return move_err;
     }
 
-    [[nodiscard]] tr_error_code_t remove(
-        [[maybe_unused]] tr_torrent_id_t id,
-        [[maybe_unused]] tr_torrent_remove_func remove_func) override
+    [[nodiscard]] tr_error_code_t remove([[maybe_unused]] tr_torrent_id_t id) override
     {
         remove_called = true;
         return remove_err;
@@ -234,7 +232,7 @@ TEST(LocalData, AdminOperationsDelegate)
         });
     EXPECT_TRUE(rename_called);
 
-    local_data.remove(12, {});
+    local_data.remove(12);
     EXPECT_TRUE(raw_backend->remove_called);
 
     local_data.close_file(13, 2);

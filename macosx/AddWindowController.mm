@@ -9,6 +9,7 @@
 #import "GroupsController.h"
 #import "NSStringAdditions.h"
 #import "Torrent.h"
+#import "Utils.h"
 
 static NSTimeInterval const kUpdateSeconds = 1.0;
 
@@ -390,7 +391,7 @@ typedef NS_ENUM(NSUInteger, PopupPriority) {
 
     if (self.fTorrentFile && self.fCanToggleDelete && self.fDeleteCheck.state == NSControlStateValueOn)
     {
-        [Torrent trashFile:self.fTorrentFile error:nil];
+        trashFile(self.fTorrentFile);
     }
 
     if (self.fStartCheck.state == NSControlStateValueOn)

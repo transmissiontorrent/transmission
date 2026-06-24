@@ -114,11 +114,13 @@ public:
         std::string_view parent_name = "",
         tr_error* error = nullptr) const;
 
+    using remove_func = std::function<bool(std::string_view filename, tr_error* error)>;
+
     void remove(
         std::string_view parent_in,
         std::string_view tmpdir_prefix,
-        tr_torrent_remove_func const& func,
-        tr_error* error = nullptr) const;
+        tr_error* error = nullptr,
+        remove_func const& func = tr_sys_path_recycle_or_remove) const;
 
     struct FoundFile : public tr_sys_path_info
     {

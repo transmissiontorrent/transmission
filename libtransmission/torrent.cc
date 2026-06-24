@@ -724,10 +724,7 @@ void tr_torrent::stop_now()
 }
 
 // By-value: arguments are moved into the session-thread work item.
-void tr_torrentRemoveInSessionThread(
-    tr_torrent* tor,
-    bool const delete_flag,
-    tr_torrent_remove_func remove_func) // NOLINT(performance-unnecessary-value-param)
+void tr_torrentRemoveInSessionThread(tr_torrent* tor, bool const delete_flag)
 {
     auto const lock = tor->unique_lock();
 
@@ -737,13 +734,8 @@ void tr_torrentRemoveInSessionThread(
         tor->session->close_torrent_files(tor->id());
         tor->session->verify_remove(tor);
 
-        if (!remove_func)
-        {
-            remove_func = tr_sys_path_remove;
-        }
-
         auto error = tr_error{};
-        tor->files().remove(tor->current_dir(), tor->name(), remove_func, &error);
+        tor->files().remove(tor->current_dir(), tor->name(), &error);
         if (error)
         {
             tr_logAddWarnTor(
@@ -772,7 +764,7 @@ void tr_torrentStop(tr_torrent* tor)
     tor->session->run_in_session_thread([tor]() { tor->stop_now(); });
 }
 
-void tr_torrentRemove(tr_torrent* tor, bool delete_flag, tr_torrent_remove_func remove_func)
+void tr_torrentRemove(tr_torrent* const tor, bool const delete_flag)
 {
     using namespace start_stop_helpers;
 
@@ -780,7 +772,7 @@ void tr_torrentRemove(tr_torrent* tor, bool delete_flag, tr_torrent_remove_func 
 
     tor->is_deleting_ = true;
 
-    tor->session->run_in_session_thread(tr_torrentRemoveInSessionThread, tor, delete_flag, std::move(remove_func));
+    tor->session->run_in_session_thread(tr_torrentRemoveInSessionThread, tor, delete_flag);
 }
 
 void tr_torrentFreeInSessionThread(tr_torrent* tor)

@@ -11,6 +11,7 @@
 
 #include <libtransmission/transmission.h> /* TR_RATIO_NA, TR_RATIO_INF */
 #include <libtransmission/error.h>
+#include <libtransmission/file.h>
 #include <libtransmission/string-utils.h>
 #include <libtransmission/torrent-metainfo.h>
 #include <libtransmission/tr-strbuf.h>
@@ -22,7 +23,6 @@
 #include <gdkmm/display.h>
 #include <giomm/appinfo.h>
 #include <giomm/asyncresult.h>
-#include <giomm/file.h>
 #include <glibmm/convert.h>
 #include <glibmm/error.h>
 #include <glibmm/i18n.h>
@@ -535,48 +535,18 @@ bool gtr_file_trash_or_remove(std::string_view const filename, tr_error* error)
         error = &local_error;
     }
 
-    auto const file = Gio::File::create_for_path(std::string{ filename });
-    bool trashed = false;
-
-    if (gtr_pref_flag_get(TR_KEY_trash_can_enabled))
+    if (!tr_sys_path_recycle_or_remove(filename, error))
     {
-        try
-        {
-            trashed = file->trash();
-        }
-        catch (Glib::Error const& e)
-        {
-            error->set(e.code(), TR_GLIB_EXCEPTION_WHAT(e));
-            gtr_message(
-                fmt::format(
-                    fmt::runtime(_("Couldn't move '{path}' to trash: {error} ({error_code})")),
-                    fmt::arg("path", filename),
-                    fmt::arg("error", error->message()),
-                    fmt::arg("error_code", error->code())));
-        }
+        gtr_message(
+            fmt::format(
+                fmt::runtime(_("Couldn't recycle or remove '{path}': {error} ({error_code})")),
+                fmt::arg("path", filename),
+                fmt::arg("error", error->message()),
+                fmt::arg("error_code", error->code())));
+        return false;
     }
 
-    bool result = true;
-    if (!trashed)
-    {
-        try
-        {
-            file->remove();
-        }
-        catch (Glib::Error const& e)
-        {
-            error->set(e.code(), TR_GLIB_EXCEPTION_WHAT(e));
-            gtr_message(
-                fmt::format(
-                    fmt::runtime(_("Couldn't remove '{path}': {error} ({error_code})")),
-                    fmt::arg("path", filename),
-                    fmt::arg("error", error->message()),
-                    fmt::arg("error_code", error->code())));
-            result = false;
-        }
-    }
-
-    return result;
+    return true;
 }
 
 namespace

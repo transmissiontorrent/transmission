@@ -8,3 +8,5 @@
 bool isSpeedEqual(CGFloat old_speed, CGFloat new_speed);
 // 0.01 precision
 bool isRatioEqual(CGFloat old_ratio, CGFloat new_ratio);
+// move a file or directory to the trash, falling back to deletion
+bool trashFile(NSString* path);

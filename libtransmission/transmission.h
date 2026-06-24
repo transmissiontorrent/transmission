@@ -582,14 +582,8 @@ tr_torrent* tr_torrentNew(tr_ctor* ctor, tr_torrent** setme_duplicate_of);
 
 /**
  * @brief Removes our torrent and .resume files for this torrent
- * @param remove_func A function that deletes a file.
- *                    The default is `tr_sys_path_remove()`
- *                    Clients can use this arg to pass in platform-specific code e.g.
- *                    to move to a recycle bin instead of deleting.
- *                    The callback is invoked in the session thread and the filename view
- *                    is only valid for the duration of the call.
  */
-void tr_torrentRemove(tr_torrent* tor, bool delete_flag, tr_torrent_remove_func remove_func = {});
+void tr_torrentRemove(tr_torrent* tor, bool delete_flag);
 
 /** @brief Start a torrent */
 void tr_torrentStart(tr_torrent* torrent);
