@@ -39,9 +39,11 @@ struct PrefsStringTraits<QString>
 
 class Prefs final
     : public QObject
-    , public tr::app::BasePrefs<QString>
+    , public tr::app::BasePrefs<Prefs, QString>
 {
     Q_OBJECT
+
+    friend class tr::app::BasePrefs<Prefs, QString>;
 
 public:
     Prefs() = default;
@@ -78,7 +80,7 @@ signals:
     void changed(tr_quark key);
 
 private:
-    void on_changed(tr_quark const key) override
+    void on_changed(tr_quark const key)
     {
         emit changed(key);
     }

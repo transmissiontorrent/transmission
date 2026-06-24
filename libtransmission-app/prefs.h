@@ -43,7 +43,7 @@ struct PrefsStringTraits;
  */
 [[nodiscard]] bool prefs_is_core(tr_quark key);
 
-template<typename StringType>
+template<typename Derived, typename StringType>
 class BasePrefs
 {
 public:
@@ -63,7 +63,7 @@ public:
     BasePrefs(BasePrefs const&) = delete;
     BasePrefs& operator=(BasePrefs&&) = delete;
     BasePrefs& operator=(BasePrefs const&) = delete;
-    virtual ~BasePrefs() = default;
+    ~BasePrefs() = default;
 
     [[nodiscard]] std::pair<tr_quark, tr_variant> keyval(tr_quark const key) const
     {
@@ -79,7 +79,7 @@ public:
     {
         if (tr::serializer::set_from_variant(*this, key, var))
         {
-            on_changed(key);
+            static_cast<Derived*>(this)->on_changed(key);
         }
     }
 
@@ -88,7 +88,7 @@ public:
     {
         if (tr::serializer::set(*this, key, val))
         {
-            on_changed(key);
+            static_cast<Derived*>(this)->on_changed(key);
         }
     }
 
@@ -118,10 +118,7 @@ public:
     }
 
 protected:
-    // Notification hook invoked whenever a `set()` actually changes a value.
-    // The base implementation does nothing; subclasses override it to forward
-    // the change (e.g. emit a `changed` signal).
-    virtual void on_changed(tr_quark /*key*/)
+    void on_changed(tr_quark /*key*/) // CRTP method
     {
     }
 
