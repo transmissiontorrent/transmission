@@ -10,6 +10,7 @@
 #include <libtransmission/transmission.h>
 
 #include <libtransmission/error.h>
+#include <libtransmission/file.h>
 #include <libtransmission/torrent-metainfo.h>
 #include <libtransmission/web-utils.h>
 
@@ -139,8 +140,7 @@ void AddData::disposeSourceFile() const
     switch (*disposal_)
     {
     case FilenameDisposal::Delete:
-        file.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-        file.remove();
+        tr_sys_path_recycle_or_remove(filename.toStdString());
         break;
 
     case FilenameDisposal::Rename:
