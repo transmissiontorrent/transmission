@@ -317,9 +317,10 @@ jobs:
       - name: Test with AddressSanitizer
         uses: ./.github/actions/run-tests
         with:
-          build-dir: obj
           build-config: RelWithDebInfo
+          build-dir: obj
           enable-asan: true
+          extra-asan-options: allocator_may_return_null=0
           timeout: 600
 
   clang-tidy-libtransmission:
