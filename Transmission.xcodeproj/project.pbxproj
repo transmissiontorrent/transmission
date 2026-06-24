@@ -470,6 +470,10 @@
 		ED91F28B2CBDA72C008388AA /* crc32iscsi.c in Sources */ = {isa = PBXBuildFile; fileRef = ED91F01E2CBDA72C008388AA /* crc32iscsi.c */; };
 		ED91F35A2CBDA72C008388AA /* crc32iscsi.h in Headers */ = {isa = PBXBuildFile; fileRef = ED91F01B2CBDA72C008388AA /* crc32iscsi.h */; };
 		ED91F3962CBDAAED008388AA /* libmadler-crcany.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ED91F00C2CBDA5D3008388AA /* libmadler-crcany.a */; };
+		7A5C000000000000000000B1 /* recycle.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7A5C000000000000000000A1 /* recycle.hpp */; };
+		7A5C000000000000000000B2 /* trash.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A5C000000000000000000A2 /* trash.cpp */; };
+		7A5C000000000000000000B3 /* trash_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7A5C000000000000000000A3 /* trash_mac.mm */; };
+		7A5C000000000000000000B4 /* librecycle.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A5C000000000000000000A4 /* librecycle.a */; };
 		ED9862972B979AA2002F3035 /* Utils.mm in Sources */ = {isa = PBXBuildFile; fileRef = ED9862962B979AA2002F3035 /* Utils.mm */; };
 		EDBA61FF2D4180D5001470F8 /* torrent-queue.h in Headers */ = {isa = PBXBuildFile; fileRef = EDBA61FD2D4180D5001470F8 /* torrent-queue.h */; };
 		EDBA62002D4180D5001470F8 /* torrent-queue.cc in Sources */ = {isa = PBXBuildFile; fileRef = EDBA61FE2D4180D5001470F8 /* torrent-queue.cc */; };
@@ -635,6 +639,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = ED91F00B2CBDA5D3008388AA;
 			remoteInfo = "madler-crcany";
+		};
+		7A5C000000000000000000C1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7A5C000000000000000000D0;
+			remoteInfo = recycle;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1466,6 +1477,10 @@
 		ED91F00C2CBDA5D3008388AA /* libmadler-crcany.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libmadler-crcany.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED91F01B2CBDA72C008388AA /* crc32iscsi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = crc32iscsi.h; sourceTree = "<group>"; };
 		ED91F01E2CBDA72C008388AA /* crc32iscsi.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = crc32iscsi.c; sourceTree = "<group>"; };
+		7A5C000000000000000000A1 /* recycle.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = include/librecycle/recycle.hpp; sourceTree = "<group>"; };
+		7A5C000000000000000000A2 /* trash.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = src/trash.cpp; sourceTree = "<group>"; };
+		7A5C000000000000000000A3 /* trash_mac.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = src/trash_mac.mm; sourceTree = "<group>"; };
+		7A5C000000000000000000A4 /* librecycle.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = librecycle.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED9862952B979AA2002F3035 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		ED9862962B979AA2002F3035 /* Utils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Utils.mm; sourceTree = "<group>"; };
 		EDBA61FD2D4180D5001470F8 /* torrent-queue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "torrent-queue.h"; sourceTree = "<group>"; };
@@ -1569,6 +1584,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7A5C000000000000000000B4 /* librecycle.a in Frameworks */,
 				ED91F3962CBDAAED008388AA /* libmadler-crcany.a in Frameworks */,
 				C1846BA9294F7B5A00A98F30 /* libwildmat.a in Frameworks */,
 				C3D9062F27B7F7E200EF2386 /* libpsl.a in Frameworks */,
@@ -1681,6 +1697,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		ED91F00A2CBDA5D3008388AA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7A5C000000000000000000D3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1824,6 +1847,7 @@
 				C3D9062127B7E3C900EF2386 /* libpsl.a */,
 				C1846B9E294F7A3400A98F30 /* libwildmat.a */,
 				ED91F00C2CBDA5D3008388AA /* libmadler-crcany.a */,
+				7A5C000000000000000000A4 /* librecycle.a */,
 				ED5E0E7C2CD30B180071433B /* QuickLookExtension.appex */,
 			);
 			name = Products;
@@ -1850,6 +1874,7 @@
 				C1639A751A55F52800E42033 /* b64 */,
 				C1846B82294F777000A98F30 /* wildmat */,
 				ED91F2682CBDA72C008388AA /* madler-crcany */,
+				7A5C000000000000000000F0 /* librecycle */,
 				4DDBB71509E16B3F00284745 /* Libraries */,
 				A2F35BBA15C5A0A100EBF632 /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
@@ -2534,6 +2559,17 @@
 			path = "third-party/madler-crcany";
 			sourceTree = "<group>";
 		};
+		7A5C000000000000000000F0 /* librecycle */ = {
+			isa = PBXGroup;
+			children = (
+				7A5C000000000000000000A1 /* recycle.hpp */,
+				7A5C000000000000000000A2 /* trash.cpp */,
+				7A5C000000000000000000A3 /* trash_mac.mm */,
+			);
+			name = librecycle;
+			path = "third-party/librecycle";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -2755,6 +2791,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A5C000000000000000000D1 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A5C000000000000000000B1 /* recycle.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -2788,6 +2832,7 @@
 			);
 			dependencies = (
 				ED91F3952CBDA9BD008388AA /* PBXTargetDependency */,
+				7A5C000000000000000000C2 /* PBXTargetDependency */,
 				C1846BA7294F7B1400A98F30 /* PBXTargetDependency */,
 				C33E46A22794B3CC0090F2AA /* PBXTargetDependency */,
 				A226FDB10D0CDF6E005A7F71 /* PBXTargetDependency */,
@@ -3125,6 +3170,23 @@
 			productReference = ED91F00C2CBDA5D3008388AA /* libmadler-crcany.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		7A5C000000000000000000D0 /* recycle */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A5C000000000000000000E0 /* Build configuration list for PBXNativeTarget "recycle" */;
+			buildPhases = (
+				7A5C000000000000000000D1 /* Headers */,
+				7A5C000000000000000000D2 /* Sources */,
+				7A5C000000000000000000D3 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = recycle;
+			productName = recycle;
+			productReference = 7A5C000000000000000000A4 /* librecycle.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -3207,6 +3269,7 @@
 				C3D9062027B7E3C900EF2386 /* psl */,
 				C1846B96294F7A3400A98F30 /* wildmat */,
 				ED91F00B2CBDA5D3008388AA /* madler-crcany */,
+				7A5C000000000000000000D0 /* recycle */,
 			);
 		};
 /* End PBXProject section */
@@ -3759,6 +3822,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A5C000000000000000000D2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A5C000000000000000000B2 /* trash.cpp in Sources */,
+				7A5C000000000000000000B3 /* trash_mac.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -3866,6 +3938,11 @@
 			isa = PBXTargetDependency;
 			target = ED91F00B2CBDA5D3008388AA /* madler-crcany */;
 			targetProxy = ED91F3942CBDA9BD008388AA /* PBXContainerItemProxy */;
+		};
+		7A5C000000000000000000C2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7A5C000000000000000000D0 /* recycle */;
+			targetProxy = 7A5C000000000000000000C1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -4321,6 +4398,7 @@
 					"third-party/wide-integer",
 					"third-party/wildmat",
 					"third-party/madler-crcany",
+					"third-party/librecycle/include",
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4573,6 +4651,7 @@
 					"third-party/wide-integer",
 					"third-party/wildmat",
 					"third-party/madler-crcany",
+					"third-party/librecycle/include",
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -4905,6 +4984,7 @@
 					"third-party/wide-integer",
 					"third-party/wildmat",
 					"third-party/madler-crcany",
+					"third-party/librecycle/include",
 				);
 				USER_HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -5596,6 +5676,42 @@
 			};
 			name = Release;
 		};
+		7A5C000000000000000000E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"third-party/librecycle/include",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7A5C000000000000000000E2 /* Release - Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"third-party/librecycle/include",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = "Release - Debug";
+		};
+		7A5C000000000000000000E3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"third-party/librecycle/include",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -5805,6 +5921,16 @@
 				ED91F0142CBDA5D3008388AA /* Debug */,
 				ED91F0152CBDA5D3008388AA /* Release - Debug */,
 				ED91F0162CBDA5D3008388AA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7A5C000000000000000000E0 /* Build configuration list for PBXNativeTarget "recycle" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A5C000000000000000000E1 /* Debug */,
+				7A5C000000000000000000E2 /* Release - Debug */,
+				7A5C000000000000000000E3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

@@ -289,6 +289,7 @@ target_link_libraries(${TR_NAME}
         wildmat
         transmission::WideInteger
         MadlerCrcany
+        librecycle::recycle
         $<$<BOOL:${WIN32}>:crypt32>
         $<$<BOOL:${WIN32}>:shlwapi>
         "$<$<BOOL:${APPLE}>:-framework Foundation>"

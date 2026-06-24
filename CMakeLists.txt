@@ -680,6 +680,9 @@ target_compile_definitions(transmission::WideInteger
     INTERFACE
         $<$<BOOL:${TR_HAVE_INT128}>:WIDE_INTEGER_HAS_LIMB_TYPE_UINT64>)
 
+tr_add_external_auto_library(RECYCLE librecycle
+    SUBPROJECT)
+
 set(TR_WEB_ASSETS ${PROJECT_SOURCE_DIR}/web/public_html)
 if(REBUILD_WEB)
     tr_get_required_flag(REBUILD_WEB NPM_IS_REQUIRED)
