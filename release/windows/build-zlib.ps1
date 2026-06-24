@@ -18,5 +18,4 @@ function global:Build-Zlib([string] $PrefixDir, [string] $Arch, [string] $DepsPr
     )
 
     Invoke-CMakeBuildAndInstall $SourceDir $BuildDir $ConfigOptions
-    Copy-Item -Path (Join-Path $BuildDir zlib.pdb) -Destination (Join-Path $PrefixDir bin)
 }
