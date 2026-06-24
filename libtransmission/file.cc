@@ -14,6 +14,8 @@
 #include <sys/stat.h>
 #endif
 
+#include <librecycle/recycle.hpp>
+
 #include "libtransmission/error.h"
 #include "libtransmission/file.h"
 
@@ -93,6 +95,19 @@ bool tr_sys_path_exists(std::string_view path, tr_error* error)
     auto const exists = std::filesystem::exists(tr_u8path(path), ec);
     maybe_set_error(error, ec);
     return exists;
+}
+
+bool tr_sys_path_recycle(std::string_view path, tr_error* error)
+{
+    auto ec = std::error_code{};
+    auto const recycled = librecycle::recycle(path, ec);
+    maybe_set_error(error, ec);
+    return recycled;
+}
+
+bool tr_sys_path_recycle_or_remove(std::string_view path, tr_error* error)
+{
+    return tr_sys_path_recycle(path) || tr_sys_path_remove(path, error);
 }
 
 std::optional<tr_sys_path_info> tr_sys_path_get_info(std::string_view path, int flags, tr_error* error)

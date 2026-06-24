@@ -259,6 +259,24 @@ bool tr_sys_path_rename(std::string_view src_path, std::string_view dst_path, tr
 bool tr_sys_path_remove(std::string_view path, tr_error* error = nullptr);
 
 /**
+ * @brief Move a file or directory to the OS trash / recycle bin.
+ *
+ * @param[in]  path  Path to file or directory. Must be UTF-8 encoded.
+ * @param[out] error Pointer to error object. Optional, pass `nullptr` if you
+ *                   are not interested in error details.
+ *
+ * @return `True` on success, `false` otherwise (with `error` set accordingly).
+ *         Unlike `tr_sys_path_remove()`, a non-empty directory is trashed
+ *         together with all of its contents as a single unit.
+ */
+bool tr_sys_path_recycle(std::string_view path, tr_error* error = nullptr);
+
+/**
+ * @brief Recycle or delete a file or directory.
+ */
+bool tr_sys_path_recycle_or_remove(std::string_view path, tr_error* error = nullptr);
+
+/**
  * @brief Transform path separators to native ones, in-place.
  *
  * @param[in,out] path Path to transform.
