@@ -231,18 +231,18 @@ TEST_F(RenameTest, singleFilenameTorrent)
 TEST_F(RenameTest, multifileTorrent)
 {
     auto constexpr TotalSize = size_t{ 67 };
-    auto constexpr ExpectedFiles = std::array<std::string_view, 4>{
+    auto constexpr ExpectedFiles = std::to_array<std::string_view>({
         "Felidae/Felinae/Acinonyx/Cheetah/Chester"sv,
         "Felidae/Felinae/Felis/catus/Kyphi"sv,
         "Felidae/Felinae/Felis/catus/Saffron"sv,
         "Felidae/Pantherinae/Panthera/Tiger/Tony"sv,
-    };
-    auto constexpr ExpectedContents = std::array<std::string_view, 4>{
+    });
+    auto constexpr ExpectedContents = std::to_array<std::string_view>({
         "It ain't easy bein' cheesy.\n"sv,
         "Inquisitive\n"sv,
         "Tough\n"sv,
         "They’re Grrrrreat!\n"sv,
-    };
+    });
 
     auto* ctor = tr_ctorNew(session_);
     auto* tor = createTorrentFromBase64Metainfo(
@@ -444,7 +444,7 @@ TEST_F(RenameTest, partialFile)
 {
     auto constexpr PieceCount = uint32_t{ 33 };
     auto constexpr PieceSize = uint32_t{ 32768 };
-    auto constexpr Length = std::array<uint32_t, 3>{ 1048576, 4096, 512 };
+    auto constexpr Length = std::to_array<uint32_t>({ 1048576, 4096, 512 });
     auto constexpr TotalSize = uint64_t{ Length[0] } + Length[1] + Length[2];
 
     /***

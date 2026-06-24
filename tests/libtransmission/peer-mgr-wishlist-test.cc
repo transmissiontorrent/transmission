@@ -2363,7 +2363,7 @@ TEST_F(PeerMgrWishlistTest, unalignedTorrentDeselected2ConsecutivePieces)
         auto wishlist = Wishlist{ mediator };
 
         // we don't want pieces 1, 2 anymore
-        auto constexpr Deselected = std::array<tr_file_index_t, 2>{ 1, 2 };
+        auto constexpr Deselected = std::to_array<tr_file_index_t>({ 1, 2 });
         for (auto const idx : Deselected)
         {
             mediator.client_wants_piece_.erase(idx);
@@ -2481,7 +2481,7 @@ TEST_F(PeerMgrWishlistTest, unalignedTorrentSelected2ConsecutivePieces)
         auto wishlist = Wishlist{ mediator };
 
         // we don't want pieces 1, 2 anymore
-        auto constexpr Selected = std::array<tr_file_index_t, 2>{ 1, 2 };
+        auto constexpr Selected = std::to_array<tr_file_index_t>({ 1, 2 });
         for (auto const idx : Selected)
         {
             mediator.client_wants_piece_.insert(idx);

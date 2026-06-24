@@ -52,7 +52,7 @@ char const* torrentPath = nullptr;
 using Arg = tr_option::Arg;
 static_assert(TrDefaultPeerPort == 51413, "update 'port' desc");
 static_assert(TrDefaultPeerSocketTos == "le", "update 'tos' desc");
-auto constexpr Options = std::array<tr_option, 20>{ {
+auto constexpr Options = std::to_array<tr_option>({
     { 'b', "blocklist", "Enable peer blocklists", "b", Arg::None, nullptr },
     { 'B', "no-blocklist", "Disable peer blocklists", "B", Arg::None, nullptr },
     { 'd', "downlimit", "Set max download speed in " SPEED_K_STR, "d", Arg::Required, "<speed>" },
@@ -79,7 +79,7 @@ auto constexpr Options = std::array<tr_option, 20>{ {
     { 500, "sequential-download", "Download pieces sequentially", "seq", Arg::None, nullptr },
 
     { 0, nullptr, nullptr, nullptr, Arg::None, nullptr },
-} };
+});
 static_assert(Options[std::size(Options) - 2].val != 0);
 } // namespace
 

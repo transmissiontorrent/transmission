@@ -768,7 +768,7 @@ TEST_F(FileTest, pathBasename)
 TEST_F(FileTest, pathDirname)
 {
 #ifdef _WIN32
-    static auto constexpr DirnameTests = std::array<std::pair<std::string_view, std::string_view>, 48>{ {
+    static auto constexpr DirnameTests = std::to_array<std::pair<std::string_view, std::string_view>>({
         { R"(C:\a/b\c)"sv, R"(C:\a/b)"sv },
         { R"(C:\a/b\c\)"sv, R"(C:\a/b)"sv },
         { R"(C:\a/b)"sv, R"(C:\a)"sv },
@@ -819,9 +819,9 @@ TEST_F(FileTest, pathDirname)
         { "/"sv, "/"sv },
         { "////"sv, "/"sv },
         { "foo"sv, "."sv },
-    } };
+    });
 #else
-    static auto constexpr DirnameTests = std::array<std::pair<std::string_view, std::string_view>, 15>{ {
+    static auto constexpr DirnameTests = std::to_array<std::pair<std::string_view, std::string_view>>({
         // taken from Node.js unit tests
         // https://github.com/nodejs/node/blob/e46c680bf2b211bbd52cf959ca17ee98c7f657f5/test/parallel/test-path-dirname.js
         { "/a/b/"sv, "/a"sv },
@@ -840,7 +840,7 @@ TEST_F(FileTest, pathDirname)
         { "/"sv, "/"sv },
         { "."sv, "."sv },
         { ".."sv, "."sv },
-    } };
+    });
 #endif
 
     for (auto const& [input, expected] : DirnameTests)
@@ -1008,13 +1008,13 @@ TEST_F(FileTest, pathNativeSeparators)
 {
     EXPECT_EQ(nullptr, tr_sys_path_native_separators(nullptr));
 
-    static auto constexpr Tests = std::array<std::pair<std::string_view, std::string_view>, 5>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, std::string_view>>({
         { "", "" },
         { "a", TR_IF_WIN32("a", "a") },
         { "/", TR_IF_WIN32("\\", "/") },
         { "/a/b/c", TR_IF_WIN32("\\a\\b\\c", "/a/b/c") },
         { "C:\\a/b\\c", TR_IF_WIN32("C:\\a\\b\\c", "C:\\a/b\\c") },
-    } };
+    });
 
     for (auto const& [input, expected] : Tests)
     {

@@ -691,11 +691,11 @@ TEST_F(AnnouncerUdpTest, canAnnounceIPv4)
     static auto constexpr Interval = time_t{ 3600 };
     static auto constexpr Leechers = uint32_t{ 10 };
     static auto constexpr Seeders = uint32_t{ 20 };
-    auto const addresses = std::array<tr_socket_address, 3>{ {
+    auto const addresses = std::to_array<tr_socket_address>({
         { tr_address::from_string("10.10.10.5"sv).value_or(tr_address{}), tr_port::from_host(128) },
         { tr_address::from_string("192.168.1.2"sv).value_or(tr_address{}), tr_port::from_host(2021) },
         { tr_address::from_string("192.168.1.3"sv).value_or(tr_address{}), tr_port::from_host(2022) },
-    } };
+    });
 
     auto const request = tr_announce_request{
         .event = TR_ANNOUNCE_EVENT_STARTED,
@@ -777,11 +777,11 @@ TEST_F(AnnouncerUdpTest, canAnnounceIPv6)
     static auto constexpr Interval = time_t{ 3600 };
     static auto constexpr Leechers = uint32_t{ 10 };
     static auto constexpr Seeders = uint32_t{ 20 };
-    auto const addresses = std::array<tr_socket_address, 3>{ {
+    auto const addresses = std::to_array<tr_socket_address>({
         { tr_address::from_string("fd12:3456:789a:1::1"sv).value_or(tr_address{}), tr_port::from_host(128) },
         { tr_address::from_string("fd12:3456:789a:1::2"sv).value_or(tr_address{}), tr_port::from_host(2021) },
         { tr_address::from_string("fd12:3456:789a:1::3"sv).value_or(tr_address{}), tr_port::from_host(2022) },
-    } };
+    });
 
     auto const request = tr_announce_request{
         .event = TR_ANNOUNCE_EVENT_STARTED,
@@ -864,16 +864,16 @@ TEST_F(AnnouncerUdpTest, canAnnounceDualStack)
     static auto constexpr Leechers = uint32_t{ 10 };
     static auto constexpr Seeders = uint32_t{ 20 };
     auto const addresses = std::array{
-        std::array<tr_socket_address, 3>{ {
+        std::to_array<tr_socket_address>({
             { tr_address::from_string("10.10.10.5"sv).value_or(tr_address{}), tr_port::from_host(128) },
             { tr_address::from_string("192.168.1.2"sv).value_or(tr_address{}), tr_port::from_host(2021) },
             { tr_address::from_string("192.168.1.3"sv).value_or(tr_address{}), tr_port::from_host(2022) },
-        } },
-        std::array<tr_socket_address, 3>{ {
+        }),
+        std::to_array<tr_socket_address>({
             { tr_address::from_string("fd12:3456:789a:1::1"sv).value_or(tr_address{}), tr_port::from_host(128) },
             { tr_address::from_string("fd12:3456:789a:1::2"sv).value_or(tr_address{}), tr_port::from_host(2021) },
             { tr_address::from_string("fd12:3456:789a:1::3"sv).value_or(tr_address{}), tr_port::from_host(2022) },
-        } },
+        }),
     };
 
     auto request = tr_announce_request{};
@@ -986,11 +986,11 @@ TEST_F(AnnouncerUdpTest, announceDualStackOnlyIPv4Successful)
     static auto constexpr Interval = time_t{ 3600 };
     static auto constexpr Leechers = uint32_t{ 10 };
     static auto constexpr Seeders = uint32_t{ 20 };
-    auto const addresses = std::array<tr_socket_address, 3>{ {
+    auto const addresses = std::to_array<tr_socket_address>({
         { tr_address::from_string("10.10.10.5"sv).value_or(tr_address{}), tr_port::from_host(128) },
         { tr_address::from_string("192.168.1.2"sv).value_or(tr_address{}), tr_port::from_host(2021) },
         { tr_address::from_string("192.168.1.3"sv).value_or(tr_address{}), tr_port::from_host(2022) },
-    } };
+    });
 
     auto request = tr_announce_request{};
     request.event = TR_ANNOUNCE_EVENT_STARTED;
@@ -1092,11 +1092,11 @@ TEST_F(AnnouncerUdpTest, announceDualStackOnlyIPv6Successful)
     static auto constexpr Interval = time_t{ 3600 };
     static auto constexpr Leechers = uint32_t{ 10 };
     static auto constexpr Seeders = uint32_t{ 20 };
-    auto const addresses = std::array<tr_socket_address, 3>{ {
+    auto const addresses = std::to_array<tr_socket_address>({
         { tr_address::from_string("fd12:3456:789a:1::1"sv).value_or(tr_address{}), tr_port::from_host(128) },
         { tr_address::from_string("fd12:3456:789a:1::2"sv).value_or(tr_address{}), tr_port::from_host(2021) },
         { tr_address::from_string("fd12:3456:789a:1::3"sv).value_or(tr_address{}), tr_port::from_host(2022) },
-    } };
+    });
 
     auto request = tr_announce_request{};
     request.event = TR_ANNOUNCE_EVENT_STARTED;

@@ -95,7 +95,7 @@ TEST_F(FilePieceMapTest, pieceSpan)
     // Note to reviewers: it's easy to see a nonexistent fencepost error here.
     // Remember everything is zero-indexed, so the 9 valid pieces are [0..10).
     // Piece #10 is the 'end' iterator position.
-    auto constexpr ExpectedPieceSpans = std::array<tr_file_piece_map::piece_span_t, 17>{ {
+    auto constexpr ExpectedPieceSpans = std::to_array<tr_file_piece_map::piece_span_t>({
         { .begin = 0U, .end = 5U },
         { .begin = 5U, .end = 6U },
         { .begin = 5U, .end = 6U },
@@ -113,7 +113,7 @@ TEST_F(FilePieceMapTest, pieceSpan)
         { .begin = 9U, .end = 10U },
         { .begin = 9U, .end = 10U },
         { .begin = 9U, .end = 10U },
-    } };
+    });
     EXPECT_EQ(std::size(FileSizes), std::size(ExpectedPieceSpans));
 
     auto const fpm = tr_file_piece_map{ block_info_, std::data(FileSizes), std::size(FileSizes) };

@@ -279,13 +279,13 @@ void tr_logAddMessage(char const* file, long line, tr_log_level level, std::stri
 namespace
 {
 
-auto constexpr LogKeys = std::array<std::pair<std::string_view, tr_log_level>, 7>{ { { "off", TR_LOG_OFF },
-                                                                                     { "critical", TR_LOG_CRITICAL },
-                                                                                     { "error", TR_LOG_ERROR },
-                                                                                     { "warn", TR_LOG_WARN },
-                                                                                     { "info", TR_LOG_INFO },
-                                                                                     { "debug", TR_LOG_DEBUG },
-                                                                                     { "trace", TR_LOG_TRACE } } };
+auto constexpr LogKeys = std::to_array<std::pair<std::string_view, tr_log_level>>({ { "off", TR_LOG_OFF },
+                                                                                    { "critical", TR_LOG_CRITICAL },
+                                                                                    { "error", TR_LOG_ERROR },
+                                                                                    { "warn", TR_LOG_WARN },
+                                                                                    { "info", TR_LOG_INFO },
+                                                                                    { "debug", TR_LOG_DEBUG },
+                                                                                    { "trace", TR_LOG_TRACE } });
 
 bool constexpr keysAreOrdered()
 {

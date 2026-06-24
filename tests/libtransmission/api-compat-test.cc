@@ -1224,7 +1224,7 @@ TEST_F(ApiCompatTest, canConvertRpc)
     using TestCase = std::tuple<std::string_view, std::string_view, Style, std::string_view>;
 
     // clang-format off
-    static auto constexpr TestCases = std::array<TestCase, 74U>{ {
+    static auto constexpr TestCases = std::to_array<TestCase>({
         { "free_space tr5 -> tr5", BadFreeSpaceRequest, Style::Tr5, BadFreeSpaceRequest },
         { "free_space tr5 -> tr4", BadFreeSpaceRequest, Style::Tr4, BadFreeSpaceRequestLegacy },
         { "free_space tr4 -> tr5", BadFreeSpaceRequestLegacy, Style::Tr5, BadFreeSpaceRequest },
@@ -1301,7 +1301,7 @@ TEST_F(ApiCompatTest, canConvertRpc)
         { "prefer clear request tr5 -> tr4", LegacyPreferClearRequest, Style::Tr4, LegacyPreferClearRequest },
 
         // TODO(ckerr): torrent-get with 'table'
-    } };
+    });
     // clang-format on
 
     for (auto const& [name, src, tgt_style, expected] : TestCases)
@@ -1319,7 +1319,7 @@ TEST_F(ApiCompatTest, canConvertJsonDataFiles)
     using Style = tr::api_compat::Style;
     using TestCase = std::tuple<std::string_view, std::string_view, Style, std::string_view>;
 
-    static auto constexpr TestCases = std::array<TestCase, 20U>{ {
+    static auto constexpr TestCases = std::to_array<TestCase>({
         { "settings tr5 -> tr5", CurrentSettingsJson, Style::Tr5, CurrentSettingsJson },
         { "settings tr5 -> tr4", CurrentSettingsJson, Style::Tr4, LegacySettingsJson },
         { "settings tr4 -> tr5", LegacySettingsJson, Style::Tr5, CurrentSettingsJson },
@@ -1341,7 +1341,7 @@ TEST_F(ApiCompatTest, canConvertJsonDataFiles)
         { "stats tr5 -> tr4", CurrentStatsJson, Style::Tr4, LegacyStatsJson },
         { "stats tr4 -> tr5", LegacyStatsJson, Style::Tr5, CurrentStatsJson },
         { "stats tr4 -> tr4", LegacyStatsJson, Style::Tr4, LegacyStatsJson },
-    } };
+    });
 
     for (auto const& [name, src, tgt_style, expected] : TestCases)
     {
@@ -1360,7 +1360,7 @@ TEST_F(ApiCompatTest, migratesLegacyRatioSettingKeys)
     using Style = tr::api_compat::Style;
     using TestCase = std::tuple<std::string_view, std::string_view, Style, std::string_view>;
 
-    static auto constexpr TestCases = std::array<TestCase, 6U>{ {
+    static auto constexpr TestCases = std::to_array<TestCase>({
         { "settings ratio kebab tr4 -> tr5", LegacyRatioSettingsKebabJson, Style::Tr5, CurrentSeedRatioSettingsJson },
         { "settings ratio underscore tr4 -> tr5", LegacyRatioSettingsUnderscoreJson, Style::Tr5, CurrentSeedRatioSettingsJson },
         { "settings ratio tr5 -> tr5", CurrentSeedRatioSettingsJson, Style::Tr5, CurrentSeedRatioSettingsJson },
@@ -1370,7 +1370,7 @@ TEST_F(ApiCompatTest, migratesLegacyRatioSettingKeys)
           Style::Tr4,
           LegacyRatioSettingsUnderscoreJson },
         { "settings ratio tr5 -> tr4", CurrentSeedRatioSettingsJson, Style::Tr4, LegacyRatioSettingsKebabJson },
-    } };
+    });
 
     for (auto const& [name, src, tgt_style, expected] : TestCases)
     {
@@ -1389,12 +1389,12 @@ TEST_F(ApiCompatTest, canConvertBencDataFiles)
     using Style = tr::api_compat::Style;
     using TestCase = std::tuple<std::string_view, std::string_view, Style, std::string_view>;
 
-    static auto constexpr TestCases = std::array<TestCase, 4U>{ {
+    static auto constexpr TestCases = std::to_array<TestCase>({
         { "resume tr5 -> tr5", ResumeBenc, Style::Tr5, ResumeBenc },
         { "resume tr5 -> tr4", ResumeBenc, Style::Tr4, LegacyResumeBenc },
         { "resume tr4 -> tr5", LegacyResumeBenc, Style::Tr5, ResumeBenc },
         { "resume tr4 -> tr4", LegacyResumeBenc, Style::Tr4, LegacyResumeBenc },
-    } };
+    });
 
     for (auto const& [name, src, tgt_style, expected] : TestCases)
     {

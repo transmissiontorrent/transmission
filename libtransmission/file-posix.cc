@@ -447,7 +447,7 @@ tr_sys_file_t tr_sys_file_open(std::string_view path, int const flags, int const
         int native_value;
     };
 
-    auto constexpr NativeMap = std::array<native_map_item, 7U>{ {
+    auto constexpr NativeMap = std::to_array<native_map_item>({
         {
             .symbolic_mask = TR_SYS_FILE_READ | TR_SYS_FILE_WRITE,
             .symbolic_value = TR_SYS_FILE_READ | TR_SYS_FILE_WRITE,
@@ -478,7 +478,7 @@ tr_sys_file_t tr_sys_file_open(std::string_view path, int const flags, int const
             .symbolic_value = TR_SYS_FILE_SEQUENTIAL,
             .native_value = O_SEQUENTIAL,
         },
-    } };
+    });
 
     int native_flags = O_BINARY | O_LARGEFILE | O_CLOEXEC; // NOLINT(misc-redundant-expression)
 

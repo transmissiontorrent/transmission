@@ -1240,11 +1240,11 @@ namespace on_scrape_done_helpers
 {
     /* Found a tracker that returns some bespoke string for this case?
        Add your patch here and open a PR */
-    auto too_long_errors = std::array<std::string_view, 3>{
+    auto too_long_errors = std::to_array<std::string_view>({
         "Bad Request",
         "GET string too long",
         "Request-URI Too Long",
-    };
+    });
 
     return std::ranges::any_of(too_long_errors, [&errmsg](auto const& substr) { return tr_strv_contains(errmsg, substr); });
 }

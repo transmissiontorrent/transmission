@@ -37,14 +37,14 @@ struct app_options
 };
 
 using Arg = tr_option::Arg;
-auto constexpr Options = std::array<tr_option, 6>{ {
+auto constexpr Options = std::to_array<tr_option>({
     { 'a', "add", "Add a tracker's announce URL", "a", Arg::Required, "<url>" },
     { 'd', "delete", "Delete a tracker's announce URL", "d", Arg::Required, "<url>" },
     { 'r', "replace", "Search and replace a substring in the announce URLs", "r", Arg::Required, "<old> <new>" },
     { 's', "source", "Set the source", "s", Arg::Required, "<source>" },
     { 'V', "version", "Show version number and exit", "V", Arg::None, nullptr },
     { 0, nullptr, nullptr, nullptr, Arg::None, nullptr },
-} };
+});
 static_assert(Options[std::size(Options) - 2].val != 0);
 } // namespace
 

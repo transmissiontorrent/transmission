@@ -225,10 +225,10 @@ TEST_F(TorrentsTest, simpleTests)
 
 TEST_F(TorrentsTest, rangedLoop)
 {
-    auto constexpr Filenames = std::array<std::string_view, 4>{ "Android-x86 8.1 r6 iso.torrent"sv,
-                                                                "debian-11.2.0-amd64-DVD-1.iso.torrent"sv,
-                                                                "ubuntu-18.04.6-desktop-amd64.iso.torrent"sv,
-                                                                "ubuntu-20.04.4-desktop-amd64.iso.torrent"sv };
+    auto constexpr Filenames = std::to_array<std::string_view>({ "Android-x86 8.1 r6 iso.torrent"sv,
+                                                                 "debian-11.2.0-amd64-DVD-1.iso.torrent"sv,
+                                                                 "ubuntu-18.04.6-desktop-amd64.iso.torrent"sv,
+                                                                 "ubuntu-20.04.4-desktop-amd64.iso.torrent"sv });
 
     auto owned = std::vector<std::unique_ptr<tr_torrent>>{};
     auto torrents = tr_torrents{};
@@ -256,10 +256,10 @@ TEST_F(TorrentsTest, rangedLoop)
 
 TEST_F(TorrentsTest, removedSince)
 {
-    auto constexpr Filenames = std::array<std::string_view, 4>{ "Android-x86 8.1 r6 iso.torrent"sv,
-                                                                "debian-11.2.0-amd64-DVD-1.iso.torrent"sv,
-                                                                "ubuntu-18.04.6-desktop-amd64.iso.torrent"sv,
-                                                                "ubuntu-20.04.4-desktop-amd64.iso.torrent"sv };
+    auto constexpr Filenames = std::to_array<std::string_view>({ "Android-x86 8.1 r6 iso.torrent"sv,
+                                                                 "debian-11.2.0-amd64-DVD-1.iso.torrent"sv,
+                                                                 "ubuntu-18.04.6-desktop-amd64.iso.torrent"sv,
+                                                                 "ubuntu-20.04.4-desktop-amd64.iso.torrent"sv });
 
     auto owned = std::vector<std::unique_ptr<tr_torrent>>{};
     auto torrents = tr_torrents{};
@@ -280,7 +280,7 @@ TEST_F(TorrentsTest, removedSince)
     }
 
     // setup: remove them at the given timestamp
-    auto constexpr TimeRemoved = std::array<time_t, 4>{ 100, 200, 200, 300 };
+    auto constexpr TimeRemoved = std::to_array<time_t>({ 100, 200, 200, 300 });
     for (size_t i = 0; i < 4; ++i)
     {
         auto* const tor = torrents_v[i];

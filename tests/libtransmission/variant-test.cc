@@ -356,7 +356,7 @@ TEST_F(VariantTest, parse)
 
 TEST_F(VariantTest, bencParseAndReencode)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 9>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "llleee"sv, true },
         { "d3:cow3:moo4:spam4:eggse"sv, true },
         { "d4:spaml1:a1:bee"sv, true },
@@ -366,7 +366,7 @@ TEST_F(VariantTest, bencParseAndReencode)
         { "d1:ai0e1:be"sv, false }, // odd number of children
         { ""sv, false },
         { " "sv, false },
-    } };
+    });
 
     auto serde = tr_variant_serde::benc();
     serde.inplace();
@@ -427,14 +427,13 @@ TEST_F(VariantTest, bencMalformedIncompleteString)
 
 TEST_F(VariantTest, bencToJson)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, std::string_view>, 5>{
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, std::string_view>>(
         { { "i6e"sv, "6"sv },
           { "d5:helloi1e5:worldi2ee"sv, R"({"hello":1,"world":2})"sv },
           { "d5:helloi1e5:worldi2e3:fooli1ei2ei3eee"sv, R"({"foo":[1,2,3],"hello":1,"world":2})"sv },
           { "d5:helloi1e5:worldi2e3:fooli1ei2ei3ed1:ai0eeee"sv, R"({"foo":[1,2,3,{"a":0}],"hello":1,"world":2})"sv },
           { "d4:argsd6:statusle7:status2lee6:result7:successe"sv,
-            R"({"args":{"status":[],"status2":[]},"result":"success"})"sv } }
-    };
+            R"({"args":{"status":[],"status2":[]},"result":"success"})"sv } });
 
     auto benc_serde = tr_variant_serde::benc();
     auto json_serde = tr_variant_serde::json();
@@ -664,7 +663,7 @@ TEST_F(VariantTest, variantAssingmentOperator)
 
 TEST_F(VariantTest, mergeOverwritesDifferingTypes)
 {
-    auto const variants = std::array<std::pair<tr_variant, std::string_view>, 7U>{ {
+    auto const variants = std::to_array<std::pair<tr_variant, std::string_view>>({
         { tr_variant{ true }, "true" },
         { tr_variant{ int64_t{ 123 } }, "123" },
         { tr_variant{ 4.5 }, "4.5" },
@@ -672,7 +671,7 @@ TEST_F(VariantTest, mergeOverwritesDifferingTypes)
         { tr_variant{ nullptr }, "null"sv },
         { tr_variant::make_map(0U), "{}"sv },
         { tr_variant::make_vector(), "[]"sv },
-    } };
+    });
 
     auto serde = tr_variant_serde::json();
     serde.compact();

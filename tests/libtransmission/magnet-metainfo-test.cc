@@ -94,9 +94,9 @@ TEST_F(MagnetMetainfoTest, magnetParse)
 
 TEST_F(MagnetMetainfoTest, parseMagnetFuzzRegressions)
 {
-    static auto constexpr Tests = std::array<std::string_view, 1>{
+    static auto constexpr Tests = std::to_array<std::string_view>({
         "UICOl7RLjChs/QZZwNH4sSQwuH890UMHuoxoWBmMkr0=",
-    };
+    });
 
     for (auto const& test : Tests)
     {

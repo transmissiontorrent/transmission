@@ -63,11 +63,11 @@ TEST(Bitfield, count)
 
 TEST(Bitfield, ctorFromFlagArray)
 {
-    auto constexpr Tests = std::array<std::array<bool, 10>, 3>{ {
+    auto constexpr Tests = std::to_array<std::array<bool, 10>>({
         { false, true, false, true, false, false, true, false, false, true }, // mixed
         { true, true, true, true, true, true, true, true, true, true }, // have all
         { false, false, false, false, false, false, false, false, false, false }, // have none
-    } };
+    });
 
     for (auto const& flags : Tests)
     {

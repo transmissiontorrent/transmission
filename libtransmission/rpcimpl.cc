@@ -1676,11 +1676,11 @@ void add_torrent_impl(struct tr_rpc_idle_data* data, tr_ctor& ctor)
         return;
     }
 
-    static auto constexpr Fields = std::array<tr_quark, 3U>{
+    static auto constexpr Fields = std::to_array<tr_quark>({
         TR_KEY_id,
         TR_KEY_name,
         TR_KEY_hash_string,
-    };
+    });
     if (duplicate_of != nullptr)
     {
         data->args_out.try_emplace(
@@ -1742,7 +1742,7 @@ void onMetadataFetched(tr_web::FetchResponse const& web_response)
 
 bool isCurlURL(std::string_view url)
 {
-    auto constexpr Schemes = std::array<std::string_view, 4>{ "http"sv, "https"sv, "ftp"sv, "sftp"sv };
+    auto constexpr Schemes = std::to_array<std::string_view>({ "http"sv, "https"sv, "ftp"sv, "sftp"sv });
     auto const parsed = tr_urlParse(url);
     return parsed && std::ranges::find(Schemes, parsed->scheme) != std::ranges::end(Schemes);
 }

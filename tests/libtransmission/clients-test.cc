@@ -24,7 +24,7 @@ TEST(Client, clientForId)
         std::string_view expected_client;
     };
 
-    auto constexpr Tests = std::array<LocalTest, 47>{ {
+    auto constexpr Tests = std::to_array<LocalTest>({
         { .peer_id = "-ADB560-"sv, .expected_client = "Advanced Download Manager 11.5.6"sv },
         { .peer_id = "-AZ8421-"sv, .expected_client = "Azureus / Vuze 8.4.2.1"sv },
         { .peer_id = "-BC0241-"sv, .expected_client = "BitComet 2.41"sv }, // two major, two minor
@@ -77,7 +77,7 @@ TEST(Client, clientForId)
           .expected_client = "BitLord 0.56"sv },
         { .peer_id = "\x65\x78\x62\x63\x00\x38\x7A\x44\x63\x10\x2D\x6E\x9A\xD6\x72\x3B\x33\x9F\x35\xA9"sv,
           .expected_client = "BitComet 0.56"sv },
-    } };
+    });
 
     for (auto const& test : Tests)
     {
@@ -93,10 +93,13 @@ TEST(Client, clientForId)
 
 TEST(Client, clientForIdFuzzRegressions)
 {
-    auto constexpr Tests = std::array<std::string_view, 5>{
-        "LVJTp3u+Aptl01HjzTHXVC5b9g4="sv, "LWJrHb2OpoNsJdODHA7iyXjnHxc="sv, "LU1PjpTjmvUth+f15YTOOggXl3k="sv,
-        "LUxU1gO7xhfBD4bmyZkB+neZIx0="sv, "LVJTp3u+Aptl01HjzTHXVC5b9g4="sv,
-    };
+    auto constexpr Tests = std::to_array<std::string_view>({
+        "LVJTp3u+Aptl01HjzTHXVC5b9g4="sv,
+        "LWJrHb2OpoNsJdODHA7iyXjnHxc="sv,
+        "LU1PjpTjmvUth+f15YTOOggXl3k="sv,
+        "LUxU1gO7xhfBD4bmyZkB+neZIx0="sv,
+        "LVJTp3u+Aptl01HjzTHXVC5b9g4="sv,
+    });
 
     for (auto const& test : Tests)
     {

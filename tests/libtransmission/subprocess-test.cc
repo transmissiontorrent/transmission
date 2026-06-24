@@ -88,7 +88,7 @@ TEST_P(SubprocessTest, SpawnAsyncMissingExec)
 {
     auto const missing_exe_path = std::string{ TR_IF_WIN32("C:\\", "/") "tr-missing-test-exe" TR_IF_WIN32(".exe", "") };
 
-    auto args = std::array<char const*, 2>{ missing_exe_path.data(), nullptr };
+    auto args = std::to_array<char const*>({ missing_exe_path.data(), nullptr });
 
     auto error = tr_error{};
     auto const ret = tr_spawn_async(std::data(args), {}, {}, &error);
@@ -108,14 +108,14 @@ TEST_P(SubprocessTest, SpawnAsyncArgs)
     auto const test_arg3 = std::string{};
     auto const test_arg4 = std::string{ "\"arg3'^! $PATH %PATH% \\" };
 
-    auto const args = std::array<char const*, 8>{ self_path_.c_str(),
-                                                  result_path.data(),
-                                                  arg_dump_args_.data(),
-                                                  test_arg1.data(),
-                                                  test_arg2.data(),
-                                                  test_arg3.data(),
-                                                  allow_batch_metachars ? test_arg4.data() : nullptr,
-                                                  nullptr };
+    auto const args = std::to_array<char const*>({ self_path_.c_str(),
+                                                   result_path.data(),
+                                                   arg_dump_args_.data(),
+                                                   test_arg1.data(),
+                                                   test_arg2.data(),
+                                                   test_arg3.data(),
+                                                   allow_batch_metachars ? test_arg4.data() : nullptr,
+                                                   nullptr });
 
     auto error = tr_error{};
     bool const ret = tr_spawn_async(std::data(args), {}, {}, &error);
@@ -163,7 +163,7 @@ TEST_P(SubprocessTest, SpawnAsyncEnv)
     auto const test_env_value4 = std::string{ "bar" };
     auto const test_env_value5 = std::string{ "jar" };
 
-    auto args = std::array<char const*, 10>{
+    auto args = std::to_array<char const*>({
         self_path_.c_str(), //
         result_path.data(), //
         arg_dump_env_.data(), //
@@ -174,7 +174,7 @@ TEST_P(SubprocessTest, SpawnAsyncEnv)
         test_env_key5.data(), //
         test_env_key6.data(), //
         nullptr, //
-    };
+    });
 
     auto const env = std::map<std::string_view, std::string_view>{
         { test_env_key1, test_env_value1 },
@@ -223,7 +223,7 @@ TEST_P(SubprocessTest, SpawnAsyncCwdExplicit)
     auto const test_dir = sandbox_.path();
     auto const result_path = buildSandboxPath("result.txt");
 
-    auto const args = std::array<char const*, 4>{ self_path_.c_str(), result_path.c_str(), arg_dump_cwd_.c_str(), nullptr };
+    auto const args = std::to_array<char const*>({ self_path_.c_str(), result_path.c_str(), arg_dump_cwd_.c_str(), nullptr });
 
     auto error = tr_error{};
     bool const ret = tr_spawn_async(std::data(args), {}, test_dir, &error);
@@ -251,7 +251,7 @@ TEST_P(SubprocessTest, SpawnAsyncCwdInherit)
     auto const result_path = buildSandboxPath("result.txt");
     auto const expected_cwd = nativeCwd();
 
-    auto const args = std::array<char const*, 4>{ self_path_.c_str(), result_path.data(), arg_dump_cwd_.data(), nullptr };
+    auto const args = std::to_array<char const*>({ self_path_.c_str(), result_path.data(), arg_dump_cwd_.data(), nullptr });
 
     auto error = tr_error{};
     auto const ret = tr_spawn_async(std::data(args), {}, {}, &error);
@@ -276,7 +276,7 @@ TEST_P(SubprocessTest, SpawnAsyncCwdMissing)
 {
     auto const result_path = buildSandboxPath("result.txt");
 
-    auto const args = std::array<char const*, 4>{ self_path_.c_str(), result_path.data(), arg_dump_cwd_.data(), nullptr };
+    auto const args = std::to_array<char const*>({ self_path_.c_str(), result_path.data(), arg_dump_cwd_.data(), nullptr });
 
     auto error = tr_error{};
     auto const ret = tr_spawn_async(std::data(args), {}, TR_IF_WIN32("C:\\", "/") "tr-missing-test-work-dir", &error);

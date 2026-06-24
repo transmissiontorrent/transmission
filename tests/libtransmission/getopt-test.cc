@@ -12,7 +12,7 @@
 namespace
 {
 using Arg = tr_option::Arg;
-auto constexpr Options = std::array<tr_option, 9>{ {
+auto constexpr Options = std::to_array<tr_option>({
     { .val = 'p',
       .longName = "private",
       .description = "Allow this torrent to only be used with the specified tracker(s)",
@@ -57,7 +57,7 @@ auto constexpr Options = std::array<tr_option, 9>{ {
       .arg = Arg::Optional,
       .argName = "<piece>" },
     { .val = 0, .longName = nullptr, .description = nullptr, .shortName = nullptr, .arg = Arg::None, .argName = nullptr },
-} };
+});
 static_assert(Options[std::size(Options) - 2].val != 0);
 } // namespace
 
@@ -90,7 +90,7 @@ protected:
 
 TEST_F(GetoptTest, noOptions)
 {
-    static auto constexpr Args = std::array<char const*, 1>{ "/some/path/tr-getopt-test" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test" });
     static auto constexpr ExpectedN = 0;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{};
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{};
@@ -99,7 +99,7 @@ TEST_F(GetoptTest, noOptions)
 
 TEST_F(GetoptTest, shortNoarg)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "-p" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-p" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 'p' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr };
@@ -108,7 +108,7 @@ TEST_F(GetoptTest, shortNoarg)
 
 TEST_F(GetoptTest, longNoarg)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "--private" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "--private" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 'p' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr };
@@ -117,7 +117,7 @@ TEST_F(GetoptTest, longNoarg)
 
 TEST_F(GetoptTest, shortWithRequiredArg)
 {
-    static auto constexpr Args = std::array<char const*, 3>{ "/some/path/tr-getopt-test", "-o", "/tmp/outfile" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-o", "/tmp/outfile" });
     auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 'o' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "/tmp/outfile" };
@@ -126,7 +126,7 @@ TEST_F(GetoptTest, shortWithRequiredArg)
 
 TEST_F(GetoptTest, longWithRequiredArg)
 {
-    static auto constexpr Args = std::array<char const*, 3>{ "/some/path/tr-getopt-test", "--outfile", "/tmp/outfile" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "--outfile", "/tmp/outfile" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 'o' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "/tmp/outfile" };
@@ -135,7 +135,7 @@ TEST_F(GetoptTest, longWithRequiredArg)
 
 TEST_F(GetoptTest, shortWithRequiredArgAfterEq)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "-o=/tmp/outfile" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-o=/tmp/outfile" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 'o' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "/tmp/outfile" };
@@ -144,7 +144,7 @@ TEST_F(GetoptTest, shortWithRequiredArgAfterEq)
 
 TEST_F(GetoptTest, longWithRequiredArgAfterEq)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "--outfile=/tmp/outfile" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "--outfile=/tmp/outfile" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 'o' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "/tmp/outfile" };
@@ -153,7 +153,7 @@ TEST_F(GetoptTest, longWithRequiredArgAfterEq)
 
 TEST_F(GetoptTest, unknownOption)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "-z" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-z" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ TR_OPT_UNK };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "-z" };
@@ -162,7 +162,7 @@ TEST_F(GetoptTest, unknownOption)
 
 TEST_F(GetoptTest, missingArgEnd)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "-o" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-o" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ TR_OPT_ERR };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr };
@@ -171,7 +171,7 @@ TEST_F(GetoptTest, missingArgEnd)
 
 TEST_F(GetoptTest, missingArgMiddle)
 {
-    static auto constexpr Args = std::array<char const*, 3>{ "/some/path/tr-getopt-test", "-o", "-p" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-o", "-p" });
     static auto constexpr ExpectedN = 2;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ TR_OPT_ERR, 'p' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr, nullptr };
@@ -180,9 +180,8 @@ TEST_F(GetoptTest, missingArgMiddle)
 
 TEST_F(GetoptTest, lotsOfOptions)
 {
-    static auto constexpr Args = std::array<char const*, 6>{
-        "/some/path/tr-getopt-test", "--piecesize=4", "-c", "hello world", "-p", "--tracker=foo"
-    };
+    static auto constexpr Args = std::to_array<char const*>(
+        { "/some/path/tr-getopt-test", "--piecesize=4", "-c", "hello world", "-p", "--tracker=foo" });
     static auto constexpr ExpectedN = 4;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 's', 'c', 'p', 't' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "4", "hello world", nullptr, "foo" };
@@ -192,7 +191,7 @@ TEST_F(GetoptTest, lotsOfOptions)
 TEST_F(GetoptTest, matchLongerKey)
 {
     // confirm that this resolves to 'q' and not 'p'
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "-pk" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-pk" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 'q' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr };
@@ -201,7 +200,7 @@ TEST_F(GetoptTest, matchLongerKey)
 
 TEST_F(GetoptTest, shortWithOptionalArg)
 {
-    static auto constexpr Args = std::array<char const*, 3>{ "/some/path/tr-getopt-test", "-seq", "12" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-seq", "12" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 994 };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "12" };
@@ -210,7 +209,7 @@ TEST_F(GetoptTest, shortWithOptionalArg)
 
 TEST_F(GetoptTest, longWithOptionalArg)
 {
-    static auto constexpr Args = std::array<char const*, 3>{ "/some/path/tr-getopt-test", "--sequential-download", "12" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "--sequential-download", "12" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 994 };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "12" };
@@ -219,7 +218,7 @@ TEST_F(GetoptTest, longWithOptionalArg)
 
 TEST_F(GetoptTest, shortWithOptionalArgAfterEq)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "-seq=12" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-seq=12" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 994 };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "12" };
@@ -228,7 +227,7 @@ TEST_F(GetoptTest, shortWithOptionalArgAfterEq)
 
 TEST_F(GetoptTest, longWithOptionalArgAfterEq)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "--sequential-download=12" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "--sequential-download=12" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 994 };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ "12" };
@@ -237,7 +236,7 @@ TEST_F(GetoptTest, longWithOptionalArgAfterEq)
 
 TEST_F(GetoptTest, shortWithoutOptionalArgEnd)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "-seq" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-seq" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 994 };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr };
@@ -246,7 +245,7 @@ TEST_F(GetoptTest, shortWithoutOptionalArgEnd)
 
 TEST_F(GetoptTest, longWithoutOptionalArgEnd)
 {
-    static auto constexpr Args = std::array<char const*, 2>{ "/some/path/tr-getopt-test", "--sequential-download" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "--sequential-download" });
     static auto constexpr ExpectedN = 1;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 994 };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr };
@@ -255,7 +254,7 @@ TEST_F(GetoptTest, longWithoutOptionalArgEnd)
 
 TEST_F(GetoptTest, shortWithoutOptionalArgMiddle)
 {
-    static auto constexpr Args = std::array<char const*, 3>{ "/some/path/tr-getopt-test", "-seq", "-p" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "-seq", "-p" });
     static auto constexpr ExpectedN = 2;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 994, 'p' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr, nullptr };
@@ -264,7 +263,7 @@ TEST_F(GetoptTest, shortWithoutOptionalArgMiddle)
 
 TEST_F(GetoptTest, longWithoutOptionalArgMiddle)
 {
-    static auto constexpr Args = std::array<char const*, 3>{ "/some/path/tr-getopt-test", "--sequential-download", "-p" };
+    static auto constexpr Args = std::to_array<char const*>({ "/some/path/tr-getopt-test", "--sequential-download", "-p" });
     static auto constexpr ExpectedN = 2;
     static auto constexpr ExpectedC = std::array<int, ExpectedN>{ 994, 'p' };
     static auto constexpr ExpectedOptArg = std::array<char const*, ExpectedN>{ nullptr, nullptr };

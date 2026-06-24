@@ -134,7 +134,7 @@ void TorrentFilter::update(Torrent::ChangeFlags changes)
 
     if (show_mode_ != ShowMode::ShowAll)
     {
-        static auto TR_CONSTEXPR23 ShowModeFlags = std::array<std::pair<ShowMode, Torrent::ChangeFlags>, 7U>{ {
+        static auto TR_CONSTEXPR23 ShowModeFlags = std::to_array<std::pair<ShowMode, Torrent::ChangeFlags>>({
             { ShowMode::ShowActive, Flag::ACTIVE_PEER_COUNT | Flag::ACTIVITY },
             { ShowMode::ShowDownloading, Flag::ACTIVITY },
             { ShowMode::ShowError, Flag::ERROR_CODE },
@@ -142,7 +142,7 @@ void TorrentFilter::update(Torrent::ChangeFlags changes)
             { ShowMode::ShowPaused, Flag::ACTIVITY },
             { ShowMode::ShowSeeding, Flag::ACTIVITY },
             { ShowMode::ShowVerifying, Flag::ACTIVITY },
-        } };
+        });
 
         auto const iter = std::ranges::find_if(ShowModeFlags, [key = show_mode_](auto const& row) { return row.first == key; });
         refilter_needed = iter != std::ranges::end(ShowModeFlags) && changes.test(iter->second);
