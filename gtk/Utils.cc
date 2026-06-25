@@ -935,8 +935,9 @@ void gtr_paste_clipboard_url_into_entry(Gtk::Entry& entry)
             }
         });
 #else
-    for (auto const& str : { Gtk::Clipboard::get(GDK_SELECTION_PRIMARY)->wait_for_text(),
-                             Gtk::Clipboard::get(GDK_SELECTION_CLIPBOARD)->wait_for_text() })
+    for (
+        auto const& str : { Gtk::Clipboard::get(GDK_SELECTION_PRIMARY)->wait_for_text(),
+                            Gtk::Clipboard::get(GDK_SELECTION_CLIPBOARD)->wait_for_text() })
     {
         if (process(str))
         {

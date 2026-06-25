@@ -399,9 +399,12 @@ namespace
     auto const in_upper_sv = in_upper.sv();
 
     static auto constexpr ReservedNames = std::to_array<std::string_view>({
-        "AUX"sv,  "CON"sv,  "NUL"sv,  "PRN"sv, //
-        "COM1"sv, "COM2"sv, "COM3"sv, "COM4"sv, "COM5"sv, "COM6"sv, "COM7"sv, "COM8"sv, "COM9"sv, //
-        "LPT1"sv, "LPT2"sv, "LPT3"sv, "LPT4"sv, "LPT5"sv, "LPT6"sv, "LPT7"sv, "LPT8"sv, "LPT9"sv, //
+        "AUX"sv,  "CON"sv,  "NUL"sv,
+        "PRN"sv, //
+        "COM1"sv, "COM2"sv, "COM3"sv, "COM4"sv, "COM5"sv, "COM6"sv, "COM7"sv, "COM8"sv,
+        "COM9"sv, //
+        "LPT1"sv, "LPT2"sv, "LPT3"sv, "LPT4"sv, "LPT5"sv, "LPT6"sv, "LPT7"sv, "LPT8"sv,
+        "LPT9"sv, //
     });
     if (std::ranges::find(ReservedNames, in_upper_sv) != std::ranges::end(ReservedNames))
     {
@@ -409,9 +412,12 @@ namespace
     }
 
     static auto constexpr ReservedPrefixes = std::to_array<std::string_view>({
-        "AUX."sv,  "CON."sv,  "NUL."sv,  "PRN."sv, //
-        "COM1."sv, "COM2."sv, "COM3."sv, "COM4."sv, "COM5."sv, "COM6."sv, "COM7."sv, "COM8."sv, "COM9."sv, //
-        "LPT1."sv, "LPT2."sv, "LPT3."sv, "LPT4."sv, "LPT5."sv, "LPT6."sv, "LPT7."sv, "LPT8."sv, "LPT9."sv, //
+        "AUX."sv,  "CON."sv,  "NUL."sv,
+        "PRN."sv, //
+        "COM1."sv, "COM2."sv, "COM3."sv, "COM4."sv, "COM5."sv, "COM6."sv, "COM7."sv, "COM8."sv,
+        "COM9."sv, //
+        "LPT1."sv, "LPT2."sv, "LPT3."sv, "LPT4."sv, "LPT5."sv, "LPT6."sv, "LPT7."sv, "LPT8."sv,
+        "LPT9."sv, //
     });
     return std::ranges::any_of(
         ReservedPrefixes,

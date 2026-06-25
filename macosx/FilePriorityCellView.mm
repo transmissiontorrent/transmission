@@ -31,7 +31,7 @@ static CGFloat const kImageOverlap = 1.0;
         for (NSInteger i = 0; i < segmentedControl.segmentCount; i++)
         {
             [segmentedControl setLabel:@"" forSegment:i];
-            [segmentedControl setWidth:9.0f forSegment:i];
+            [segmentedControl setWidth:9.0F forSegment:i];
         }
 
         [segmentedControl setImage:[NSImage imageNamed:@"PriorityControlLow"] forSegment:0];
@@ -125,7 +125,7 @@ static CGFloat const kImageOverlap = 1.0;
     }
 
     NSUInteger const count = priorities.count;
-    NSMutableArray* images = [NSMutableArray arrayWithCapacity:MAX(count, 1u)];
+    NSMutableArray* images = [NSMutableArray arrayWithCapacity:MAX(count, 1U)];
 
     if (count == 0)
     {

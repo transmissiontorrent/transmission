@@ -686,11 +686,12 @@ TEST_F(FileTest, pathResolve)
     EXPECT_TRUE(error);
     error = {};
 
-    for (auto const& input : { R"(\\127.0.0.1\ADMIN$\System32)"sv,
-                               R"(\\127.0.0.1\ADMIN$\\System32)"sv,
-                               R"(\\127.0.0.1\\ADMIN$\System32)"sv,
-                               R"(\\127.0.0.1\\ADMIN$\\System32)"sv,
-                               R"(\\127.0.0.1\ADMIN$/System32)"sv })
+    for (
+        auto const& input : { R"(\\127.0.0.1\ADMIN$\System32)"sv,
+                              R"(\\127.0.0.1\ADMIN$\\System32)"sv,
+                              R"(\\127.0.0.1\\ADMIN$\System32)"sv,
+                              R"(\\127.0.0.1\\ADMIN$\\System32)"sv,
+                              R"(\\127.0.0.1\ADMIN$/System32)"sv })
     {
         resolved = tr_sys_path_resolve(input, &error);
         EXPECT_EQ(R"(\\127.0.0.1\ADMIN$\System32)"sv, resolved);

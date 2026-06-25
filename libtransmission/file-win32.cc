@@ -466,8 +466,9 @@ bool tr_sys_path_rename(std::string_view const src_path, std::string_view const 
         {
             flags = 0;
         }
-        else if (auto const dst_attributes = GetFileAttributesW(wide_dst_path.c_str());
-                 dst_attributes != INVALID_FILE_ATTRIBUTES && (dst_attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+        else if (
+            auto const dst_attributes = GetFileAttributesW(wide_dst_path.c_str());
+            dst_attributes != INVALID_FILE_ATTRIBUTES && (dst_attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
         {
             flags = 0;
         }

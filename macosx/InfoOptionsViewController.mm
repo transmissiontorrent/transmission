@@ -209,9 +209,10 @@ static CGFloat const kStackViewSpacing = 8.0;
     BOOL multipleDownloadSpeedLimits = NO;
     NSInteger globalUseSpeedLimit = torrent.usesGlobalSpeedLimit ? NSControlStateValueOn : NSControlStateValueOff;
 
-    while ((torrent = [enumerator nextObject]) &&
-           (uploadUseSpeedLimit != NSControlStateValueMixed || !multipleUploadSpeedLimits || downloadUseSpeedLimit != NSControlStateValueMixed ||
-            !multipleDownloadSpeedLimits || globalUseSpeedLimit != NSControlStateValueMixed))
+    while (
+        (torrent = [enumerator nextObject]) &&
+        (uploadUseSpeedLimit != NSControlStateValueMixed || !multipleUploadSpeedLimits || downloadUseSpeedLimit != NSControlStateValueMixed ||
+         !multipleDownloadSpeedLimits || globalUseSpeedLimit != NSControlStateValueMixed))
     {
         if (uploadUseSpeedLimit != NSControlStateValueMixed &&
             uploadUseSpeedLimit != ([torrent usesSpeedLimit:YES] ? NSControlStateValueOn : NSControlStateValueOff))
@@ -288,8 +289,7 @@ static CGFloat const kStackViewSpacing = 8.0;
     NSUInteger idleLimit = torrent.idleLimitMinutes;
     BOOL multipleIdleLimits = NO;
 
-    while ((torrent = [enumerator nextObject]) &&
-           (checkRatio != kInvalidValue || !multipleRatioLimits || checkIdle != kInvalidValue || !multipleIdleLimits))
+    while ((torrent = [enumerator nextObject]) && (checkRatio != kInvalidValue || !multipleRatioLimits || checkIdle != kInvalidValue || !multipleIdleLimits))
     {
         if (checkRatio != kInvalidValue && checkRatio != torrent.ratioSetting)
         {

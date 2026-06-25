@@ -2146,8 +2146,9 @@ constexpr struct
         return tr_compare_3way(a->swarm->tor->is_done(), b->swarm->tor->is_done());
     }
 
-    [[nodiscard]] bool operator()(std::shared_ptr<tr_peerMsgs> const& a, std::shared_ptr<tr_peerMsgs> const& b)
-        const // less than
+    [[nodiscard]] bool operator()(
+        std::shared_ptr<tr_peerMsgs> const& a,
+        std::shared_ptr<tr_peerMsgs> const& b) const // less than
     {
         return compare(a, b) < 0;
     }

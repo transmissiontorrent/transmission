@@ -1684,7 +1684,7 @@ static tr_torrent_rename_done_func makeRenameDoneCallback(NSDictionary* contextI
 
 - (NSSet*)filePrioritiesForIndexes:(NSIndexSet*)indexSet
 {
-    NSMutableSet* priorities = [NSMutableSet setWithCapacity:MIN(indexSet.count, 3u)];
+    NSMutableSet* priorities = [NSMutableSet setWithCapacity:MIN(indexSet.count, 3U)];
 
     if ([self canChangeDownloadChecks])
     {

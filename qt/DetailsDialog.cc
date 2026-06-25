@@ -897,8 +897,9 @@ void DetailsDialog::refreshUI()
             ui_.labelsTextEdit->setReadOnly(true);
             ui_.labelsTextEdit->setEnabled(true);
         }
-        else if (auto const& baseline = torrents[0]->labels();
-                 std::ranges::all_of(torrents, [&baseline](auto const* tor) { return tor->labels() == baseline; }))
+        else if (
+            auto const& baseline = torrents[0]->labels();
+            std::ranges::all_of(torrents, [&baseline](auto const* tor) { return tor->labels() == baseline; }))
         {
             labels_baseline_ = baseline.join(QStringLiteral(", "));
             ui_.labelsTextEdit->setPlainText(labels_baseline_);

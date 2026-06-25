@@ -1736,15 +1736,15 @@ static void removeKeRangerRansomware()
     for (NSString* itemString in arrayOfStrings)
     {
         // We open all links
-        for (NSTextCheckingResult* result in [linkDetector matchesInString:itemString options:0
-                                                                     range:NSMakeRange(0, itemString.length)])
+        for (NSTextCheckingResult* result in [linkDetector matchesInString:itemString options:0 range:NSMakeRange(0, itemString.length)])
         {
             [self openURL:result.URL.absoluteString];
         }
 
         // We open all magnets
-        for (NSTextCheckingResult* result in [magnetDetector matchesInString:itemString options:0
-                                                                       range:NSMakeRange(0, itemString.length)])
+        for (
+            NSTextCheckingResult* result in [magnetDetector matchesInString:itemString options:0
+                                                                      range:NSMakeRange(0, itemString.length)])
         {
             [self openURL:[itemString substringWithRange:result.range]];
         }

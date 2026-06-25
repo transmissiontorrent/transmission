@@ -257,8 +257,8 @@ static NSString* const kWebSeedAnimationId = @"webSeed";
     }
 }
 
-- (NSString*)connectedTextFrom:(NSUInteger)tracker
-                              :(NSUInteger)incoming
+- (NSString*)connectedTextFrom:(NSUInteger)
+                       tracker:(NSUInteger)incoming
                               :(NSUInteger)cache
                               :(NSUInteger)lpd
                               :(NSUInteger)pex

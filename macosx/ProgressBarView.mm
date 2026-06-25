@@ -197,7 +197,7 @@ static NSInteger const kMaxPieces = 18 * 18;
     for (int i = 0; i < pieceCount; i++)
     {
         NSColor* pieceColor;
-        if (piecesPercent[i] == 1.0f)
+        if (piecesPercent[i] == 1.0F)
         {
             if (previousFinishedIndexes && ![previousFinishedIndexes containsIndex:i])
             {

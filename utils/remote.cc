@@ -1095,8 +1095,9 @@ void print_details(tr_variant::Map const& result)
             {
                 fmt::print("  Availability: None\n");
             }
-            else if (auto j = t->value_if<int64_t>(TR_KEY_desired_available), k = t->value_if<int64_t>(TR_KEY_left_until_done);
-                     j && k)
+            else if (
+                auto j = t->value_if<int64_t>(TR_KEY_desired_available), k = t->value_if<int64_t>(TR_KEY_left_until_done);
+                j && k)
             {
                 fmt::print("  Availability: {:s}%\n", strlpercent(100.0 * (*j + i - *k) / i));
             }

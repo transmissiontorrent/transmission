@@ -176,8 +176,9 @@ int tr_main(int argc, char** argv)
     char const* arg = nullptr;
     int file_args_start_idx = -1;
     int qt_args_start_idx = -1;
-    while (file_args_start_idx < 0 && qt_args_start_idx < 0 &&
-           (opt = tr_getopt(getUsage(), argc, static_cast<char const* const*>(argv), std::data(Opts), &arg)) != TR_OPT_DONE)
+    while (
+        file_args_start_idx < 0 && qt_args_start_idx < 0 &&
+        (opt = tr_getopt(getUsage(), argc, static_cast<char const* const*>(argv), std::data(Opts), &arg)) != TR_OPT_DONE)
     {
         switch (opt)
         {

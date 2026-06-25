@@ -537,9 +537,9 @@ void tr_torrent::queue_move_down(std::span<tr_torrent* const> const torrents_in)
 
     auto torrents = std::vector<tr_torrent*>(std::begin(torrents_in), std::end(torrents_in));
     std::ranges::sort(std::views::reverse(torrents), tr_torrent::CompareQueuePosition);
-    for (auto last_consecutive_pos =
-             torrents.front()->session->torrent_queue().size() - 1U + tr_torrent_queue::MinQueuePosition;
-         auto* const tor : torrents)
+    for (
+        auto last_consecutive_pos = torrents.front()->session->torrent_queue().size() - 1U + tr_torrent_queue::MinQueuePosition;
+        auto* const tor : torrents)
     {
         if (auto const pos = tor->queue_position(); pos != last_consecutive_pos)
         {

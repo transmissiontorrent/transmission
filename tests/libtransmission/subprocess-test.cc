@@ -286,14 +286,12 @@ TEST_P(SubprocessTest, SpawnAsyncCwdMissing)
     EXPECT_NE(""sv, error.message());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    Subprocess,
-    SubprocessTest,
-    TR_IF_WIN32(
-        ::testing::Values( //
-            getTestProgramPath("subprocess-test.exe"),
-            getTestProgramPath("subprocess-test.cmd")),
-        ::testing::Values( //
-            getTestProgramPath("subprocess-test"))));
+INSTANTIATE_TEST_SUITE_P(Subprocess,
+                         SubprocessTest,
+                         TR_IF_WIN32(::testing::Values( //
+                                         getTestProgramPath("subprocess-test.exe"),
+                                         getTestProgramPath("subprocess-test.cmd")),
+                                     ::testing::Values( //
+                                         getTestProgramPath("subprocess-test"))));
 
 } // namespace tr::test
