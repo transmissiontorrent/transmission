@@ -78,7 +78,7 @@ jobs:
           cat "$GITHUB_OUTPUT"
 
   code-style:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: [ what-to-make ]
     if: ${{ needs.what-to-make.outputs.test-style == 'true' }}
     steps:
@@ -94,10 +94,8 @@ jobs:
       - name: Get Dependencies
         run: |
           set -ex
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-20 main"
           sudo apt update
-          sudo apt install -y clang-format-20
+          sudo apt install -y clang-format-22
       - name: Get NPM
         if: ${{ needs.what-to-make.outputs.make-web == 'true' }}
         uses: actions/setup-node@v6
