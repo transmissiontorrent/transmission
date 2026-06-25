@@ -115,6 +115,7 @@ public:
     bool speed_limit_up_enabled = false;
     bool tcp_enabled = true;
     bool torrent_complete_verify_enabled = false;
+    bool trash_can_enabled = true;
     bool utp_enabled = true;
     double ratio_limit = 2.0;
     size_t unused_cache_size_mbytes = 4U; // TODO(TR5): remove
@@ -224,6 +225,7 @@ public:
         Field<&SessionSettings::tcp_enabled>{ TR_KEY_tcp_enabled },
         Field<&SessionSettings::torrent_added_verify_mode>{ TR_KEY_torrent_added_verify_mode },
         Field<&SessionSettings::torrent_complete_verify_enabled>{ TR_KEY_torrent_complete_verify_enabled },
+        Field<&SessionSettings::trash_can_enabled>{ TR_KEY_trash_can_enabled },
         Field<&SessionSettings::should_delete_source_torrents>{ TR_KEY_trash_original_torrent_files },
         Field<&SessionSettings::umask>{ TR_KEY_umask },
         Field<&SessionSettings::upload_slots_per_torrent>{ TR_KEY_upload_slots_per_torrent },

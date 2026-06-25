@@ -2615,6 +2615,17 @@ using SessionAccessors = std::pair<SessionGetter, SessionSetter>;
     map.try_emplace(TR_KEY_tcp_enabled, [](tr_session const& src) -> tr_variant { return src.allowsTCP(); }, nullptr);
 
     map.try_emplace(
+        TR_KEY_trash_can_enabled,
+        [](tr_session const& src) -> tr_variant { return src.trash_can_enabled(); },
+        [](tr_session& tgt, tr_variant const& src, ErrorInfo& /*err*/)
+        {
+            if (auto const val = src.value_if<bool>())
+            {
+                tgt.set_trash_can_enabled(*val);
+            }
+        });
+
+    map.try_emplace(
         TR_KEY_trash_original_torrent_files,
         [](tr_session const& src) -> tr_variant { return src.shouldDeleteSource(); },
         [](tr_session& tgt, tr_variant const& src, ErrorInfo& /*err*/)

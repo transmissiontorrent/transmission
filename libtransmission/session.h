@@ -853,6 +853,22 @@ public:
         return settings().should_delete_source_torrents;
     }
 
+    void set_trash_can_enabled(bool enabled) noexcept
+    {
+        settings_.trash_can_enabled = enabled;
+    }
+
+    [[nodiscard]] auto trash_can_enabled() const noexcept
+    {
+        return settings().trash_can_enabled;
+    }
+
+    // Get the function to use for deleting a torrent's local data files.
+    [[nodiscard]] auto local_data_remove_func() const noexcept -> bool (*)(std::string_view, tr_error*)
+    {
+        return trash_can_enabled() ? tr_sys_path_recycle_or_remove : tr_sys_path_remove;
+    }
+
     [[nodiscard]] constexpr auto allowsDHT() const noexcept
     {
         return settings().dht_enabled;

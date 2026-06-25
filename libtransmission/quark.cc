@@ -691,7 +691,9 @@ auto constexpr MyStatic = std::array<std::string_view, TR_N_KEYS>{
     "tracker_replace"sv, // rpc
     "tracker_stats"sv, // rpc
     "trackers"sv, // rpc
+    "trash-can-enabled"sv, // rpc, tr_session::Settings
     "trash-original-torrent-files"sv, // gtk app, rpc, tr_session::Settings
+    "trash_can_enabled"sv, // rpc, tr_session::Settings
     "trash_original_torrent_files"sv, // gtk app, rpc, tr_session::Settings
     "umask"sv, // tr_session::Settings
     "units"sv, // rpc

@@ -119,7 +119,7 @@ public:
     void remove(
         std::string_view parent_in,
         std::string_view tmpdir_prefix,
-        remove_func const& func = tr_sys_path_recycle_or_remove,
+        remove_func const& func = tr_sys_path_remove,
         tr_error* error = nullptr) const;
 
     struct FoundFile : public tr_sys_path_info
