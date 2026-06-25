@@ -22,7 +22,7 @@ BreakAfterOpenBracketFunction: true
 BreakAfterOpenBracketIf: true
 BreakAfterOpenBracketLoop: true
 BreakAfterOpenBracketSwitch: true
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Linux
 BreakBeforeCloseBracketFunction: false
 BreakBeforeCloseBracketIf: false
 BreakBeforeCloseBracketLoop: false
