@@ -285,7 +285,7 @@ auto constexpr LogKeys = std::to_array<std::pair<std::string_view, tr_log_level>
                                                                                     { "warn", TR_LOG_WARN },
                                                                                     { "info", TR_LOG_INFO },
                                                                                     { "debug", TR_LOG_DEBUG },
-                                                                                    { "trace", TR_LOG_TRACE } });
+                                                                                    { "trace", TR_LOG_TRACE }, });
 
 bool constexpr keysAreOrdered()
 {

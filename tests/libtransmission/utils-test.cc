@@ -101,7 +101,7 @@ TEST_F(UtilsTest, ratioToString)
                                                                                        { 4000.4, "4000" },
                                                                                        { 600000.0, "600000" },
                                                                                        { 900000000.0, "900000000" },
-                                                                                       { TR_RATIO_INF, "inf" } });
+                                                                                       { TR_RATIO_INF, "inf" }, });
     char const nullchar = '\0';
 
     ASSERT_EQ(tr_strratio(TR_RATIO_NA, "None", "Ratio is NaN"), "None");
