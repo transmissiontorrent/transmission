@@ -238,7 +238,7 @@ bool tr_torrent_files::move(
     // after moving the files, remove any leftover empty directories
     if (!err)
     {
-        remove(old_parent, parent_name, nullptr, tr_sys_path_remove);
+        remove(old_parent, parent_name, tr_sys_path_remove);
     }
 
     return !err;
@@ -258,8 +258,8 @@ bool tr_torrent_files::move(
 void tr_torrent_files::remove(
     std::string_view parent_in,
     std::string_view tmpdir_prefix,
-    tr_error* error,
-    remove_func const& func) const
+    remove_func const& func,
+    tr_error* error) const
 {
     auto const parent = tr_pathbuf{ parent_in };
 

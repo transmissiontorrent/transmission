@@ -735,7 +735,7 @@ void tr_torrentRemoveInSessionThread(tr_torrent* tor, bool const delete_flag)
         tor->session->verify_remove(tor);
 
         auto error = tr_error{};
-        tor->files().remove(tor->current_dir(), tor->name(), &error);
+        tor->files().remove(tor->current_dir(), tor->name(), tr_sys_path_recycle_or_remove, &error);
         if (error)
         {
             tr_logAddWarnTor(
