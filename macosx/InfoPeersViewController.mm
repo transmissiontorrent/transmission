@@ -257,7 +257,6 @@ static NSString* const kWebSeedAnimationId = @"webSeed";
     }
 }
 
-// clang-format off: compatibility with unnamed arguments
 - (NSString*)connectedTextFrom:(NSUInteger)tracker
                               :(NSUInteger)incoming
                               :(NSUInteger)cache
@@ -265,7 +264,6 @@ static NSString* const kWebSeedAnimationId = @"webSeed";
                               :(NSUInteger)pex
                               :(NSUInteger)dht
                               :(NSUInteger)ltep
-// clang-format on
 {
     NSMutableArray* fromComponents = [NSMutableArray arrayWithCapacity:7];
     if (tracker > 0)
