@@ -184,7 +184,7 @@ TEST_F(NetTest, compact6)
 
 TEST_F(NetTest, isGlobalUnicastAddress)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 17>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "1.0.0.0"sv, true },
         { "10.0.0.0"sv, false },
@@ -202,7 +202,7 @@ TEST_F(NetTest, isGlobalUnicastAddress)
         { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false },
         { "2001:0:0eab:dead::a0:abcd:4e"sv, true },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -214,7 +214,7 @@ TEST_F(NetTest, isGlobalUnicastAddress)
 
 TEST_F(NetTest, isIPv4CurrentNetwork)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 19>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, true },
         { "0.25.37.132"sv, true },
         { "0.255.255.255"sv, true },
@@ -234,7 +234,7 @@ TEST_F(NetTest, isIPv4CurrentNetwork)
         { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false },
         { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -246,7 +246,7 @@ TEST_F(NetTest, isIPv4CurrentNetwork)
 
 TEST_F(NetTest, isIPv4And10Private)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 18>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "9.255.255.255"sv, false },
         { "10.0.0.0"sv, true },
@@ -265,7 +265,7 @@ TEST_F(NetTest, isIPv4And10Private)
         { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false },
         { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -277,7 +277,7 @@ TEST_F(NetTest, isIPv4And10Private)
 
 TEST_F(NetTest, isIPv4CarrierGradeNAT)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 19>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "1.0.0.0"sv, false },
         { "10.0.0.0"sv, false },
@@ -297,7 +297,7 @@ TEST_F(NetTest, isIPv4CarrierGradeNAT)
         { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false },
         { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -309,7 +309,7 @@ TEST_F(NetTest, isIPv4CarrierGradeNAT)
 
 TEST_F(NetTest, isIPv4Loopback)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 19>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "1.0.0.0"sv, false },
         { "10.0.0.0"sv, false },
@@ -329,7 +329,7 @@ TEST_F(NetTest, isIPv4Loopback)
         { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false },
         { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -341,7 +341,7 @@ TEST_F(NetTest, isIPv4Loopback)
 
 TEST_F(NetTest, isIPv4LinkLocal)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 18>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "1.0.0.0"sv, false },
         { "10.0.0.0"sv, false },
@@ -360,7 +360,7 @@ TEST_F(NetTest, isIPv4LinkLocal)
         { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false },
         { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -372,7 +372,7 @@ TEST_F(NetTest, isIPv4LinkLocal)
 
 TEST_F(NetTest, isIPv4And172Private)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.0"sv, false },      { "10.255.0.255"sv, false },
         { "100.64.0.0"sv, false },      { "100.128.0.0"sv, false },
@@ -383,7 +383,7 @@ TEST_F(NetTest, isIPv4And172Private)
         { "172.31.255.255"sv, true },   { "172.32.0.0"sv, false },
         { "223.0.0.0"sv, false },       { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -395,7 +395,7 @@ TEST_F(NetTest, isIPv4And172Private)
 
 TEST_F(NetTest, isIPv4IetfProtocolAssignment)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -406,7 +406,7 @@ TEST_F(NetTest, isIPv4IetfProtocolAssignment)
         { "192.0.0.255"sv, true },      { "192.0.1.0"sv, false },
         { "223.0.0.0"sv, false },       { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -418,7 +418,7 @@ TEST_F(NetTest, isIPv4IetfProtocolAssignment)
 
 TEST_F(NetTest, isIPv4TestNet1)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -429,7 +429,7 @@ TEST_F(NetTest, isIPv4TestNet1)
         { "192.0.2.225"sv, true },      { "192.0.3.0"sv, false },
         { "223.0.0.0"sv, false },       { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -441,7 +441,7 @@ TEST_F(NetTest, isIPv4TestNet1)
 
 TEST_F(NetTest, isIPv4And6to4Relay)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -452,7 +452,7 @@ TEST_F(NetTest, isIPv4And6to4Relay)
         { "192.88.99.225"sv, true },    { "192.88.100.0"sv, false },
         { "223.0.0.0"sv, false },       { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -464,7 +464,7 @@ TEST_F(NetTest, isIPv4And6to4Relay)
 
 TEST_F(NetTest, isIPv4And192Private)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -475,7 +475,7 @@ TEST_F(NetTest, isIPv4And192Private)
         { "192.168.255.225"sv, true },  { "192.169.0.0"sv, false },
         { "223.0.0.0"sv, false },       { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -487,7 +487,7 @@ TEST_F(NetTest, isIPv4And192Private)
 
 TEST_F(NetTest, isIPv4Benchmark)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -498,7 +498,7 @@ TEST_F(NetTest, isIPv4Benchmark)
         { "198.19.255.225"sv, true },   { "198.20.0.0"sv, false },
         { "223.0.0.0"sv, false },       { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -510,7 +510,7 @@ TEST_F(NetTest, isIPv4Benchmark)
 
 TEST_F(NetTest, isIPv4TestNet2)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -521,7 +521,7 @@ TEST_F(NetTest, isIPv4TestNet2)
         { "198.51.100.255"sv, true },   { "198.51.101.0"sv, false },
         { "223.0.0.0"sv, false },       { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -533,7 +533,7 @@ TEST_F(NetTest, isIPv4TestNet2)
 
 TEST_F(NetTest, isIPv4TestNet3)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -544,7 +544,7 @@ TEST_F(NetTest, isIPv4TestNet3)
         { "203.0.113.255"sv, true },    { "203.0.114.0"sv, false },
         { "223.0.0.0"sv, false },       { "224.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -556,7 +556,7 @@ TEST_F(NetTest, isIPv4TestNet3)
 
 TEST_F(NetTest, isIPv4Multicast)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -567,7 +567,7 @@ TEST_F(NetTest, isIPv4Multicast)
         { "224.0.0.0"sv, true },        { "230.124.45.18"sv, true },
         { "239.255.255.255"sv, true },  { "240.0.0.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -579,7 +579,7 @@ TEST_F(NetTest, isIPv4Multicast)
 
 TEST_F(NetTest, isIPv4McastTestNet)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -590,7 +590,7 @@ TEST_F(NetTest, isIPv4McastTestNet)
         { "233.252.0.0"sv, true },      { "233.252.0.18"sv, true },
         { "233.252.0.255"sv, true },    { "233.252.1.0"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -602,7 +602,7 @@ TEST_F(NetTest, isIPv4McastTestNet)
 
 TEST_F(NetTest, isIPv4ReservedClassE)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -613,7 +613,7 @@ TEST_F(NetTest, isIPv4ReservedClassE)
         { "240.0.0.0"sv, true },        { "247.252.0.18"sv, true },
         { "255.255.255.254"sv, true },  { "255.255.255.255"sv, false },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -625,7 +625,7 @@ TEST_F(NetTest, isIPv4ReservedClassE)
 
 TEST_F(NetTest, isIPv4LimitedBroadcast)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 20>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },         { "10.0.0.0"sv, false },
         { "10.255.0.255"sv, false },    { "100.64.0.0"sv, false },
         { "127.0.0.0"sv, false },       { "169.253.255.255"sv, false },
@@ -636,7 +636,7 @@ TEST_F(NetTest, isIPv4LimitedBroadcast)
         { "240.0.0.0"sv, false },       { "247.252.0.18"sv, false },
         { "255.255.255.254"sv, false }, { "255.255.255.255"sv, true },
         { "0:0:0:0:0:0:0:1"sv, false }, { "2001:0:0eab:dead::a0:abcd:4e"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -648,7 +648,7 @@ TEST_F(NetTest, isIPv4LimitedBroadcast)
 
 TEST_F(NetTest, isIPv6Unspecified)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 26>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "169.254.0.0"sv, false },
         { "::"sv, true },
@@ -675,7 +675,7 @@ TEST_F(NetTest, isIPv6Unspecified)
         { "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
         { "ff00::"sv, false },
         { "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -687,7 +687,7 @@ TEST_F(NetTest, isIPv6Unspecified)
 
 TEST_F(NetTest, isIPv6Loopback)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 26>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "169.254.0.0"sv, false },
         { "::"sv, false },
@@ -714,7 +714,7 @@ TEST_F(NetTest, isIPv6Loopback)
         { "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
         { "ff00::"sv, false },
         { "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -726,7 +726,7 @@ TEST_F(NetTest, isIPv6Loopback)
 
 TEST_F(NetTest, isIPv6IPv4Mapped)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 26>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "169.254.0.0"sv, false },
         { "::"sv, false },
@@ -753,7 +753,7 @@ TEST_F(NetTest, isIPv6IPv4Mapped)
         { "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
         { "ff00::"sv, false },
         { "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -765,7 +765,7 @@ TEST_F(NetTest, isIPv6IPv4Mapped)
 
 TEST_F(NetTest, isIPv6Teredo)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 26>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "169.254.0.0"sv, false },
         { "::"sv, false },
@@ -792,7 +792,7 @@ TEST_F(NetTest, isIPv6Teredo)
         { "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
         { "ff00::"sv, false },
         { "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -804,7 +804,7 @@ TEST_F(NetTest, isIPv6Teredo)
 
 TEST_F(NetTest, isIPv6And6to4)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 26>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "169.254.0.0"sv, false },
         { "::"sv, false },
@@ -831,7 +831,7 @@ TEST_F(NetTest, isIPv6And6to4)
         { "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
         { "ff00::"sv, false },
         { "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -843,7 +843,7 @@ TEST_F(NetTest, isIPv6And6to4)
 
 TEST_F(NetTest, isIPv6LinkLocal)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 26>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "169.254.0.0"sv, false },
         { "::"sv, false },
@@ -870,7 +870,7 @@ TEST_F(NetTest, isIPv6LinkLocal)
         { "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
         { "ff00::"sv, false },
         { "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -882,7 +882,7 @@ TEST_F(NetTest, isIPv6LinkLocal)
 
 TEST_F(NetTest, isIPv6Multicast)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, bool>, 26>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, bool>>({
         { "0.0.0.0"sv, false },
         { "169.254.0.0"sv, false },
         { "::"sv, false },
@@ -909,7 +909,7 @@ TEST_F(NetTest, isIPv6Multicast)
         { "feff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, false },
         { "ff00::"sv, true },
         { "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"sv, true },
-    } };
+    });
 
     for (auto const& [presentation, expected] : Tests)
     {
@@ -949,7 +949,7 @@ TEST_F(NetTest, ipCompare)
 
 TEST_F(NetTest, IPv4MappedAddress)
 {
-    static auto constexpr Tests = std::array<std::pair<std::string_view, std::string_view>, 14>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, std::string_view>>({
         { "::ffff:1.0.0.0"sv, "1.0.0.0"sv },
         { "::ffff:10.0.0.0"sv, "10.0.0.0"sv },
         { "::ffff:10.255.0.0"sv, "10.255.0.0"sv },
@@ -964,7 +964,7 @@ TEST_F(NetTest, IPv4MappedAddress)
         { "::ffff:169.255.0.0"sv, "169.255.0.0"sv },
         { "::ffff:223.0.0.0"sv, "223.0.0.0"sv },
         { "::ffff:224.0.0.0"sv, "224.0.0.0"sv },
-    } };
+    });
 
     for (auto const& [mapped_sv, native_sv] : Tests)
     {

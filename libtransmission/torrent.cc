@@ -407,7 +407,7 @@ void torrentCallScript(tr_torrent const* tor, std::string const& script)
     auto torrent_dir = tr_pathbuf{ tor->current_dir() };
     tr_sys_path_native_separators(std::data(torrent_dir));
 
-    auto const cmd = std::array<char const*, 2>{ script.c_str(), nullptr };
+    auto const cmd = std::to_array<char const*>({ script.c_str(), nullptr });
 
     auto const id_str = std::to_string(tr_torrentId(tor));
     auto const labels_str = build_labels_string(tor->labels());

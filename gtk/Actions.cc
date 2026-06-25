@@ -69,14 +69,14 @@ void toggle_pref_cb(Gio::SimpleAction& action, gpointer prefs_key)
 }
 
 // action-name, prefs_name
-constexpr auto PrefToggleEntries = std::array<std::pair<std::string_view, tr_quark>, 6>{ {
+constexpr auto PrefToggleEntries = std::to_array<std::pair<std::string_view, tr_quark>>({
     { "alt-speed-enabled"sv, TR_KEY_alt_speed_enabled },
     { "compact-view"sv, TR_KEY_compact_view },
     { "show-filterbar"sv, TR_KEY_show_filterbar },
     { "show-statusbar"sv, TR_KEY_show_statusbar },
     { "show-toolbar"sv, TR_KEY_show_toolbar },
     { "sort-reversed"sv, TR_KEY_sort_reversed },
-} };
+});
 
 constexpr auto Entries = std::array{
     "copy-magnet-link-to-clipboard"sv,

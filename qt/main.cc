@@ -37,7 +37,7 @@ auto constexpr FileArgsSeparator = "--"sv;
 auto constexpr QtArgsSeparator = "---"sv;
 
 using Arg = tr_option::Arg;
-auto constexpr Opts = std::array<tr_option, 8>{ {
+auto constexpr Opts = std::to_array<tr_option>({
     {
         .val = 'g',
         .longName = "config-dir",
@@ -102,7 +102,7 @@ auto constexpr Opts = std::array<tr_option, 8>{ {
         .arg = Arg::None,
         .argName = nullptr,
     },
-} };
+});
 static_assert(Opts[std::size(Opts) - 2].val != 0);
 } // namespace
 

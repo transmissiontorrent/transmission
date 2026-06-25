@@ -117,10 +117,10 @@ CURLcode ssl_context_func(CURL* /*curl*/, void* ssl_ctx, void* /*user_data*/)
         return CURLE_OK;
     }
 
-    static auto constexpr SysStoreNames = std::array<LPCWSTR, 2>{
+    static auto constexpr SysStoreNames = std::to_array<LPCWSTR>({
         L"CA",
         L"ROOT",
-    };
+    });
 
     for (auto& sys_store_name : SysStoreNames)
     {

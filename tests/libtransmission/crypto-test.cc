@@ -123,7 +123,7 @@ TEST(Crypto, sha1)
     auto const hash4 = tr_sha1::digest("te"sv, "st"sv);
     EXPECT_EQ("a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"sv, tr_sha1_to_string(hash4));
 
-    auto const hash5 = tr_sha1::digest("t"sv, "e"sv, std::string{ "s" }, std::array<char, 1>{ { 't' } });
+    auto const hash5 = tr_sha1::digest("t"sv, "e"sv, std::string{ "s" }, std::to_array<char>({ 't' }));
     EXPECT_EQ("a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"sv, tr_sha1_to_string(hash5));
 }
 
@@ -135,11 +135,11 @@ TEST(Crypto, ssha1)
         std::string_view ssha1;
     };
 
-    static auto constexpr Tests = std::array<LocalTest, 2>{ {
+    static auto constexpr Tests = std::to_array<LocalTest>({
         { .plain_text = "test"sv, .ssha1 = "{15ad0621b259a84d24dcd4e75b09004e98a3627bAMbyRHJy"sv },
         { .plain_text = "QNY)(*#$B)!_X$B !_B#($^!)*&$%CV!#)&$C!@$(P*)"sv,
           .ssha1 = "{10e2d7acbb104d970514a147cd16d51dfa40fb3c0OSwJtOL"sv },
-    } };
+    });
 
     static auto constexpr HashCount = size_t{ 4U } * 1024U;
 

@@ -245,7 +245,7 @@ TEST_F(WebUtilsTest, urlIsValid)
 
 TEST_F(WebUtilsTest, urlPercentDecode)
 {
-    auto constexpr Tests = std::array<std::pair<std::string_view, std::string_view>, 13>{ {
+    auto constexpr Tests = std::to_array<std::pair<std::string_view, std::string_view>>({
         { "%-2"sv, "%-2"sv },
         { "%6 1"sv, "%6 1"sv },
         { "%6"sv, "%6"sv },
@@ -260,7 +260,7 @@ TEST_F(WebUtilsTest, urlPercentDecode)
         { "%FG"sv, "%FG"sv },
         { "http%3A%2F%2Fwww.example.com%2F~user%2F%3Ftest%3D1%26test1%3D2"sv,
           "http://www.example.com/~user/?test=1&test1=2"sv },
-    } };
+    });
 
     for (auto const& [encoded, decoded] : Tests)
     {
@@ -270,7 +270,7 @@ TEST_F(WebUtilsTest, urlPercentDecode)
 
 TEST_F(WebUtilsTest, urlPercentEncode)
 {
-    static auto constexpr Tests = std::array<std::tuple<std::string_view, std::string_view, bool>, 10U>{ {
+    static auto constexpr Tests = std::to_array<std::tuple<std::string_view, std::string_view, bool>>({
         { "192.168.202.101"sv, "192.168.202.101"sv, true },
         { "8.8.8.8"sv, "8.8.8.8"sv, true },
         { "[2001:0:0eab:dead::a0:abcd:4e]"sv, "%5B2001%3A0%3A0eab%3Adead%3A%3Aa0%3Aabcd%3A4e%5D"sv, true },
@@ -281,7 +281,7 @@ TEST_F(WebUtilsTest, urlPercentEncode)
         { "https://example.com/Let%C3%B6lt%C3%A9sek"sv, "https://example.com/Let%C3%B6lt%C3%A9sek"sv, false },
         { "udp://你好.com/announce"sv, "udp://%E4%BD%A0%E5%A5%BD.com/announce"sv, false },
         { "udp://%E4%BD%A0%E5%A5%BD.com/announce"sv, "udp://%E4%BD%A0%E5%A5%BD.com/announce"sv, false },
-    } };
+    });
 
     for (auto const& [decoded, encoded, escape_reserved] : Tests)
     {

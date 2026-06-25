@@ -105,11 +105,11 @@ bool is_junk_file(std::string_view filename)
     }
 #endif
 
-    auto constexpr Files = std::array<std::string_view, 3>{
+    auto constexpr Files = std::to_array<std::string_view>({
         ".DS_Store"sv,
         "Thumbs.db"sv,
         "desktop.ini"sv,
-    };
+    });
 
     return std::ranges::find(Files, base) != std::ranges::end(Files);
 }
@@ -206,7 +206,7 @@ bool tr_torrent_files::move(
         return false;
     }
 
-    auto const paths = std::array<std::string_view, 1>{ old_parent.sv() };
+    auto const paths = std::to_array<std::string_view>({ old_parent.sv() });
 
     auto err = bool{};
 
@@ -298,7 +298,7 @@ void tr_torrent_files::remove(
     }
 
     // move the local data to the tmpdir
-    auto const paths = std::array<std::string_view, 1>{ parent.sv() };
+    auto const paths = std::to_array<std::string_view>({ parent.sv() });
     for (tr_file_index_t idx = 0, n_files = file_count(); idx < n_files; ++idx)
     {
         if (auto const found = find(idx, std::data(paths), std::size(paths)); found)
@@ -366,10 +366,10 @@ namespace
 // for potential support of different filesystems on the same OS
 [[nodiscard, maybe_unused]] bool is_unix_reserved_file(std::string_view in) noexcept
 {
-    static auto constexpr ReservedNames = std::array<std::string_view, 2>{
+    static auto constexpr ReservedNames = std::to_array<std::string_view>({
         "."sv,
         ".."sv,
-    };
+    });
     return (std::ranges::find(ReservedNames, in) != std::ranges::end(ReservedNames));
 }
 
@@ -398,21 +398,21 @@ namespace
     std::ranges::for_each(in_upper, [](auto& ch) { ch = static_cast<char>(toupper(ch)); });
     auto const in_upper_sv = in_upper.sv();
 
-    static auto constexpr ReservedNames = std::array<std::string_view, 22>{
+    static auto constexpr ReservedNames = std::to_array<std::string_view>({
         "AUX"sv,  "CON"sv,  "NUL"sv,  "PRN"sv, //
         "COM1"sv, "COM2"sv, "COM3"sv, "COM4"sv, "COM5"sv, "COM6"sv, "COM7"sv, "COM8"sv, "COM9"sv, //
         "LPT1"sv, "LPT2"sv, "LPT3"sv, "LPT4"sv, "LPT5"sv, "LPT6"sv, "LPT7"sv, "LPT8"sv, "LPT9"sv, //
-    };
+    });
     if (std::ranges::find(ReservedNames, in_upper_sv) != std::ranges::end(ReservedNames))
     {
         return true;
     }
 
-    static auto constexpr ReservedPrefixes = std::array<std::string_view, 22>{
+    static auto constexpr ReservedPrefixes = std::to_array<std::string_view>({
         "AUX."sv,  "CON."sv,  "NUL."sv,  "PRN."sv, //
         "COM1."sv, "COM2."sv, "COM3."sv, "COM4."sv, "COM5."sv, "COM6."sv, "COM7."sv, "COM8."sv, "COM9."sv, //
         "LPT1."sv, "LPT2."sv, "LPT3."sv, "LPT4."sv, "LPT5."sv, "LPT6."sv, "LPT7."sv, "LPT8."sv, "LPT9."sv, //
-    };
+    });
     return std::ranges::any_of(
         ReservedPrefixes,
         [in_upper_sv](auto const& prefix) { return tr_strv_starts_with(in_upper_sv, prefix); });

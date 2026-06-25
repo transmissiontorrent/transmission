@@ -87,7 +87,7 @@ static_assert(TrDefaultPeerPort == 51413, "update 'peerport' desc");
 static_assert(TrDefaultPeerLimitTorrent == 50, "update 'peerlimit-torrent' desc");
 static_assert(TrDefaultPeerLimitGlobal == 200, "update 'peerlimit-global' desc");
 static_assert(TrDefaultRpcPort == 9091 && R"(update "port" desc)");
-auto constexpr Options = std::array<tr_option, 48>{ {
+auto constexpr Options = std::to_array<tr_option>({
     { 'a', "allowed", "Allowed IP addresses. (Default: '127.0.0.1,::1')", "a", Arg::Required, "<list>" },
     { 'b', "blocklist", "Enable peer blocklists", "b", Arg::None, nullptr },
     { 'B', "no-blocklist", "Disable peer blocklists", "B", Arg::None, nullptr },
@@ -156,7 +156,7 @@ auto constexpr Options = std::array<tr_option, 48>{ {
     { 995, "no-sequential-download", "Disable sequential download by default", "SEQ", Arg::None, nullptr },
     { 'x', "pid-file", "Enable PID file", "x", Arg::Required, "<pid-file>" },
     { 0, nullptr, nullptr, nullptr, Arg::None, nullptr },
-} };
+});
 static_assert(Options[std::size(Options) - 2].val != 0);
 } // namespace
 

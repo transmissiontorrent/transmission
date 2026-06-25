@@ -48,7 +48,7 @@ char constexpr MyName[] = "transmission-show";
 char constexpr Usage[] = "Usage: transmission-show [options] <torrent-file>";
 
 using Arg = tr_option::Arg;
-auto constexpr Options = std::array<tr_option, 14>{ {
+auto constexpr Options = std::to_array<tr_option>({
     { 'd', "header", "Show only header section", "d", Arg::None, nullptr },
     { 'i', "info", "Show only info section", "i", Arg::None, nullptr },
     { 't', "trackers", "Show only trackers section", "t", Arg::None, nullptr },
@@ -63,7 +63,7 @@ auto constexpr Options = std::array<tr_option, 14>{ {
     { 'u', "unsorted", "Do not sort files by name", "u", Arg::None, nullptr },
     { 'V', "version", "Show version number and exit", "V", Arg::None, nullptr },
     { 0, nullptr, nullptr, nullptr, Arg::None, nullptr },
-} };
+});
 static_assert(Options[std::size(Options) - 2].val != 0);
 } // namespace
 

@@ -130,12 +130,12 @@ TEST_F(AnnounceListTest, canNotAddInvalidUrl)
 
 TEST_F(AnnounceListTest, canSet)
 {
-    auto constexpr Urls = std::array<char const*, 3>{
+    auto constexpr Urls = std::to_array<char const*>({
         "https://www.example.com/a/announce",
         "https://www.example.com/b/announce",
         "https://www.example.com/c/announce",
-    };
-    auto constexpr Tiers = std::array<tr_tracker_tier_t, 3>{ 1, 2, 3 };
+    });
+    auto constexpr Tiers = std::to_array<tr_tracker_tier_t>({ 1, 2, 3 });
 
     auto announce_list = tr_announce_list{};
     EXPECT_EQ(3U, announce_list.set(std::data(Urls), std::data(Tiers), 3));
@@ -150,11 +150,15 @@ TEST_F(AnnounceListTest, canSet)
 
 TEST_F(AnnounceListTest, canSetUnsortedWithBackupsInTiers)
 {
-    auto constexpr Urls = std::array<char const*, 6>{
-        "https://www.backup-a.com/announce",  "https://www.backup-b.com/announce",  "https://www.backup-c.com/announce",
-        "https://www.primary-a.com/announce", "https://www.primary-b.com/announce", "https://www.primary-c.com/announce",
-    };
-    auto constexpr Tiers = std::array<tr_tracker_tier_t, 6>{ 0, 1, 2, 0, 1, 2 };
+    auto constexpr Urls = std::to_array<char const*>({
+        "https://www.backup-a.com/announce",
+        "https://www.backup-b.com/announce",
+        "https://www.backup-c.com/announce",
+        "https://www.primary-a.com/announce",
+        "https://www.primary-b.com/announce",
+        "https://www.primary-c.com/announce",
+    });
+    auto constexpr Tiers = std::to_array<tr_tracker_tier_t>({ 0, 1, 2, 0, 1, 2 });
 
     auto announce_list = tr_announce_list{};
     EXPECT_EQ(6U, announce_list.set(std::data(Urls), std::data(Tiers), 6));
@@ -183,12 +187,12 @@ TEST_F(AnnounceListTest, canSetUnsortedWithBackupsInTiers)
 
 TEST_F(AnnounceListTest, canSetExceptDuplicate)
 {
-    auto constexpr Urls = std::array<char const*, 3>{
+    auto constexpr Urls = std::to_array<char const*>({
         "https://www.example.com/a/announce",
         "https://www.example.com/b/announce",
         "https://www.example.com/b/announce",
-    };
-    auto constexpr Tiers = std::array<tr_tracker_tier_t, 3>{ 3, 2, 1 };
+    });
+    auto constexpr Tiers = std::to_array<tr_tracker_tier_t>({ 3, 2, 1 });
 
     auto announce_list = tr_announce_list{};
     EXPECT_EQ(2U, announce_list.set(std::data(Urls), std::data(Tiers), 3));
@@ -201,12 +205,12 @@ TEST_F(AnnounceListTest, canSetExceptDuplicate)
 
 TEST_F(AnnounceListTest, canSetExceptInvalid)
 {
-    auto constexpr Urls = std::array<char const*, 3>{
+    auto constexpr Urls = std::to_array<char const*>({
         "https://www.example.com/a/announce",
         "telnet://www.example.com/b/announce",
         "https://www.example.com/c/announce",
-    };
-    auto constexpr Tiers = std::array<tr_tracker_tier_t, 3>{ 1, 2, 3 };
+    });
+    auto constexpr Tiers = std::to_array<tr_tracker_tier_t>({ 1, 2, 3 });
 
     auto announce_list = tr_announce_list{};
     EXPECT_EQ(2U, announce_list.set(std::data(Urls), std::data(Tiers), 3));
@@ -339,11 +343,11 @@ TEST_F(AnnounceListTest, announceToScrape)
         std::string_view expected_scrape;
     };
 
-    auto constexpr Tests = std::array<ScrapeTest, 3>{ {
+    auto constexpr Tests = std::to_array<ScrapeTest>({
         { .announce = "https://www.example.com/announce"sv, .expected_scrape = "https://www.example.com/scrape"sv },
         { .announce = "https://www.example.com/foo"sv, .expected_scrape = ""sv },
         { .announce = "udp://www.example.com:999/"sv, .expected_scrape = "udp://www.example.com:999/"sv },
-    } };
+    });
 
     for (auto const& test : Tests)
     {
@@ -354,12 +358,12 @@ TEST_F(AnnounceListTest, announceToScrape)
 
 TEST_F(AnnounceListTest, save)
 {
-    auto constexpr Urls = std::array<char const*, 3>{
+    auto constexpr Urls = std::to_array<char const*>({
         "https://www.example.com/a/announce",
         "https://www.example.com/b/announce",
         "https://www.example.com/c/announce",
-    };
-    auto constexpr Tiers = std::array<tr_tracker_tier_t, 3>{ 0, 1, 2 };
+    });
+    auto constexpr Tiers = std::to_array<tr_tracker_tier_t>({ 0, 1, 2 });
 
     // first, set up a scratch torrent
     auto constexpr* const OriginalFile = LIBTRANSMISSION_TEST_ASSETS_DIR "/Android-x86 8.1 r6 iso.torrent";

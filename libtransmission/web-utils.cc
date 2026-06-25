@@ -180,13 +180,13 @@ namespace
 
 constexpr std::optional<uint16_t> getPortForScheme(std::string_view scheme)
 {
-    auto constexpr KnownSchemes = std::array<std::pair<std::string_view, uint16_t>, 5>{ {
+    auto constexpr KnownSchemes = std::to_array<std::pair<std::string_view, uint16_t>>({
         { "ftp"sv, 21U },
         { "http"sv, 80U },
         { "https"sv, 443U },
         { "sftp"sv, 22U },
         { "udp"sv, 80U },
-    } };
+    });
 
     for (auto const& [known_scheme, port] : KnownSchemes)
     {
@@ -217,7 +217,7 @@ constexpr bool urlCharsAreValid(std::string_view url)
 
 bool tr_isValidTrackerScheme(std::string_view scheme)
 {
-    auto constexpr Schemes = std::array<std::string_view, 3>{ "http"sv, "https"sv, "udp"sv };
+    auto constexpr Schemes = std::to_array<std::string_view>({ "http"sv, "https"sv, "udp"sv });
     return std::ranges::find(Schemes, scheme) != std::ranges::end(Schemes);
 }
 
@@ -430,7 +430,7 @@ bool tr_urlIsValidTracker(std::string_view url)
 
 bool tr_urlIsValid(std::string_view url)
 {
-    auto constexpr Schemes = std::array<std::string_view, 5>{ "http"sv, "https"sv, "ftp"sv, "sftp"sv, "udp"sv };
+    auto constexpr Schemes = std::to_array<std::string_view>({ "http"sv, "https"sv, "ftp"sv, "sftp"sv, "udp"sv });
     auto const parsed = tr_urlParse(url);
     return parsed && std::ranges::find(Schemes, parsed->scheme) != std::ranges::end(Schemes);
 }
@@ -477,7 +477,7 @@ std::string tr_urlPercentDecode(std::string_view in)
         in.remove_prefix(pos);
         if (std::size(in) >= 3 && in[0] == '%' && (std::isxdigit(in[1]) != 0) && (std::isxdigit(in[2]) != 0))
         {
-            auto hexstr = std::array<char, 3>{ in[1], in[2], '\0' };
+            auto hexstr = std::to_array<char>({ in[1], in[2], '\0' });
             auto const hex = strtoul(std::data(hexstr), nullptr, 16);
             out += char(hex);
             in.remove_prefix(3);

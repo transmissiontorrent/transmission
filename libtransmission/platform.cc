@@ -253,11 +253,11 @@ std::string tr_getWebClientDir([[maybe_unused]] tr_session const* session)
     /* Generally, Web interface should be stored in a Web subdir of
      * calling executable dir. */
 
-    static auto constexpr KnownFolderIds = std::array<KNOWNFOLDERID const* const, 3>{
+    static auto constexpr KnownFolderIds = std::to_array<KNOWNFOLDERID const* const>({
         &FOLDERID_LocalAppData,
         &FOLDERID_RoamingAppData,
         &FOLDERID_ProgramData,
-    };
+    });
 
     for (auto const* const folder_id : KnownFolderIds)
     {

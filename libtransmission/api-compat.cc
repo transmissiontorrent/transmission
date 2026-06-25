@@ -59,7 +59,7 @@ struct KeyLookupTable
     }
 };
 
-auto constexpr RpcKeys = std::array<ApiKey, 212U>{ {
+auto constexpr RpcKeys = std::to_array<ApiKey>({
     { .current = TR_KEY_active_torrent_count, .legacy = TR_KEY_active_torrent_count_camel_APICOMPAT },
     { .current = TR_KEY_activity_date, .legacy = TR_KEY_activity_date_camel_APICOMPAT },
     { .current = TR_KEY_added_date, .legacy = TR_KEY_added_date_camel_APICOMPAT },
@@ -275,9 +275,9 @@ auto constexpr RpcKeys = std::array<ApiKey, 212U>{ {
     { .current = TR_KEY_torrent_start_now, .legacy = TR_KEY_torrent_start_now_kebab_APICOMPAT },
     { .current = TR_KEY_torrent_stop, .legacy = TR_KEY_torrent_stop_kebab_APICOMPAT },
     { .current = TR_KEY_torrent_verify, .legacy = TR_KEY_torrent_verify_kebab_APICOMPAT },
-} };
+});
 
-auto constexpr SessionKeys = std::array<ApiKey, 139U>{ {
+auto constexpr SessionKeys = std::to_array<ApiKey>({
     { .current = TR_KEY_activity_date, .legacy = TR_KEY_activity_date_kebab_APICOMPAT },
     { .current = TR_KEY_added_date, .legacy = TR_KEY_added_date_kebab_APICOMPAT },
     { .current = TR_KEY_alt_speed_down, .legacy = TR_KEY_alt_speed_down_kebab_APICOMPAT },
@@ -422,7 +422,7 @@ auto constexpr SessionKeys = std::array<ApiKey, 139U>{ {
     { .current = TR_KEY_watch_dir, .legacy = TR_KEY_watch_dir_kebab_APICOMPAT },
     { .current = TR_KEY_watch_dir_enabled, .legacy = TR_KEY_watch_dir_enabled_kebab_APICOMPAT },
     { .current = TR_KEY_watch_dir_force_generic, .legacy = TR_KEY_watch_dir_force_generic_kebab_APICOMPAT },
-} };
+});
 
 [[nodiscard]] consteval size_t lookup_table_size()
 {
@@ -531,7 +531,7 @@ auto constexpr PreferClearLegacy = std::string_view{ "tolerated" };
         return Error::SUCCESS;
     }
 
-    static auto constexpr Phrases = std::array<std::pair<std::string_view, Error::Code>, 14U>{ {
+    static auto constexpr Phrases = std::to_array<std::pair<std::string_view, Error::Code>>({
         { "absolute", Error::PATH_NOT_ABSOLUTE },
         { "couldn't fetch blocklist", Error::HTTP_ERROR },
         { "couldn't save", Error::SYSTEM_ERROR },
@@ -546,7 +546,7 @@ auto constexpr PreferClearLegacy = std::string_view{ "tolerated" };
         { "torrent-rename-path requires 1 torrent", Error::INVALID_PARAMS },
         { "unrecognized info", Error::UNRECOGNIZED_INFO },
         { MethodNotFoundLegacyErrmsg, Error::METHOD_NOT_FOUND },
-    } };
+    });
 
     for (auto const& [substr, code] : Phrases)
     {
@@ -692,7 +692,7 @@ struct State
 {
     if (state.is_settings && state.current_key_is_any_of({ TR_KEY_sort_mode, TR_KEY_sort_mode_kebab_APICOMPAT }))
     {
-        static auto constexpr Strings = std::array<std::pair<std::string_view /*Tr5*/, std::string_view /*Tr4*/>, 10U>{ {
+        static auto constexpr Strings = std::to_array<std::pair<std::string_view /*Tr5*/, std::string_view /*Tr4*/>>({
             { "sort_by_activity", "sort-by-activity" },
             { "sort_by_age", "sort-by-age" },
             { "sort_by_eta", "sort-by-eta" },
@@ -703,7 +703,7 @@ struct State
             { "sort_by_ratio", "sort-by-ratio" },
             { "sort_by_size", "sort-by-size" },
             { "sort_by_state", "sort-by-state" },
-        } };
+        });
         for (auto const& [current, legacy] : Strings)
         {
             if (src == current || src == legacy)
@@ -715,7 +715,7 @@ struct State
 
     if (state.is_settings && state.current_key_is_any_of({ TR_KEY_filter_mode, TR_KEY_filter_mode_kebab_APICOMPAT }))
     {
-        static auto constexpr Strings = std::array<std::pair<std::string_view, std::string_view>, 8U>{ {
+        static auto constexpr Strings = std::to_array<std::pair<std::string_view, std::string_view>>({
             { "show_active", "show-active" },
             { "show_all", "show-all" },
             { "show_downloading", "show-downloading" },
@@ -724,7 +724,7 @@ struct State
             { "show_paused", "show-paused" },
             { "show_seeding", "show-seeding" },
             { "show_verifying", "show-verifying" },
-        } };
+        });
         for (auto const& [current, legacy] : Strings)
         {
             if (src == current || src == legacy)
@@ -736,12 +736,12 @@ struct State
 
     if (state.is_settings && state.current_key_is_any_of({ TR_KEY_statusbar_stats, TR_KEY_statusbar_stats_kebab_APICOMPAT }))
     {
-        static auto constexpr Strings = std::array<std::pair<std::string_view, std::string_view>, 4U>{ {
+        static auto constexpr Strings = std::to_array<std::pair<std::string_view, std::string_view>>({
             { "total_ratio", "total-ratio" },
             { "total_transfer", "total-transfer" },
             { "session_ratio", "session-ratio" },
             { "session_transfer", "session-transfer" },
-        } };
+        });
         for (auto const& [current, legacy] : Strings)
         {
             if (src == current || src == legacy)

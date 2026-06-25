@@ -209,7 +209,7 @@ void send_simple_response(struct evhttp_request* req, int code, char const* text
 [[nodiscard]] constexpr char const* mimetype_guess(std::string_view path)
 {
     // these are the ones we need for serving the web client's files...
-    auto constexpr Types = std::array<std::pair<std::string_view, char const*>, 7>{ {
+    auto constexpr Types = std::to_array<std::pair<std::string_view, char const*>>({
         { ".css"sv, "text/css" },
         { ".gif"sv, "image/gif" },
         { ".html"sv, "text/html" },
@@ -217,7 +217,7 @@ void send_simple_response(struct evhttp_request* req, int code, char const* text
         { ".js"sv, "application/javascript" },
         { ".png"sv, "image/png" },
         { ".svg"sv, "image/svg+xml" },
-    } };
+    });
 
     for (auto const& [suffix, mime_type] : Types)
     {

@@ -501,7 +501,7 @@ struct Client
     format_func formatter;
 };
 
-auto constexpr Clients = std::array<Client, 131>{ {
+auto constexpr Clients = std::to_array<Client>({
     { .begins_with = "-AD", .name = "Advanced Download Manager", .formatter = three_digit_formatter },
     { .begins_with = "-AG", .name = "Ares", .formatter = four_digit_formatter },
     { .begins_with = "-AR", .name = "Arctic", .formatter = four_digit_formatter },
@@ -633,7 +633,7 @@ auto constexpr Clients = std::array<Client, 131>{ {
     { .begins_with = "btpd", .name = "BT Protocol Daemon", .formatter = btpd_formatter },
     { .begins_with = "eX", .name = "eXeem", .formatter = no_version_formatter },
     { .begins_with = "martini", .name = "Martini Man", .formatter = no_version_formatter },
-} };
+});
 
 } // namespace
 

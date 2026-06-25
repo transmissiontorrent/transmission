@@ -106,13 +106,13 @@ private:
     bool isPaused_ = false;
     sigc::connection refresh_tag_;
 
-    static auto constexpr level_names_ = std::array<std::pair<tr_log_level, char const*>, 5U>{ {
+    static auto constexpr level_names_ = std::to_array<std::pair<tr_log_level, char const*>>({
         { TR_LOG_CRITICAL, NC_("Logging level", "Critical") },
         { TR_LOG_ERROR, NC_("Logging level", "Error") },
         { TR_LOG_WARN, NC_("Logging level", "Warning") },
         { TR_LOG_INFO, NC_("Logging level", "Information") },
         { TR_LOG_DEBUG, NC_("Logging level", "Debug") },
-    } };
+    });
 };
 
 namespace

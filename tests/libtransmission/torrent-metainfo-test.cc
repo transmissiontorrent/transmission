@@ -63,7 +63,7 @@ TEST_F(TorrentMetainfoTest, bucket)
         bool expected_parse_result;
     };
 
-    static auto constexpr Tests = std::array<LocalTest, 12U>{ {
+    static auto constexpr Tests = std::to_array<LocalTest>({
         { .benc = BEFORE_PATH "5:a.txt" AFTER_PATH, .expected_parse_result = true },
         // allow empty components, but not =all= empty components, see bug #5517
         { .benc = BEFORE_PATH "0:5:a.txt" AFTER_PATH, .expected_parse_result = true },
@@ -83,7 +83,7 @@ TEST_F(TorrentMetainfoTest, bucket)
         { .benc = "d10:short", .expected_parse_result = false },
         // fail on empty string
         { .benc = "", .expected_parse_result = false },
-    } };
+    });
 
     tr_logSetLevel(TR_LOG_OFF);
 
@@ -96,9 +96,9 @@ TEST_F(TorrentMetainfoTest, bucket)
 
 TEST_F(TorrentMetainfoTest, parseBencFuzzRegressions)
 {
-    static auto constexpr Tests = std::array<std::string_view, 1>{
+    static auto constexpr Tests = std::to_array<std::string_view>({
         "ZC/veNSVW0Ss+KGfMqH4DQqtYXzgmVi5oBi0XlxviLytlwwjf7MLanOcnS73eSB/iye83hVyvSWg27tPl5oqWdNEZ0euMbo7E8FH/xgTvUEOnBVgvPno50CyI7c5F2QTw16avUB7dvGzx5xIjzJ2qkD2BsNtOoiZI3skC6XwSifsDfJUN8NxHFiwvWxmZRLq2eQlE2wGxAW5aLj6U1MHDzPZ83+2o81pRyMr11bHmWFcNorTGLeOpHBd9veduHpNOKNwOatoXeb57jZCy1Zmu9y/wCuUx6DP3I5FGQ/t3AYh7w028Z/zgIlvWat6QjqSPp7j1nEbl6SNZNl1doGmusl9hvRsbaCq9b1XHpTDtQSJ8Owj07fph0p0ZVu5kJpQBfOGsHLh6ALVrTepptIvcnNW9+nauE+NJa2z+9Yla7780sCdBsGYZZA6HUr0J9GXES7+uRPPBwAl2YB1qWhCsOCClixTiAlwrsBl1bJ/a4FV04aU5jXDEYrpJMzdSAEoypDWMsn3Fc5umLqJ1jtqPqykKY0HjPrCkVAMmvmacauBzIj5Eg/uw0xtZp+wXdLQv8qyuXgsJs7dExZbgTgfPY4niTBpftM6YFQrCx/IxiMshYp7tMolykoed/8gZMm6yyWizzml4BlvnvY3+J2eVKRvS7QToRKxN5eFP9l/pflrK+8cHbwVnjQ1pE3hTQACmNIQHRTY2QoOGwG+HTwo48akfbJnjJ3F0iN6miy7lvv5u0p1rpbM2On5FJ3G98OYnzGIxf8BomHvVp/3eX6QJZUMZKsUTpgbRqg0AJH9FjiERQ9v6B25Va+Q0yV8z5DmiA5AgyIwkIzlSBAl0PYsNaw+rH06a93yBhAfK6EPSArYLjMI6o/1kF4UxNyfE+F79xbdCAKRAX3iJ7DH1GncFoIQ1fZd/uZaF9tXjViQ7P/sHuKdZvfLpvJq88JV5Pcdsfdlle86QAF4weB+k/k8f/xgvxRNbbcAfjLvEHhDBzfEvHkgFrW19WvLHyAqjjUovpecIu3KeCqwyOr1dHViUVelxqc5BklyGQ+Asd6GnWPSzO5Hamj4rYrapgogEup5PKm1j2CgL2HH2tySWwjgtOWbooGhsdBnCeQOsapCxwc6ALtudG4Q9RBu6A6pLUfFE3rm1RuvNGoJNHiEQ4BAFiqLpYJd4lR7V2fI6EIKug0dB3SpHpUeNCQbG67IM+kVe0I+vP3cECGOGXo="sv,
-    };
+    });
 
     for (auto const& test : Tests)
     {
@@ -213,7 +213,7 @@ TEST_F(TorrentMetainfoTest, GetRightStyleWebseedString)
 
 TEST_F(TorrentMetainfoTest, piecesKeyTest)
 {
-    static auto constexpr BadTorrents = std::array<std::pair<std::string_view, std::string_view>, 7U>{ {
+    static auto constexpr BadTorrents = std::to_array<std::pair<std::string_view, std::string_view>>({
         { "missing-pieces-key.torrent"sv, "missing v1 metadata"sv },
         { "bad-pieces-key.torrent"sv, "missing v1 metadata"sv },
         { "empty-pieces-key.torrent"sv, "missing v1 metadata"sv },
@@ -222,7 +222,7 @@ TEST_F(TorrentMetainfoTest, piecesKeyTest)
         { "dup-pieces-key.torrent"sv, "invalid duplicate 'pieces'"sv },
         { "invalid-pieces-length.torrent"sv,
           "invalid 'pieces' size: 119"sv }, // Test for https://github.com/transmission/transmission/issues/3591
-    } };
+    });
 
     {
         auto tm = tr_torrent_metainfo{};
@@ -278,10 +278,10 @@ TEST_F(TorrentMetainfoTest, preservesInfoDictOrder)
     //
     // These v1 hashes are calculated by hand with this command:
     // dd if=${TORRENT_FILE} skip=225 count=343 bs=1 status=none | sha1sum -b
-    static auto constexpr Tests = std::array<std::pair<std::string_view, std::string_view>, 2U>{ {
+    static auto constexpr Tests = std::to_array<std::pair<std::string_view, std::string_view>>({
         { "unordered-info-dict.torrent"sv, "e44a814ac5ed962f9181638d1136a6aface3f734"sv },
         { "perfect-pieces.torrent"sv, "efa7eb3dec5661698f353fde079418543a63e872"sv },
-    } };
+    });
 
     for (auto const& [name, v1hash] : Tests)
     {

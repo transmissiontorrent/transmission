@@ -43,7 +43,7 @@ char constexpr Usage[] = "Usage: transmission-create [options] <file|directory>"
 uint32_t constexpr KiB = 1024;
 
 using Arg = tr_option::Arg;
-auto constexpr Options = std::array<tr_option, 10>{ {
+auto constexpr Options = std::to_array<tr_option>({
     { 'p', "private", "Allow this torrent to only be used with the specified tracker(s)", "p", Arg::None, nullptr },
     { 'r', "source", "Set the source for private trackers", "r", Arg::Required, "<source>" },
     { 'o', "outfile", "Save the generated .torrent to this filename", "o", Arg::Required, "<file>" },
@@ -54,7 +54,7 @@ auto constexpr Options = std::array<tr_option, 10>{ {
     { 'x', "anonymize", R"(Omit "Creation date" and "Created by" info)", nullptr, Arg::None, nullptr },
     { 'V', "version", "Show version number and exit", "V", Arg::None, nullptr },
     { 0, nullptr, nullptr, nullptr, Arg::None, nullptr },
-} };
+});
 static_assert(Options[std::size(Options) - 2].val != 0);
 } // namespace
 

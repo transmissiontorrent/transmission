@@ -178,7 +178,7 @@ TEST_F(SessionTest, peerId)
         auto const suffix = peer_id.substr(peer_id_prefix.size());
         for (char const ch : suffix)
         {
-            auto const tmp = std::array<char, 2>{ ch, '\0' };
+            auto const tmp = std::to_array<char>({ ch, '\0' });
             val += strtoul(tmp.data(), nullptr, 36);
         }
 

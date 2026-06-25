@@ -154,8 +154,8 @@ protected:
 
     static auto ubuntuFiles()
     {
-        static auto constexpr Files = std::array<SubpathAndSize, 1>{ { { "ubuntu-20.04.4-desktop-amd64.iso"sv,
-                                                                         3379068928ULL } } };
+        static auto constexpr Files = std::to_array<SubpathAndSize>(
+            { { "ubuntu-20.04.4-desktop-amd64.iso"sv, 3379068928ULL } });
 
         auto files = tr_torrent_files{};
 

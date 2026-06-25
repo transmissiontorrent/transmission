@@ -218,7 +218,7 @@ enum
 
 using Arg = tr_option::Arg;
 static_assert(TrDefaultPeerPort == 51413, "update 'port' desc");
-auto constexpr Options = std::array<tr_option, 106>{ {
+auto constexpr Options = std::to_array<tr_option>({
     { 'a', "add", "Add torrent files by filename or URL", "a", Arg::None, nullptr },
     { 970, "alt-speed", "Use the alternate Limits", "as", Arg::None, nullptr },
     { 971, "no-alt-speed", "Don't use the alternate Limits", "AS", Arg::None, nullptr },
@@ -386,7 +386,7 @@ auto constexpr Options = std::array<tr_option, 106>{ {
     { 'Y', "no-lpd", "Disable local peer discovery (LPD)", "Y", Arg::None, nullptr },
     { 941, "peer-info", "List the current torrent(s)' peers", "pi", Arg::None, nullptr },
     { 0, nullptr, nullptr, nullptr, Arg::None, nullptr },
-} };
+});
 static_assert(Options[std::size(Options) - 2].val != 0);
 } // namespace
 
@@ -750,15 +750,15 @@ void set_preferred_transports(tr_variant::Map& args, std::string_view comma_deli
     return files;
 }
 
-auto constexpr FilesKeys = std::array<tr_quark, 4>{
+auto constexpr FilesKeys = std::to_array<tr_quark>({
     TR_KEY_files,
     TR_KEY_name,
     TR_KEY_priorities,
     TR_KEY_wanted,
-};
+});
 static_assert(FilesKeys[std::size(FilesKeys) - 1] != tr_quark{});
 
-auto constexpr DetailsKeys = std::array<tr_quark, 57>{
+auto constexpr DetailsKeys = std::to_array<tr_quark>({
     TR_KEY_activity_date,
     TR_KEY_added_date,
     TR_KEY_bandwidth_priority,
@@ -816,10 +816,10 @@ auto constexpr DetailsKeys = std::array<tr_quark, 57>{
     TR_KEY_upload_ratio,
     TR_KEY_webseeds,
     TR_KEY_webseeds_sending_to_us,
-};
+});
 static_assert(DetailsKeys[std::size(DetailsKeys) - 1] != tr_quark{});
 
-auto constexpr ListKeys = std::array<tr_quark, 15U>{
+auto constexpr ListKeys = std::to_array<tr_quark>({
     TR_KEY_added_date,
     TR_KEY_error,
     TR_KEY_error_string,
@@ -835,7 +835,7 @@ auto constexpr ListKeys = std::array<tr_quark, 15U>{
     TR_KEY_size_when_done,
     TR_KEY_status,
     TR_KEY_upload_ratio,
-};
+});
 static_assert(ListKeys[std::size(ListKeys) - 1] != tr_quark{});
 
 [[nodiscard]] size_t write_func(void* ptr, size_t size, size_t nmemb, void* vbuf)
@@ -968,12 +968,12 @@ void warn_if_unsupported_rpc_version(std::string_view const semver)
     }
 }
 
-auto constexpr BandwidthPriorityNames = std::array<std::string_view, 4>{
+auto constexpr BandwidthPriorityNames = std::to_array<std::string_view>({
     "Low"sv,
     "Normal"sv,
     "High"sv,
     "Invalid"sv,
-};
+});
 static_assert(!BandwidthPriorityNames[std::size(BandwidthPriorityNames) - 1].empty());
 
 template<size_t N>

@@ -144,7 +144,7 @@ public:
         sendToClient(sock, tr_base64_decode(b64));
     }
 
-    static auto constexpr ReservedBytesNoExtensions = std::array<uint8_t, 8>{ 0, 0, 0, 0, 0, 0, 0, 0 };
+    static auto constexpr ReservedBytesNoExtensions = std::to_array<uint8_t>({ 0, 0, 0, 0, 0, 0, 0, 0 });
     static auto constexpr PlaintextProtocolName = "\023BitTorrent protocol"sv;
 
     tr_socket_address const DefaultPeerSockAddr{ *tr_address::from_string("127.0.0.1"sv), tr_port::from_host(8080) };
@@ -165,7 +165,7 @@ public:
 
     auto createIncomingIo(tr_session* session)
     {
-        auto sockpair = std::array<evutil_socket_t, 2>{ -1, -1 };
+        auto sockpair = std::to_array<evutil_socket_t>({ -1, -1 });
         EXPECT_EQ(0, evutil_socketpair(LOCAL_SOCKETPAIR_AF, SOCK_STREAM, 0, std::data(sockpair))) << tr_strerror(errno);
         EXPECT_EQ(0, evutil_make_socket_nonblocking(sockpair[0]));
         EXPECT_EQ(0, evutil_make_socket_nonblocking(sockpair[1]));
@@ -180,7 +180,7 @@ public:
 
     auto createOutgoingIo(tr_session* session, tr_sha1_digest_t const& info_hash)
     {
-        auto sockpair = std::array<evutil_socket_t, 2>{ -1, -1 };
+        auto sockpair = std::to_array<evutil_socket_t>({ -1, -1 });
         EXPECT_EQ(0, evutil_socketpair(LOCAL_SOCKETPAIR_AF, SOCK_STREAM, 0, std::data(sockpair))) << tr_strerror(errno);
         EXPECT_EQ(0, evutil_make_socket_nonblocking(sockpair[0]));
         EXPECT_EQ(0, evutil_make_socket_nonblocking(sockpair[1]));
