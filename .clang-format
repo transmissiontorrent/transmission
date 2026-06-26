@@ -1,26 +1,37 @@
 ---
-AlignAfterOpenBracket: AlwaysBreak
-AlignConsecutiveAssignments: false
-AlignConsecutiveDeclarations: false
-AlignConsecutiveMacros: false
+AlignAfterOpenBracket: true
+AlignConsecutiveAssignments:
+  Enabled: false
+AlignConsecutiveDeclarations:
+  Enabled: false
+AlignConsecutiveMacros:
+  Enabled: false
 AlignEscapedNewlines: DontAlign
-AlignOperands: false
+AlignOperands: DontAlign
 AlignTrailingComments: false
 AllowAllArgumentsOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
 AllowShortFunctionsOnASingleLine: None
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLambdasOnASingleLine: Inline
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakBeforeMultilineStrings: true
 BinPackArguments: false
-BinPackParameters: false
-BreakBeforeBraces: Allman
+BinPackParameters: OnePerLine
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakAfterOpenBracketLoop: true
+BreakAfterOpenBracketSwitch: true
+BreakBeforeBraces: Linux
+BreakBeforeCloseBracketFunction: false
+BreakBeforeCloseBracketIf: false
+BreakBeforeCloseBracketLoop: false
+BreakBeforeCloseBracketSwitch: false
 BreakBeforeTernaryOperators: false
 BreakStringLiterals: false
 ColumnLimit: 128
 ContinuationIndentWidth: 4
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: Block
 DerivePointerAlignment: false
 ExperimentalAutoDetectBinPacking: false
 IndentCaseBlocks: true
@@ -29,12 +40,15 @@ IndentWidth: 4
 KeepEmptyLines:
   AtStartOfBlock: false
 MaxEmptyLinesToKeep: 1
+NumericLiteralCase:
+  Suffix: Upper # Matches clang-tidy readability-uppercase-literal-suffix
 PenaltyBreakAssignment: 1000
 PenaltyBreakBeforeFirstCallParameter: 0
 PenaltyReturnTypeOnItsOwnLine: 1000
 PointerAlignment: Left
 ReflowComments: Never
-SortIncludes: Never
+SortIncludes:
+  Enabled: false
 SpaceAfterCStyleCast: false
 SpacesBeforeTrailingComments: 1
 SpacesInAngles: Never
@@ -55,8 +69,18 @@ ConstructorInitializerIndentWidth: 4
 FixNamespaceComments: true
 IndentGotoLabels: false
 QualifierAlignment: Right
-SortUsingDeclarations: true # Since clang-format 16, the equivalent value is LexicographicNumeric
+SortUsingDeclarations: LexicographicNumeric
 SpaceAfterTemplateKeyword: false
+
+# Workaround. Needed until we adopt a version that includes https://github.com/llvm/llvm-project/pull/192283.
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakAfterOpenBracketLoop: true
+BreakAfterOpenBracketSwitch: true
+BreakBeforeCloseBracketFunction: false
+BreakBeforeCloseBracketIf: false
+BreakBeforeCloseBracketLoop: false
+BreakBeforeCloseBracketSwitch: false
 ---
 Language: ObjC
 
@@ -65,3 +89,26 @@ ObjCBreakBeforeNestedBlockParam: false
 ObjCSpaceBeforeProtocolList: false
 PenaltyExcessCharacter: 1
 QualifierAlignment: Right
+
+# Workaround. Needed until we adopt a version that includes https://github.com/llvm/llvm-project/pull/192283
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakAfterOpenBracketLoop: true
+BreakAfterOpenBracketSwitch: true
+BreakBeforeCloseBracketFunction: false
+BreakBeforeCloseBracketIf: false
+BreakBeforeCloseBracketLoop: false
+BreakBeforeCloseBracketSwitch: false
+---
+# Workaround. Needed until we adopt a version that includes https://github.com/llvm/llvm-project/pull/192283
+Language: C
+
+BreakAfterOpenBracketFunction: true
+BreakAfterOpenBracketIf: true
+BreakAfterOpenBracketLoop: true
+BreakAfterOpenBracketSwitch: true
+BreakBeforeCloseBracketFunction: false
+BreakBeforeCloseBracketIf: false
+BreakBeforeCloseBracketLoop: false
+BreakBeforeCloseBracketSwitch: false
+...

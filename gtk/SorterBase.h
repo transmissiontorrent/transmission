@@ -18,15 +18,12 @@ class SorterBase : public IF_GTKMM4(Gtk::Sorter, Glib::Object)
 {
 #if !GTKMM_CHECK_VERSION(4, 0, 0)
 public:
-    // clang-format off
-    enum class Change : uint8_t
-    {
+    enum class Change : uint8_t {
         DIFFERENT,
         INVERTED,
         LESS_STRICT,
         MORE_STRICT,
     };
-    // clang-format on
 #endif
 
 public:
