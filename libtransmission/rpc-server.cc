@@ -439,7 +439,7 @@ bool isHostnameAllowed(tr_rpc_server const* server, evhttp_request* const req)
 
     auto const& src = server->host_whitelist_;
     auto const hostname_sz = tr_urlbuf{ hostname };
-    return std::ranges::any_of(src, [&hostname_sz](auto const& str) { return tr_wildmat(hostname_sz, str.c_str()); });
+    return std::ranges::any_of(src, [&hostname_sz](auto const& str) { return tr_wildmat(hostname_sz.c_str(), str.c_str()); });
 }
 
 bool test_session_id(tr_rpc_server const* server, evhttp_request* const req)

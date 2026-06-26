@@ -254,12 +254,6 @@ public:
         return sv();
     }
 
-    // NOLINTNEXTLINE(google-explicit-constructor)
-    [[nodiscard]] constexpr operator auto() const noexcept
-    {
-        return c_str();
-    }
-
 private:
     /**
      * Ensure that the buffer's string is zero-terminated, e.g. for

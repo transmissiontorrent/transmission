@@ -77,7 +77,7 @@ private:
 
         // open fd for watching
         auto const szdirname = tr_pathbuf{ dirname() };
-        dirfd_ = open(szdirname, O_RDONLY | O_EVTONLY);
+        dirfd_ = open(szdirname.c_str(), O_RDONLY | O_EVTONLY);
         if (dirfd_ == -1) {
             auto const error_code = errno;
             tr_logAddError(

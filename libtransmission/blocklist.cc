@@ -58,7 +58,8 @@ using address_range_t = std::pair<tr_address, tr_address>;
 
 void save(std::string_view filename, address_range_t const* ranges, size_t n_ranges)
 {
-    auto out = std::ofstream{ tr_pathbuf{ filename }, std::ios_base::out | std::ios_base::trunc | std::ios_base::binary };
+    auto out = std::ofstream{ tr_pathbuf{ filename }.c_str(),
+                              std::ios_base::out | std::ios_base::trunc | std::ios_base::binary };
     if (!out.is_open()) {
         tr_logAddWarn(
             fmt::format(
@@ -211,7 +212,7 @@ std::optional<std::vector<address_range_t>> parseFile(std::string_view filename)
 {
     using namespace ParseHelpers;
 
-    auto in = std::ifstream{ tr_pathbuf{ filename } };
+    auto in = std::ifstream{ tr_pathbuf{ filename }.c_str() };
     if (!in.is_open()) {
         tr_logAddWarn(
             fmt::format(

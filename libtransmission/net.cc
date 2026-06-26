@@ -305,7 +305,7 @@ std::optional<tr_address> tr_address::from_string(std::string_view address_sv)
 
     auto ss = sockaddr_storage{};
     auto sslen = int{ sizeof(ss) };
-    if (evutil_parse_sockaddr_port(address_sz, reinterpret_cast<sockaddr*>(&ss), &sslen) != 0) {
+    if (evutil_parse_sockaddr_port(address_sz.c_str(), reinterpret_cast<sockaddr*>(&ss), &sslen) != 0) {
         return {};
     }
 
@@ -523,8 +523,10 @@ std::optional<tr_socket_address> tr_socket_address::from_string(std::string_view
 {
     auto ss = sockaddr_storage{};
     auto sslen = int{ sizeof(ss) };
-    if (evutil_parse_sockaddr_port(tr_strbuf<char, TrAddrStrlen>{ sockaddr_sv }, reinterpret_cast<sockaddr*>(&ss), &sslen) !=
-        0) {
+    if (evutil_parse_sockaddr_port(
+            tr_strbuf<char, TrAddrStrlen>{ sockaddr_sv }.c_str(),
+            reinterpret_cast<sockaddr*>(&ss),
+            &sslen) != 0) {
         return {};
     }
 
