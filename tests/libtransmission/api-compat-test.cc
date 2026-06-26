@@ -91,6 +91,7 @@ constexpr std::string_view LegacySessionGetResponseJson = R"json({
         "speed-limit-up-enabled": false,
         "start-added-torrents": true,
         "tcp-enabled": true,
+        "trash-can-enabled": true,
         "trash-original-torrent-files": false,
         "units": {
             "memory-bytes": 1024,
@@ -190,6 +191,7 @@ constexpr std::string_view CurrentSessionGetResponseJson = R"json({
         "speed_limit_up_enabled": false,
         "start_added_torrents": true,
         "tcp_enabled": true,
+        "trash_can_enabled": true,
         "trash_original_torrent_files": false,
         "units": {
             "memory_bytes": 1024,

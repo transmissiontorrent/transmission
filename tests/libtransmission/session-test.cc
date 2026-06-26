@@ -17,6 +17,7 @@
 #include <libtransmission/transmission.h>
 
 #include <libtransmission/crypto-utils.h>
+#include <libtransmission/file.h>
 #include <libtransmission/quark.h>
 #include <libtransmission/session-id.h>
 #include <libtransmission/session.h>
@@ -158,6 +159,25 @@ TEST_F(SessionTest, propertiesApi)
         EXPECT_EQ(value, session->blocklist_enabled());
         EXPECT_EQ(value, tr_blocklistIsEnabled(session));
     }
+}
+
+TEST_F(SessionTest, localDataRemoveFunc)
+{
+    auto* const session = session_;
+
+    // recycle-on-delete is the default
+    EXPECT_TRUE(session->trash_can_enabled());
+    EXPECT_EQ(tr_sys_path_recycle_or_remove, session->local_data_remove_func());
+
+    // disabling it switches to an unconditional unlink
+    session->set_trash_can_enabled(false);
+    EXPECT_FALSE(session->trash_can_enabled());
+    EXPECT_EQ(tr_sys_path_remove, session->local_data_remove_func());
+
+    // re-enabling it goes back to the recycle bin
+    session->set_trash_can_enabled(true);
+    EXPECT_TRUE(session->trash_can_enabled());
+    EXPECT_EQ(tr_sys_path_recycle_or_remove, session->local_data_remove_func());
 }
 
 TEST_F(SessionTest, peerId)
