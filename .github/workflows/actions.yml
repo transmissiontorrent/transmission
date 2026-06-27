@@ -322,7 +322,7 @@ jobs:
           timeout: 600
 
   clang-tidy-libtransmission:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: what-to-make
     if: |
       needs.what-to-make.outputs.make-core == 'true' ||
@@ -437,7 +437,7 @@ jobs:
           echo "matrix=$(printf "%s\n" "${jobs[@]}" | jq -sc '{include: .}')" >> "$GITHUB_OUTPUT"
 
   clang-tidy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: what-to-clang-tidy
     strategy:
       fail-fast: false

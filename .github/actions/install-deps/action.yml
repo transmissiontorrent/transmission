@@ -6,7 +6,7 @@ inputs:
     required: false
     default: 'clang'
   enable-clang-tidy:
-    description: 'Install clang-tidy-20'
+    description: 'Install clang-tidy-22'
     required: false
     default: 'false'
   enable-debugging:
@@ -80,16 +80,6 @@ runs:
             SUDO_CMD="sudo"
           fi
 
-          # Setup LLVM repo if clang-tidy is needed
-          if [[ "${{ inputs.enable-clang-tidy }}" == "true" ]]; then
-            wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | $SUDO_CMD apt-key add -
-            if [[ "$DISTRO" == "ubuntu" && "$DISTRO_VERSION" == "24.04" ]]; then
-              $SUDO_CMD add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-20 main"
-            else
-              $SUDO_CMD add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-20 main"
-            fi
-          fi
-
           $SUDO_CMD apt-get update
 
           # Base packages
@@ -135,7 +125,7 @@ runs:
 
           # clang-tidy
           if [[ "${{ inputs.enable-clang-tidy }}" == "true" ]]; then
-            BASE_PACKAGES+=(clang-tidy-20)
+            BASE_PACKAGES+=(clang-tidy-22)
           fi
 
           # Debugging tools
@@ -315,7 +305,7 @@ runs:
         # Development tools (if enabled)
         if [[ "${{ inputs.enable-clang-tidy }}" == "true" ]]; then
           echo "Static Analysis:"
-          clang-tidy-20 --version 2>/dev/null | head -1 || clang-tidy --version 2>/dev/null | head -1 || echo "clang-tidy: not found"
+          clang-tidy-22 --version 2>/dev/null | head -1 || clang-tidy --version 2>/dev/null | head -1 || echo "clang-tidy: not found"
           echo ""
         fi
 
