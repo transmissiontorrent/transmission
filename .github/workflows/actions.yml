@@ -464,13 +464,11 @@ jobs:
           - name: core
             deps: CoreDeps
             enable-qt: 'OFF'
-            enable-tests: 'ON'
             regex: '(libtransmission|libtransmission-app|tests/libtransmission)/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-core }}
           - name: qt6
             deps: Deps
             enable-qt: 'ON'
-            enable-tests: 'ON'
             regex: '(qt|tests/qt)/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-qt }}
     steps:
@@ -506,7 +504,7 @@ jobs:
             '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
             "-DCMAKE_PREFIX_PATH=`"$Env:DEPS_PREFIX`""
             '-DENABLE_QT=${{ matrix.enable-qt }}'
-            '-DENABLE_TESTS=${{ matrix.enable-tests }}'
+            '-DENABLE_TESTS=ON'
             '-DRUN_CLANG_TIDY=OFF'
             '-DUSE_SYSTEM_DEFAULT=OFF'
           )
