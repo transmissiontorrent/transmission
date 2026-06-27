@@ -46,6 +46,7 @@ Checks:
   - modernize-*
   - -modernize-avoid-c-style-cast # TODO: enable
   - -modernize-use-designated-initializers # TODO: enable
+  - -modernize-use-nullptr # TODO: enable after https://github.com/llvm/llvm-project/issues/206245 if fixed
   - -modernize-use-scoped-lock # TODO: enable
   - -modernize-use-trailing-return-type
   - performance-*

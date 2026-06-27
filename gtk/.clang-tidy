@@ -21,6 +21,7 @@ Checks:
   - hicpp-*
   - -hicpp-no-array-decay # alias of `cppcoreguidelines-pro-bounds-array-to-pointer-decay`
   - -hicpp-special-member-functions # alias of `cppcoreguidelines-special-member-functions`
+  - -hicpp-use-nullptr # alias of `modernize-use-nullptr`
   - misc-*
   - -misc-const-correctness # TODO: enable
   - -misc-include-cleaner
@@ -29,6 +30,7 @@ Checks:
   - modernize-*
   - -modernize-avoid-c-style-cast # TODO: enable
   - -modernize-use-designated-initializers # TODO: enable
+  - -modernize-use-nullptr # TODO: enable after https://github.com/llvm/llvm-project/issues/206245 if fixed
   - -modernize-use-scoped-lock # TODO: enable
   - -modernize-use-trailing-return-type
   - performance-*

@@ -33,6 +33,7 @@ Checks:
   - -hicpp-signed-bitwise
   - -hicpp-special-member-functions # alias of `cppcoreguidelines-special-member-functions`
   - -hicpp-use-equals-delete # alias of `modernize-use-equals-delete`
+  - -hicpp-use-nullptr # alias of `modernize-use-nullptr`
   - misc-*
   - -misc-const-correctness # TODO: enable
   - -misc-include-cleaner
@@ -43,6 +44,7 @@ Checks:
   - modernize-*
   - -modernize-avoid-c-style-cast # TODO: enable
   - -modernize-use-designated-initializers # TODO: enable
+  - -modernize-use-nullptr # TODO: enable after https://github.com/llvm/llvm-project/issues/206245 if fixed
   - -modernize-use-scoped-lock # TODO: enable
   - -modernize-use-trailing-return-type # keep
   - performance-*
