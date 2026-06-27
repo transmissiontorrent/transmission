@@ -80,8 +80,10 @@ runs:
             SUDO_CMD="sudo"
           fi
 
-          # Setup LLVM repo if clang-tidy is needed
-          if [[ "${{ inputs.enable-clang-tidy }}" == "true" ]]; then
+          # Setup LLVM repo if clang-tidy is needed.
+          # Ubuntu 26.04 already ships clang-tidy-20 in its own repositories,
+          # so apt.llvm.org is only needed on older releases.
+          if [[ "${{ inputs.enable-clang-tidy }}" == "true" && ! ( "$DISTRO" == "ubuntu" && "$DISTRO_VERSION" == "26.04" ) ]]; then
             wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | $SUDO_CMD apt-key add -
             if [[ "$DISTRO" == "ubuntu" && "$DISTRO_VERSION" == "24.04" ]]; then
               $SUDO_CMD add-apt-repository "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-20 main"
