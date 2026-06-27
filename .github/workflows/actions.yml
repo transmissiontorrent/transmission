@@ -363,7 +363,7 @@ jobs:
             enable-tests: false
             enabled: ${{ needs.what-to-make.outputs.tidy-gtk }}
             regex: 'gtk/.*'
-            runner: ubuntu-26.04 # 24.04 doesn't have GTKMM4_MINIMUM
+            runner: ubuntu-latest
           - toolkit: qt5
             enable-gtk: false
             enable-qt: qt5
@@ -442,7 +442,7 @@ jobs:
         with:
           build-path: obj
           regex: ${{ matrix.regex }}
-          clang-tidy-binary: clang-tidy-20
+          clang-tidy-binary: clang-tidy-22
           full-run: ${{ needs.what-to-make.outputs.tidy-everything }}
           extra-arg: '-DFMT_USE_CONSTEVAL=0'
 

@@ -15,7 +15,7 @@ inputs:
       directories so toolkit-independent files are not checked more than once.
     required: true
   clang-tidy-binary:
-    description: clang-tidy executable to use (e.g. clang-tidy-20 on Linux)
+    description: clang-tidy executable to use (e.g. clang-tidy-22 on Linux)
     default: clang-tidy
   full-run:
     description: >
@@ -39,12 +39,6 @@ runs:
       run: |
         set -euo pipefail
 
-        # Fetch the clang-tidy-diff.py that ships with LLVM 20.1.8, matching
-        # the clang-tidy-20 we install. Pinned to an exact release tag for
-        # reproducibility.
-        script_url='https://raw.githubusercontent.com/llvm/llvm-project/llvmorg-20.1.8/clang-tools-extra/clang-tidy/tool/clang-tidy-diff.py'
-        curl -fsSL "$script_url" -o clang-tidy-diff.py
-
         py="$(command -v python3 || command -v python)"
 
         if [ '${{ inputs.full-run }}' = 'true' ]; then
@@ -67,7 +61,7 @@ runs:
         fi
         set +e
         git diff -U0 "$base" HEAD \
-          | "$py" clang-tidy-diff.py \
+          | "$py" /usr/bin/clang-tidy-diff.py \
               -p1 \
               -path '${{ inputs.build-path }}' \
               -clang-tidy-binary '${{ inputs.clang-tidy-binary }}' \
