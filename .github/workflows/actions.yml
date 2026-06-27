@@ -340,9 +340,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        toolkit: [none, gtk3, gtk4, qt5, qt6]
+        toolkit: [headless, gtk3, gtk4, qt5, qt6]
         include:
-          - toolkit: none
+          - toolkit: headless
             runner: ubuntu-24.04
             enable-gtk: false
             enable-qt: false
