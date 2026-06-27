@@ -10,8 +10,9 @@ Checks:
   - -bugprone-easily-swappable-parameters
   - -bugprone-implicit-widening-of-multiplication-result
   - -bugprone-narrowing-conversions
+  - -bugprone-throwing-static-initialization
   - cert-*
-  - -cert-err58-cpp
+  - -cert-err58-cpp # alias of `bugprone-throwing-static-initialization`
   - -cert-int09-c
   - clang-analyzer-*
   - cppcoreguidelines-*

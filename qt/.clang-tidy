@@ -8,8 +8,9 @@ Checks:
   - bugprone-*
   - -bugprone-branch-clone
   - -bugprone-easily-swappable-parameters
+  - -bugprone-throwing-static-initialization
   - cert-*
-  - -cert-err58-cpp,
+  - -cert-err58-cpp # alias of `bugprone-throwing-static-initialization`
   - -cert-int09-c
   - clang-analyzer-*
   - cppcoreguidelines-*
