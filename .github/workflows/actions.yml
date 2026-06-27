@@ -346,46 +346,43 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        toolkit: [headless, gtk3, gtk4, qt5, qt6]
+        toolkit: [core, gtk3, gtk4, qt5, qt6]
         include:
-          - toolkit: headless
-            runner: ubuntu-24.04
+          - toolkit: core
             enable-gtk: false
             enable-qt: false
             enable-tests: true
-            regex: '(libtransmission|libtransmission-app|tests/libtransmission)/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-core }}
-          - toolkit: gtk3
+            regex: '(libtransmission|libtransmission-app|tests/libtransmission)/.*'
             runner: ubuntu-24.04
+          - toolkit: gtk3
             enable-gtk: gtk3
             enable-qt: false
             enable-tests: false
-            regex: 'gtk/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-gtk }}
+            regex: 'gtk/.*'
+            runner: ubuntu-24.04
           - toolkit: gtk4
-            # Ubuntu 24.04 ships gtkmm-4.0 4.10, but the project requires
-            # >= 4.11.1 (GTKMM4_MINIMUM); 26.04 is the first GA-track image new
-            # enough. install-deps installs clang-tidy-20 from the distro there.
-            runner: ubuntu-26.04
             enable-gtk: gtk4
             enable-qt: false
             enable-tests: false
-            regex: 'gtk/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-gtk }}
+            regex: 'gtk/.*'
+            runner: ubuntu-26.04 # 24.04 doesn't have GTKMM4_MINIMUM
           - toolkit: qt5
-            runner: ubuntu-24.04
             enable-gtk: false
             enable-qt: qt5
             enable-tests: true
-            regex: '(qt|tests/qt)/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-qt }}
-          - toolkit: qt6
+            regex: '(qt|tests/qt)/.*'
             runner: ubuntu-24.04
+          - toolkit: qt6
             enable-gtk: false
             enable-qt: qt6
             enable-tests: true
-            regex: '(qt|tests/qt)/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-qt }}
+            regex: '(qt|tests/qt)/.*'
+            runner: ubuntu-24.04
     steps:
       - name: Show Configuration
         run: |
@@ -460,18 +457,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        toolkit: [headless, qt6]
+        toolkit: [core, qt6]
         include:
-          - toolkit: headless
+          - toolkit: core
             deps: CoreDeps
             enable-qt: 'OFF'
-            regex: '(libtransmission|libtransmission-app|tests/libtransmission)/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-core }}
+            regex: '(libtransmission|libtransmission-app|tests/libtransmission)/.*'
           - toolkit: qt6
             deps: Deps
             enable-qt: 'ON'
-            regex: '(qt|tests/qt)/.*'
             enabled: ${{ needs.what-to-make.outputs.tidy-qt }}
+            regex: '(qt|tests/qt)/.*'
     steps:
       - name: Show Configuration
         run: |
