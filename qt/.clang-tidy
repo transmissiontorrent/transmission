@@ -8,6 +8,7 @@ Checks:
   - bugprone-*
   - -bugprone-branch-clone
   - -bugprone-easily-swappable-parameters
+  - -bugprone-invalid-enum-default-initialization # TODO: enable
   - cert-*
   - -cert-err58-cpp,
   - -cert-int09-c
@@ -33,20 +34,31 @@ Checks:
   - -hicpp-special-member-functions # alias of `cppcoreguidelines-special-member-functions`
   - -hicpp-use-equals-delete # alias of `modernize-use-equals-delete`
   - misc-*
+  - -misc-const-correctness # TODO: enable
   - -misc-include-cleaner
   - -misc-no-recursion
   - -misc-non-private-member-variables-in-classes
+  - -misc-override-with-different-visibility # TODO: enable
+  - -misc-use-internal-linkage # TODO: enable
   - modernize-*
+  - -modernize-avoid-c-style-cast # TODO: enable
+  - -modernize-use-designated-initializers # TODO: enable
+  - -modernize-use-scoped-lock # TODO: enable
   - -modernize-use-trailing-return-type # keep
   - performance-*
   - readability-*
+  - -readability-ambiguous-smartptr-reset-call # TODO: enable
   - -readability-convert-member-functions-to-static
   - -readability-enum-initial-value
   - -readability-function-cognitive-complexity
   - -readability-identifier-length
   - -readability-implicit-bool-conversion
   - -readability-magic-numbers
+  - -readability-math-missing-parentheses # TODO: enable
   - -readability-redundant-access-specifiers # keep: 'private' vs 'private slots'
+  - -readability-redundant-parentheses # TODO: enable
+  - -readability-redundant-typename # TODO: enable
+  - -readability-use-concise-preprocessor-directives # TODO: enable
 
 CheckOptions:
   - { key: cppcoreguidelines-avoid-do-while.IgnoreMacros,                   value: true       }

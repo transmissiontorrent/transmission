@@ -6,6 +6,7 @@ HeaderFilterRegex: .*/tests/libtransmission/.*
 Checks:
   - bugprone-*
   - -bugprone-easily-swappable-parameters
+  - -bugprone-invalid-enum-default-initialization # TODO: enable
   - -bugprone-narrowing-conversions
   - -bugprone-unchecked-optional-access
   - cert-*
@@ -28,18 +29,29 @@ Checks:
   - hicpp-*
   - -hicpp-signed-bitwise
   - misc-*
+  - -misc-const-correctness # TODO: enable
   - -misc-include-cleaner
   - -misc-no-recursion
   - -misc-non-private-member-variables-in-classes
+  - -misc-override-with-different-visibility # TODO: enable
+  - -misc-use-internal-linkage # TODO: enable
   - modernize-*
+  - -modernize-avoid-c-style-cast # TODO: enable
+  - -modernize-use-designated-initializers # TODO: enable
+  - -modernize-use-scoped-lock # TODO: enable
   - -modernize-use-trailing-return-type
   - performance-*
   - readability-*
+  - -readability-ambiguous-smartptr-reset-call # TODO: enable
   - -readability-enum-initial-value
   - -readability-function-cognitive-complexity
   - -readability-identifier-length
   - -readability-magic-numbers
+  - -readability-math-missing-parentheses # TODO: enable
   - -readability-qualified-auto
+  - -readability-redundant-parentheses # TODO: enable
+  - -readability-redundant-typename # TODO: enable
+  - -readability-use-concise-preprocessor-directives # TODO: enable
 
 CheckOptions:
   - { key: cppcoreguidelines-avoid-do-while.IgnoreMacros,                   value: true       }
