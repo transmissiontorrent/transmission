@@ -9,8 +9,9 @@ Checks:
   - -bugprone-branch-clone
   - -bugprone-easily-swappable-parameters
   - -bugprone-implicit-widening-of-multiplication-result
+  - -bugprone-throwing-static-initialization
   - cert-*
-  - -cert-err58-cpp
+  - -cert-err58-cpp # alias of `bugprone-throwing-static-initialization`
   - -cert-int09-c # alias of `readability-enum-initial-value`
   - clang-analyzer-*
   # -clang-analyzer-optin.core.EnumCastOutOfRange: disabled due false <filesystem> warning in file.cc calling
