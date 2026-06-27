@@ -119,7 +119,7 @@ auto reserve_if_possible(C& c, std::size_t n) -> decltype(c.reserve(n), void())
     c.reserve(n);
 }
 template<typename C>
-void reserve_if_possible(C& /*c*/, ...) // NOLINT(cert-dcl50-cpp)
+void reserve_if_possible(C& /*c*/, ...) // NOLINT(cert-dcl50-cpp, modernize-avoid-variadic-functions)
 {
 }
 
