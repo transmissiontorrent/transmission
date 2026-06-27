@@ -237,7 +237,7 @@ TEST_F(FileTest, getInfo)
     EXPECT_LE(info->last_modified_at, time(nullptr) + 1);
     tr_sys_path_remove(path1);
 
-    if (createSymlink(path1, path2, false)) {
+    if (createSymlink(path1.c_str(), path2.c_str(), false)) {
         // Can't get info of non-existent file/directory
         info = tr_sys_path_get_info(path1, 0, &err);
         EXPECT_FALSE(info.has_value());
@@ -270,7 +270,7 @@ TEST_F(FileTest, getInfo)
         // Good directory info
         t = time(nullptr);
         tr_sys_dir_create(path2, 0, 0777);
-        EXPECT_TRUE(createSymlink(path1, path2, true)); /* Win32: directory and file symlinks differ :( */
+        EXPECT_TRUE(createSymlink(path1.c_str(), path2.c_str(), true)); /* Win32: directory and file symlinks differ :( */
         info = tr_sys_path_get_info(path1, 0, &err);
         EXPECT_TRUE(info.has_value());
         assert(info.has_value());
@@ -344,7 +344,7 @@ TEST_F(FileTest, pathExists)
 
     tr_sys_path_remove(path1);
 
-    if (createSymlink(path1, path2, false)) {
+    if (createSymlink(path1.c_str(), path2.c_str(), false)) {
         // Non-existent file does not exist (via symlink)
         EXPECT_FALSE(tr_sys_path_exists(path1, &error));
         EXPECT_FALSE(error) << error;
@@ -359,7 +359,7 @@ TEST_F(FileTest, pathExists)
 
         /* Create directory and see that it exists (via symlink) */
         tr_sys_dir_create(path2, 0, 0777);
-        EXPECT_TRUE(createSymlink(path1, path2, true)); /* Win32: directory and file symlinks differ :( */
+        EXPECT_TRUE(createSymlink(path1.c_str(), path2.c_str(), true)); /* Win32: directory and file symlinks differ :( */
         EXPECT_TRUE(tr_sys_path_exists(path1, &error));
         EXPECT_FALSE(error) << error;
 
@@ -468,7 +468,7 @@ TEST_F(FileTest, pathIsSame)
     tr_sys_path_remove(path1);
     tr_sys_path_remove(path2);
 
-    if (createSymlink(path1, ".", true)) {
+    if (createSymlink(path1.c_str(), ".", true)) {
         /* Directory and symlink pointing to it are the same */
         EXPECT_TRUE(tr_sys_path_is_same(path1, test_dir.data(), &error));
         EXPECT_FALSE(error) << error;
@@ -482,7 +482,7 @@ TEST_F(FileTest, pathIsSame)
         EXPECT_FALSE(error) << error;
 
         /* Symlinks pointing to different directories are not the same */
-        createSymlink(path2, "..", true);
+        createSymlink(path2.c_str(), "..", true);
         EXPECT_FALSE(tr_sys_path_is_same(path1, path2, &error));
         EXPECT_FALSE(error) << error;
         EXPECT_FALSE(tr_sys_path_is_same(path2, path1, &error));
@@ -491,7 +491,7 @@ TEST_F(FileTest, pathIsSame)
         tr_sys_path_remove(path2);
 
         /* Symlinks pointing to same directory are the same */
-        createSymlink(path2, ".", true);
+        createSymlink(path2.c_str(), ".", true);
         EXPECT_TRUE(tr_sys_path_is_same(path1, path2, &error));
         EXPECT_FALSE(error) << error;
 
@@ -505,7 +505,7 @@ TEST_F(FileTest, pathIsSame)
         EXPECT_FALSE(error) << error;
 
         /* Symlinks pointing to same directory are the same */
-        createSymlink(path3, "..", true);
+        createSymlink(path3.c_str(), "..", true);
         EXPECT_TRUE(tr_sys_path_is_same(path1, path3, &error));
         EXPECT_FALSE(error) << error;
 
@@ -521,7 +521,7 @@ TEST_F(FileTest, pathIsSame)
         tr_sys_path_remove(path3);
 
         /* File and symlink pointing to same file are the same */
-        createSymlink(path3, path1, false);
+        createSymlink(path3.c_str(), path1.c_str(), false);
         EXPECT_TRUE(tr_sys_path_is_same(path1, path3, &error));
         EXPECT_FALSE(error) << error;
         EXPECT_TRUE(tr_sys_path_is_same(path3, path1, &error));
@@ -529,9 +529,9 @@ TEST_F(FileTest, pathIsSame)
 
         /* Symlinks pointing to non-existent files are not the same */
         tr_sys_path_remove(path1);
-        createSymlink(path1, "missing", false);
+        createSymlink(path1.c_str(), "missing", false);
         tr_sys_path_remove(path3);
-        createSymlink(path3, "missing", false);
+        createSymlink(path3.c_str(), "missing", false);
         EXPECT_FALSE(tr_sys_path_is_same(path1, path3, &error));
         EXPECT_FALSE(error) << error;
         EXPECT_FALSE(tr_sys_path_is_same(path3, path1, &error));
@@ -563,13 +563,13 @@ TEST_F(FileTest, pathIsSame)
 
     createFileWithContents(path1, "test");
 
-    if (createHardlink(path2, path1)) {
+    if (createHardlink(path2.c_str(), path1.c_str())) {
         /* File and hardlink to it are the same */
         EXPECT_TRUE(tr_sys_path_is_same(path1, path2, &error));
         EXPECT_FALSE(error) << error;
 
         /* Two hardlinks to the same file are the same */
-        createHardlink(path3, path2);
+        createHardlink(path3.c_str(), path2.c_str());
         EXPECT_TRUE(tr_sys_path_is_same(path2, path3, &error));
         EXPECT_FALSE(error) << error;
         EXPECT_TRUE(tr_sys_path_is_same(path1, path3, &error));
@@ -584,7 +584,7 @@ TEST_F(FileTest, pathIsSame)
 
         /* File and hardlink to another file are not the same */
         createFileWithContents(path3, "test");
-        createHardlink(path2, path3);
+        createHardlink(path2.c_str(), path3.c_str());
         EXPECT_FALSE(tr_sys_path_is_same(path1, path2, &error));
         EXPECT_FALSE(error) << error;
         EXPECT_FALSE(tr_sys_path_is_same(path2, path1, &error));
@@ -596,7 +596,7 @@ TEST_F(FileTest, pathIsSame)
         fmt::print(stderr, "WARNING: [{:s}] unable to run symlink tests\n", __FUNCTION__);
     }
 
-    if (createSymlink(path2, path1, false) && createHardlink(path3, path1)) {
+    if (createSymlink(path2.c_str(), path1.c_str(), false) && createHardlink(path3.c_str(), path1.c_str())) {
         EXPECT_TRUE(tr_sys_path_is_same(path2, path3, &error));
         EXPECT_FALSE(error) << error;
     } else {
@@ -620,7 +620,7 @@ TEST_F(FileTest, pathResolve)
 
     createFileWithContents(path1, "test");
 
-    if (createSymlink(path2, path1, false)) {
+    if (createSymlink(path2.c_str(), path1.c_str(), false)) {
         auto resolved = tr_sys_path_resolve(path2, &error);
         EXPECT_FALSE(error) << error;
         EXPECT_TRUE(pathContainsNoSymlinks(resolved.c_str()));
@@ -629,7 +629,7 @@ TEST_F(FileTest, pathResolve)
         tr_sys_path_remove(path1);
 
         tr_sys_dir_create(path1, 0, 0755);
-        EXPECT_TRUE(createSymlink(path2, path1, true)); /* Win32: directory and file symlinks differ :( */
+        EXPECT_TRUE(createSymlink(path2.c_str(), path1.c_str(), true)); /* Win32: directory and file symlinks differ :( */
         resolved = tr_sys_path_resolve(path2, &error);
         EXPECT_FALSE(error) << error;
         EXPECT_TRUE(pathContainsNoSymlinks(resolved.c_str()));
@@ -880,7 +880,7 @@ TEST_F(FileTest, pathRename)
 
     path3.assign(test_dir, "/c"sv);
 
-    if (createSymlink(path2, path1, false)) {
+    if (createSymlink(path2.c_str(), path1.c_str(), false)) {
         /* Preconditions */
         EXPECT_TRUE(tr_sys_path_exists(path2));
         EXPECT_FALSE(tr_sys_path_exists(path3));
@@ -898,7 +898,7 @@ TEST_F(FileTest, pathRename)
         fmt::print(stderr, "WARNING: [{:s}] unable to run symlink tests\n", __FUNCTION__);
     }
 
-    if (createHardlink(path2, path1)) {
+    if (createHardlink(path2.c_str(), path1.c_str())) {
         /* Preconditions */
         EXPECT_TRUE(tr_sys_path_exists(path2));
         EXPECT_FALSE(tr_sys_path_exists(path3));
@@ -999,11 +999,11 @@ TEST_F(FileTest, fileCopy)
     createFileWithContents(path1, Contents);
 
     // source file exists but is inaccessible
-    (void)chmod(path1, 0);
+    (void)chmod(path1.c_str(), 0);
     EXPECT_FALSE(tr_sys_path_copy(path1, test_dir, &error));
     EXPECT_TRUE(error);
     error = {};
-    (void)chmod(path1, 0600);
+    (void)chmod(path1.c_str(), 0600);
 
     // source file exists but target is invalid
     EXPECT_FALSE(tr_sys_path_copy(path1, test_dir, &error));
@@ -1053,7 +1053,7 @@ TEST_F(FileTest, fileOpen)
     EXPECT_FALSE(error) << error;
     tr_sys_file_close(fd);
     EXPECT_TRUE(tr_sys_path_exists(path1));
-    EXPECT_TRUE(validatePermissions(path1, 0640));
+    EXPECT_TRUE(validatePermissions(path1.c_str(), 0640));
 
     // can open existing file
     EXPECT_TRUE(tr_sys_path_exists(path1));
@@ -1218,7 +1218,7 @@ TEST_F(FileTest, dirCreate)
     EXPECT_TRUE(tr_sys_dir_create(path1, 0, 0700, &error));
     EXPECT_FALSE(error) << error;
     EXPECT_TRUE(tr_sys_path_exists(path1));
-    EXPECT_TRUE(validatePermissions(path1, 0700));
+    EXPECT_TRUE(validatePermissions(path1.c_str(), 0700));
 
     tr_sys_path_remove(path1);
     createFileWithContents(path1, "test");
@@ -1244,8 +1244,8 @@ TEST_F(FileTest, dirCreate)
     EXPECT_FALSE(error) << error;
     EXPECT_TRUE(tr_sys_path_exists(path1));
     EXPECT_TRUE(tr_sys_path_exists(path2));
-    EXPECT_TRUE(validatePermissions(path1, 0751));
-    EXPECT_TRUE(validatePermissions(path2, 0751));
+    EXPECT_TRUE(validatePermissions(path1.c_str(), 0751));
+    EXPECT_TRUE(validatePermissions(path2.c_str(), 0751));
 
     // Can create existing directory (no-op)
     EXPECT_TRUE(tr_sys_dir_create(path1, 0, 0700, &error));

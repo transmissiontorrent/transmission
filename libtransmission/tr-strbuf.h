@@ -90,16 +90,6 @@ public:
         return buffer_.end();
     }
 
-    [[nodiscard]] constexpr Char& at(size_t pos) noexcept
-    {
-        return buffer_[pos];
-    }
-
-    [[nodiscard]] constexpr Char at(size_t pos) const noexcept
-    {
-        return buffer_[pos];
-    }
-
     [[nodiscard]] constexpr Char& operator[](size_t pos) noexcept
     {
         return buffer_[pos];
@@ -262,12 +252,6 @@ public:
     [[nodiscard]] constexpr operator std::basic_string_view<Char>() const noexcept
     {
         return sv();
-    }
-
-    // NOLINTNEXTLINE(google-explicit-constructor)
-    [[nodiscard]] constexpr operator auto() const noexcept
-    {
-        return c_str();
     }
 
 private:

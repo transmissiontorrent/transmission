@@ -88,7 +88,7 @@ private:
             return;
         }
 
-        inwd_ = inotify_add_watch(infd_, tr_pathbuf{ dirname() }, InotifyWatchMask | IN_ONLYDIR);
+        inwd_ = inotify_add_watch(infd_, tr_pathbuf{ dirname() }.c_str(), InotifyWatchMask | IN_ONLYDIR);
         if (inwd_ == -1) {
             auto const error_code = errno;
             tr_logAddError(

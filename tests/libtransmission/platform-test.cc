@@ -83,7 +83,7 @@ TEST_F(PlatformTest, defaultConfigDirXdgConfigHome)
     unsetenv("TRANSMISSION_HOME");
     unsetenv("XDG_CONFIG_HOME");
     auto const home = tr_pathbuf{ sandboxDir(), "/home/user" };
-    setenv("HOME", home, 1);
+    setenv("HOME", home.c_str(), 1);
 
     auto const expected = fmt::format("{:s}/.config/appname", home.sv());
     auto const actual = tr_getDefaultConfigDir("appname");

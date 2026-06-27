@@ -568,7 +568,7 @@ TEST_F(DhtTest, usesBootstrapFile)
     // which tr-dht will try to ping as nodes
     static auto constexpr BootstrapNodeName = "91.121.74.28"sv;
     static auto constexpr BootstrapNodePort = tr_port::from_host(8080);
-    if (auto ofs = std::ofstream{ tr_pathbuf{ sandboxDir(), "/dht.bootstrap" } }; ofs) {
+    if (auto ofs = std::ofstream{ tr_pathbuf{ sandboxDir(), "/dht.bootstrap" }.c_str() }; ofs) {
         ofs << BootstrapNodeName << ' ' << BootstrapNodePort.host() << '\n';
         ofs.close();
     }

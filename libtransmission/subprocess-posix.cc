@@ -65,7 +65,7 @@ void set_system_error(tr_error* error, int code, std::string_view what)
         }
     }
 
-    if (!std::empty(work_dir) && chdir(tr_pathbuf{ work_dir }) == -1) {
+    if (!std::empty(work_dir) && chdir(tr_pathbuf{ work_dir }.c_str()) == -1) {
         return false;
     }
 
