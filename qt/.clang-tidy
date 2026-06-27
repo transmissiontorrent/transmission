@@ -38,6 +38,7 @@ Checks:
   - misc-*
   - -misc-const-correctness # TODO: enable
   - -misc-include-cleaner
+  - -misc-multiple-inheritance # TODO: enable?
   - -misc-no-recursion
   - -misc-non-private-member-variables-in-classes
   - -misc-override-with-different-visibility # TODO: enable

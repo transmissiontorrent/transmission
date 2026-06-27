@@ -25,6 +25,7 @@ Checks:
   - misc-*
   - -misc-const-correctness # TODO: enable
   - -misc-include-cleaner
+  - -misc-multiple-inheritance # TODO: enable?
   - -misc-override-with-different-visibility # TODO: enable
   - -misc-use-internal-linkage # TODO: enable
   - modernize-*
