@@ -12,7 +12,7 @@ Checks:
   - -bugprone-implicit-widening-of-multiplication-result
   - cert-*
   - -cert-err58-cpp
-  - -cert-int09-c
+  - -cert-int09-c # alias of `readability-enum-initial-value`
   - clang-analyzer-*
   # -clang-analyzer-optin.core.EnumCastOutOfRange: disabled due false <filesystem> warning in file.cc calling
   # std::filesystem::last_write_time() on windows ci builds with MSVC STL 14.44.35207.
