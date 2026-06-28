@@ -102,11 +102,6 @@ jobs:
         uses: actions/checkout@v6
         with:
           submodules: recursive
-      - name: Get NPM
-        if: ${{ needs.what-to-make.outputs.make-web == 'true' }}
-        uses: actions/setup-node@v6
-        with:
-          node-version: lts/*
       - name: Check for style diffs
         id: check-for-diffs
         working-directory: .
