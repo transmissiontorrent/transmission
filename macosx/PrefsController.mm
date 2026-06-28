@@ -242,7 +242,7 @@ static NSString* const kWebUIURLFormat = @"http://localhost:%ld/";
     [self updatePortStatus];
 
     __weak __auto_type weakSelf = self;
-    self.fPortStatusTimer = [NSTimer scheduledTimerWithTimeInterval:5.0 repeats:YES block:^(NSTimer* _Nonnull timer) {
+    self.fPortStatusTimer = [NSTimer scheduledTimerWithTimeInterval:5.0 repeats:YES block:^(NSTimer* _Nonnull) {
         [weakSelf updatePortStatus];
     }];
 

@@ -55,7 +55,7 @@ static tr_session* fLib = NULL;
     [self updateStats];
 
     __weak __auto_type weakSelf = self;
-    self.fTimer = [NSTimer scheduledTimerWithTimeInterval:kUpdateSeconds repeats:YES block:^(NSTimer* _Nonnull timer) {
+    self.fTimer = [NSTimer scheduledTimerWithTimeInterval:kUpdateSeconds repeats:YES block:^(NSTimer* _Nonnull) {
         [weakSelf updateStats];
     }];
     [NSRunLoop.currentRunLoop addTimer:self.fTimer forMode:NSModalPanelRunLoopMode];
