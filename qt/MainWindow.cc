@@ -219,25 +219,26 @@ MainWindow::MainWindow(Session& session, Prefs& prefs, TorrentModel& model, bool
     connect(&filter_model_, &TorrentFilter::rowsRemoved, this, refresh_header_soon);
     connect(ui_.listView, &TorrentView::headerDoubleClicked, filter_bar, &FilterBar::clear);
 
-    static std::array<tr_quark, 17> constexpr InitKeys = {
+    static auto constexpr InitKeys = std::to_array<tr_quark>({
         TR_KEY_alt_speed_enabled, //
         TR_KEY_compact_view, //
-        TR_KEY_speed_limit_down, //
-        TR_KEY_speed_limit_down_enabled, //
-        TR_KEY_show_filterbar, //
+        TR_KEY_main_window_is_maximized, //
         TR_KEY_main_window_x, //
+        TR_KEY_read_clipboard, //
         TR_KEY_seed_ratio_limit, //
         TR_KEY_seed_ratio_limited, //
-        TR_KEY_read_clipboard, //
+        TR_KEY_show_filterbar, //
         TR_KEY_show_notification_area_icon, //
+        TR_KEY_show_statusbar, //
+        TR_KEY_show_toolbar, //
         TR_KEY_sort_mode, //
         TR_KEY_sort_reversed, //
-        TR_KEY_show_statusbar, //
-        TR_KEY_statusbar_stats, //
-        TR_KEY_show_toolbar, //
+        TR_KEY_speed_limit_down, //
+        TR_KEY_speed_limit_down_enabled, //
         TR_KEY_speed_limit_up, //
         TR_KEY_speed_limit_up_enabled, //
-    };
+        TR_KEY_statusbar_stats, //
+    });
     for (auto const key : InitKeys) {
         refreshPref(key);
     }
@@ -1128,6 +1129,15 @@ void MainWindow::refreshPref(tr_quark const key)
             prefs_.get<int>(TR_KEY_main_window_y),
             prefs_.get<int>(TR_KEY_main_window_width),
             prefs_.get<int>(TR_KEY_main_window_height));
+        break;
+
+    case TR_KEY_main_window_is_maximized:
+        if (prefs_.get<bool>(key)) {
+            // Set the state rather than calling showMaximized() so a window
+            // that is hidden (e.g. started minimized to tray) stays hidden
+            // until it is explicitly shown.
+            setWindowState(windowState() | Qt::WindowMaximized);
+        }
         break;
 
     case TR_KEY_alt_speed_enabled:
