@@ -155,7 +155,7 @@ static NSUInteger const kMaxQueueLength = 10000U;
 {
     if (!self.fTimer) {
         __weak __auto_type weakSelf = self;
-        self.fTimer = [NSTimer scheduledTimerWithTimeInterval:kUpdateSeconds repeats:YES block:^(NSTimer* _Nonnull timer) {
+        self.fTimer = [NSTimer scheduledTimerWithTimeInterval:kUpdateSeconds repeats:YES block:^(NSTimer* _Nonnull) {
             [weakSelf updateLog];
         }];
         [self updateLog];
@@ -182,7 +182,7 @@ static NSUInteger const kMaxQueueLength = 10000U;
 {
     [self.fTimer invalidate];
     __weak __auto_type weakSelf = self;
-    self.fTimer = [NSTimer scheduledTimerWithTimeInterval:kUpdateSeconds repeats:YES block:^(NSTimer* _Nonnull timer) {
+    self.fTimer = [NSTimer scheduledTimerWithTimeInterval:kUpdateSeconds repeats:YES block:^(NSTimer* _Nonnull) {
         [weakSelf updateLog];
     }];
     [self updateLog];
