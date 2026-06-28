@@ -74,6 +74,7 @@ runs:
               -regex '${{ inputs.regex }}' \
               -only-check-in-db \
               -allow-no-checks \
+              -quiet \
               "${extra[@]}" \
               -j 0 \
               2>&1 | tee clang-tidy.log

@@ -25,11 +25,6 @@
 #include "TrQtInit.h"
 #include "qt-test-fixtures.h"
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
-#define QCOMPARE_EQ(actual, expected) QCOMPARE(actual, expected)
-#define QCOMPARE_NE(actual, expected) QVERIFY((actual) != (expected))
-#endif
-
 using namespace std::literals;
 
 Q_DECLARE_METATYPE(tr_quark)
@@ -66,22 +61,22 @@ class PrefsTest
     template<typename T>
     void verify_get_set_by_property(Prefs& prefs, tr_quark const key, T const& val1, T const& val2)
     {
-        QCOMPARE_NE(val1, val2);
+        TRCOMPARE_NE(val1, val2);
 
         prefs.set(key, val1);
-        QCOMPARE_EQ(prefs.get<T>(key), val1);
-        QCOMPARE_NE(prefs.get<T>(key), val2);
+        TRCOMPARE_EQ(prefs.get<T>(key), val1);
+        TRCOMPARE_NE(prefs.get<T>(key), val2);
 
         prefs.set(key, val2);
-        QCOMPARE_NE(prefs.get<T>(key), val1);
-        QCOMPARE_EQ(prefs.get<T>(key), val2);
+        TRCOMPARE_NE(prefs.get<T>(key), val1);
+        TRCOMPARE_EQ(prefs.get<T>(key), val2);
     }
 
     template<typename T>
     void verify_get_by_json(Prefs& prefs, tr_quark const key, T const& val, std::string_view const valstr)
     {
         prefs.set(key, val);
-        QCOMPARE_EQ(prefs.get<T>(key), val);
+        TRCOMPARE_EQ(prefs.get<T>(key), val);
         verify_json_contains(prefs.current_settings(), prefs.keyval(key).first, valstr);
     }
 
@@ -99,7 +94,7 @@ class PrefsTest
         QVERIFY(map);
         if (map) {
             auto const prefs = Prefs{ *map };
-            QCOMPARE_EQ(prefs.get<T>(key), val);
+            TRCOMPARE_EQ(prefs.get<T>(key), val);
         }
     }
 
@@ -108,7 +103,7 @@ class PrefsTest
         auto serde = tr_variant_serde::json();
         serde.compact();
         auto const str = serde.to_string(var);
-        QCOMPARE_EQ(str, std::string{ expected });
+        TRCOMPARE_EQ(str, std::string{ expected });
     }
 
 private slots:
@@ -116,12 +111,12 @@ private slots:
     {
         auto prefs = Prefs{};
 
-        QCOMPARE_EQ(prefs.get<ShowMode>(TR_KEY_filter_mode), DefaultShowMode);
-        QCOMPARE_EQ(prefs.get<SortMode>(TR_KEY_sort_mode), DefaultSortMode);
-        QCOMPARE_EQ(prefs.get<StatsMode>(TR_KEY_statusbar_stats), DefaultStatsMode);
-        QCOMPARE_EQ(prefs.get<std::chrono::sys_seconds>(TR_KEY_blocklist_date), std::chrono::sys_seconds{});
-        QCOMPARE_EQ(prefs.get<bool>(TR_KEY_torrent_complete_sound_enabled), true);
-        QCOMPARE_EQ(prefs.get<bool>(TR_KEY_show_statusbar), true);
+        TRCOMPARE_EQ(prefs.get<ShowMode>(TR_KEY_filter_mode), DefaultShowMode);
+        TRCOMPARE_EQ(prefs.get<SortMode>(TR_KEY_sort_mode), DefaultSortMode);
+        TRCOMPARE_EQ(prefs.get<StatsMode>(TR_KEY_statusbar_stats), DefaultStatsMode);
+        TRCOMPARE_EQ(prefs.get<std::chrono::sys_seconds>(TR_KEY_blocklist_date), std::chrono::sys_seconds{});
+        TRCOMPARE_EQ(prefs.get<bool>(TR_KEY_torrent_complete_sound_enabled), true);
+        TRCOMPARE_EQ(prefs.get<bool>(TR_KEY_show_statusbar), true);
     }
 
     void handles_bool()
@@ -264,7 +259,7 @@ private slots:
             prefs.set(Key, Val);
 
             auto const [key, var] = prefs.keyval(Key);
-            QCOMPARE_EQ(key, TR_KEY_main_window_height);
+            TRCOMPARE_EQ(key, static_cast<tr_quark>(TR_KEY_main_window_height));
             verify_variant_json(var, fmt::format("{}", Val));
         }
 
@@ -274,7 +269,7 @@ private slots:
             prefs.set(Key, val);
 
             auto const [key, var] = prefs.keyval(Key);
-            QCOMPARE_EQ(key, TR_KEY_download_dir);
+            TRCOMPARE_EQ(key, static_cast<tr_quark>(TR_KEY_download_dir));
             verify_variant_json(var, fmt::format(R"("{}")", val.toStdString()));
         }
     }
@@ -319,7 +314,7 @@ private slots:
         auto const new_value = !old_value;
         prefs.set(QuarkKey, new_value);
 
-        QCOMPARE_EQ(prefs.get<bool>(QuarkKey), new_value);
+        TRCOMPARE_EQ(prefs.get<bool>(QuarkKey), new_value);
         QCOMPARE(quark_spy.count(), 1);
         QCOMPARE(quark_spy.first().at(0).value<tr_quark>(), static_cast<tr_quark>(QuarkKey));
 
@@ -337,7 +332,7 @@ private slots:
         auto const current_value = prefs.get<bool>(QuarkKey);
         prefs.set(QuarkKey, tr_variant{ "wrong-type"sv });
 
-        QCOMPARE_EQ(prefs.get<bool>(QuarkKey), current_value);
+        TRCOMPARE_EQ(prefs.get<bool>(QuarkKey), current_value);
         QCOMPARE(quark_spy.count(), 0);
     }
 
@@ -378,18 +373,18 @@ private slots:
         prefs.save(settings_file);
 
         auto saved = tr::settings::load(settings_file.toStdString());
-        QCOMPARE_NE(saved.size(), 0U);
+        TRCOMPARE_NE(saved.size(), 0U);
         QVERIFY(!saved.contains(TR_KEY_filter_text));
 
         auto const custom_value = saved.value_if<int64_t>(custom_key);
         QVERIFY(custom_value.has_value());
-        QCOMPARE_EQ(custom_value, 123);
+        TRCOMPARE_EQ(custom_value, 123);
 
         auto round_tripped = Prefs{ saved };
-        QCOMPARE_EQ(round_tripped.get<QString>(TR_KEY_download_dir), download_dir);
-        QCOMPARE_EQ(round_tripped.get<SortMode>(TR_KEY_sort_mode), SortMode::SortByQueue);
-        QCOMPARE_EQ(round_tripped.get<std::chrono::sys_seconds>(TR_KEY_blocklist_date), blocklist_date);
-        QCOMPARE_EQ(round_tripped.get<QString>(TR_KEY_filter_text), QString{});
+        TRCOMPARE_EQ(round_tripped.get<QString>(TR_KEY_download_dir), download_dir);
+        TRCOMPARE_EQ(round_tripped.get<SortMode>(TR_KEY_sort_mode), SortMode::SortByQueue);
+        TRCOMPARE_EQ(round_tripped.get<std::chrono::sys_seconds>(TR_KEY_blocklist_date), blocklist_date);
+        TRCOMPARE_EQ(round_tripped.get<QString>(TR_KEY_filter_text), QString{});
     }
 
     static void is_core_classifies_core_keys()

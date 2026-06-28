@@ -5,9 +5,46 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include <QTemporaryDir>
+#include <QTest>
+
+#include <fmt/format.h>
+
+#include <libtransmission/converters.h>
+#include <libtransmission/variant.h>
 
 #include "TrQtInit.h"
+#include "VariantHelpers.h"
+
+// QCOMPARE_EQ / QCOMPARE_NE only exist in Qt >= 6.3, but Transmission still
+// supports Qt 5.15. These give equivalent comparisons (fuzzy for floats) and,
+// on failure, render both operands as JSON via the serializer. Distinct `T`/`U`
+// allow mixed operand types; an operand without a Converter is a compile error.
+template<typename T, typename U>
+void trcompare(T const& actual, U const& expected, bool const negate)
+{
+    auto ok = bool{};
+    if constexpr (std::is_floating_point_v<T> && std::is_floating_point_v<U>) {
+        ok = qFuzzyCompare(actual, expected);
+    } else {
+        ok = actual == expected;
+    }
+
+    if (negate ? !ok : ok) {
+        return;
+    }
+
+    auto serde = tr_variant_serde::json();
+    serde.compact();
+    auto const actual_str = serde.to_string(tr::serializer::to_variant(actual));
+    auto const expected_str = serde.to_string(tr::serializer::to_variant(expected));
+    QFAIL(fmt::format("got '{:s}', expected '{:s}'", actual_str, expected_str).c_str());
+}
+
+#define TRCOMPARE_EQ(actual, expected) trcompare((actual), (expected), false)
+#define TRCOMPARE_NE(actual, expected) trcompare((actual), (expected), true)
 
 class BasicTest
 {

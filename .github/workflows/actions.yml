@@ -343,6 +343,7 @@ jobs:
     # changed since the merge base, so each cell needs to generate code (Qt moc/
     # uic) but never compiles the whole target. The matrix.enabled flag (wired to
     # the what-to-make tidy-* outputs) skips cells whose area did not change.
+    # TODO: try removing '-DFMT_USE_CONSTEVAL=0' either when upgrading clang or fmt
     strategy:
       fail-fast: false
       matrix:
@@ -444,6 +445,7 @@ jobs:
           regex: ${{ matrix.regex }}
           clang-tidy-binary: clang-tidy-20
           full-run: ${{ needs.what-to-make.outputs.tidy-everything }}
+          extra-arg: '-DFMT_USE_CONSTEVAL=0'
 
   clang-tidy-windows:
     runs-on: windows-2025
