@@ -100,6 +100,12 @@ struct tau_scrape_request {
         return !!on_response_;
     }
 
+    // scrape responses are protocol-agnostic, so any connected protocol will do
+    [[nodiscard]] static constexpr bool wants_protocol(tr_address_type /*ip_protocol*/) noexcept
+    {
+        return true;
+    }
+
     void request_finished() const
     {
         if (on_response_) {
@@ -146,8 +152,6 @@ struct tau_scrape_request {
     tau_transaction_t const transaction_id = tau_transaction_new();
 
     tr_scrape_response response = {};
-
-    static auto constexpr ip_protocol = TR_AF_UNSPEC; // NOLINT(readability-identifier-naming)
 
 private:
     time_t const created_at_ = tr_time();
@@ -210,7 +214,7 @@ struct tau_announce_request {
         std::optional<tr_address> announce_ip,
         tr_announce_request const& in,
         std::shared_ptr<tau_announce_data> data)
-        : ip_protocol{ ip_protocol_in }
+        : ip_protocol_{ ip_protocol_in }
         , data_{ std::move(data) }
     {
         // https://www.bittorrent.org/beps/bep_0015.html sets key size at 32 bits
@@ -243,6 +247,12 @@ struct tau_announce_request {
     [[nodiscard]] auto has_callback() const noexcept
     {
         return !!data_;
+    }
+
+    // an announce request is sent on a single, specific protocol
+    [[nodiscard]] constexpr bool wants_protocol(tr_address_type ipp) const noexcept
+    {
+        return ipp == ip_protocol_;
     }
 
     void fail(bool did_connect, bool did_timeout, std::string_view errmsg)
@@ -298,7 +308,6 @@ struct tau_announce_request {
 
     PayloadBuffer payload;
 
-    tr_address_type const ip_protocol;
     time_t sent_at = 0;
     tau_transaction_t const transaction_id = tau_transaction_new();
 
@@ -324,6 +333,7 @@ private:
 
     time_t const created_at_ = tr_time();
 
+    tr_address_type const ip_protocol_;
     std::shared_ptr<tau_announce_data> data_;
 };
 
@@ -543,7 +553,7 @@ private:
             auto& req = *it;
 
             if (req.sent_at != 0 || // it's already been sent; we're awaiting a response
-                !maybe_send_request(req.ip_protocol, std::data(req.payload), std::size(req.payload), now)) {
+                !maybe_send_request(req, now)) {
                 ++it;
                 continue;
             }
@@ -560,17 +570,18 @@ private:
         }
     }
 
-    bool maybe_send_request(tr_address_type ip_protocol, std::byte const* payload, size_t payload_len, time_t now)
+    template<typename T>
+    bool maybe_send_request(T const& req, time_t now)
     {
         for (uint8_t ipp = 0; ipp < NUM_TR_AF_INET_TYPES; ++ipp) {
             auto const ipp_enum = static_cast<tr_address_type>(ipp);
-            if (addr_[ipp] && (ip_protocol == TR_AF_UNSPEC || ipp == ip_protocol) && is_connected(ipp_enum, now)) {
+            if (addr_[ipp] && req.wants_protocol(ipp_enum) && is_connected(ipp_enum, now)) {
                 auto const conn_id = connection_id[ipp];
                 logdbg(log_name(), fmt::format("sending request w/connection id {}", conn_id));
 
                 auto buf = PayloadBuffer{};
                 buf.add_uint64(conn_id);
-                buf.add(payload, payload_len);
+                buf.add(std::data(req.payload), std::size(req.payload));
 
                 sendto(ipp_enum, std::data(buf), std::size(buf));
                 return true;
