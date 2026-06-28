@@ -8,8 +8,8 @@
     "build": "node esbuild.mjs"
   },
   "devDependencies": {
-    "esbuild": "^0.27.3",
-    "esbuild-sass-plugin": "^3.3.1"
+    "esbuild": "^0.28.1",
+    "esbuild-sass-plugin": "^3.7.0"
   },
   "dependencies": {
     "clusterize.js": "^1.0.0",
