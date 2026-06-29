@@ -10,6 +10,7 @@
 #include <cstring> // memcpy()
 #include <ctime>
 #include <deque>
+#include <exception>
 #include <fstream>
 #include <map>
 #include <memory>
@@ -162,7 +163,13 @@ public:
         // Since we only save known good nodes,
         // only overwrite older data if we know enough nodes.
         if (is_ready(AF_INET) || is_ready(AF_INET6)) {
-            save_state();
+            try {
+                save_state();
+            } catch (std::exception const& e) {
+                tr_logAddError(fmt::format("Failed to uninitialize DHT: {:s}", e.what()));
+            } catch (...) {
+                tr_logAddError("Failed to uninitialize DHT: unknown error");
+            }
         }
 
         mediator_.api().uninit();
