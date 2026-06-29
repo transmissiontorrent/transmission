@@ -238,7 +238,7 @@ void set_error_color(
 
     auto color = Gdk::RGBA();
     if (torrent.get_error_code() != tr_stat::Error::Ok &&
-        (flags & TR_GTK_CELL_RENDERER_STATE(SELECTED)) == Gtk::CellRendererState{} &&
+        (flags & TR_GTK_CELL_RENDERER_STATE(SELECTED)) == static_cast<Gtk::CellRendererState>(0) &&
         widget.get_style_context()->lookup_color(error_color_name, color)) {
         text_renderer.property_foreground_rgba() = color;
     } else {
