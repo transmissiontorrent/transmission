@@ -216,6 +216,7 @@ bool to_value(tr_variant const& src, T* const ptgt)
 template<typename T>
 [[nodiscard]] std::optional<T> to_value(tr_variant const& var)
 {
+    // NOLINTNEXTLINE(bugprone-invalid-enum-default-initialization): for `T{}`
     if (auto ret = T{}; to_value<T>(var, &ret)) {
         return ret;
     }

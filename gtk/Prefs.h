@@ -37,7 +37,7 @@ template<typename T>
     return std::nullopt;
 }
 
-template<typename T>
+template<typename T> // NOLINTNEXTLINE(bugprone-invalid-enum-default-initialization)
 [[nodiscard]] T gtr_pref_get(tr_quark const key, T default_value = {})
 {
     if (auto val = gtr_pref_lookup<T>(key)) {
