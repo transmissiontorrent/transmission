@@ -45,7 +45,6 @@ Checks:
   - portability-*
   - -portability-template-virtual-member-function
   - readability-*
-  - -readability-enum-initial-value
   - -readability-function-cognitive-complexity
   - -readability-identifier-length
   - -readability-magic-numbers
