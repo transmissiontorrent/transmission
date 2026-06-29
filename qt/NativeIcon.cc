@@ -4,7 +4,7 @@
 // License text can be found in the licenses/ folder.
 
 #include "NativeIcon.h"
-#include "QtCompat.h"
+#include "Utils.h"
 
 #include <optional>
 #include <string_view>
@@ -446,7 +446,7 @@ QIcon icon(Type const type, QStyle const* const style)
 #if defined(Q_OS_MAC)
     if (auto const key = info.sf_symbol_name; !std::empty(key)) {
         auto icon = QIcon{};
-        auto const name = QString::fromUtf8(std::data(key), std::size(key));
+        auto const name = Utils::qstringFromUtf8(key);
         for (int const pixel_size : pixel_sizes) {
             if (auto const pixmap = loadSFSymbol(name, pixel_size); !pixmap.isNull()) {
                 icon.addPixmap(pixmap);
@@ -474,7 +474,7 @@ QIcon icon(Type const type, QStyle const* const style)
     }
 
     if (auto const key = info.xdg_icon_name; !std::empty(key)) {
-        auto const name = QString::fromUtf8(std::data(key), static_cast<IF_QT6(qsizetype, int)>(std::size(key)));
+        auto const name = Utils::qstringFromUtf8(key);
 
         if (auto icon = QIcon::fromTheme(name); !icon.isNull()) {
             return icon;

@@ -23,7 +23,7 @@ template<typename String>
 [[nodiscard]] QByteArray toQBA(String const& str)
 {
     auto const sv = std::string_view{ str };
-    return { sv.data(), static_cast<IF_QT6(qsizetype, int)>(sv.size()) };
+    return { sv.data(), static_cast<QtrSizeArgType>(sv.size()) };
 }
 
 class FakeReply final : public QNetworkReply

@@ -5,11 +5,10 @@
 
 #pragma once
 
+#include <string_view>
 #include <utility>
 
 #include <QPointer>
-#include <QRect>
-#include <QSpinBox>
 #include <QString>
 
 class QAbstractItemView;
@@ -17,22 +16,19 @@ class QColor;
 class QHeaderView;
 class QIcon;
 class QModelIndex;
+class QRect;
+class QSpinBox;
 
 class Utils
 {
 public:
     static QIcon getIconFromIndex(QModelIndex const& index);
 
+    [[nodiscard]] static QString qstringFromUtf8(std::string_view str);
+
     static QString removeTrailingDirSeparator(QString const& path);
 
-    static void narrowRect(QRect& rect, int dx1, int dx2, Qt::LayoutDirection direction)
-    {
-        if (direction == Qt::RightToLeft) {
-            qSwap(dx1, dx2);
-        }
-
-        rect.adjust(dx1, 0, -dx2, 0);
-    }
+    static void narrowRect(QRect& rect, int dx1, int dx2, Qt::LayoutDirection direction);
 
     static int measureViewItem(QAbstractItemView const* view, QString const& text);
     static int measureHeaderItem(QHeaderView const* view, QString const& text);

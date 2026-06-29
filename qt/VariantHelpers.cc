@@ -21,6 +21,7 @@
 #include "QtCompat.h"
 #include "Speed.h"
 #include "Torrent.h"
+#include "Utils.h"
 
 namespace ser = tr::serializer;
 
@@ -48,9 +49,7 @@ bool change(TrackerStat& setme, tr_variant const* value)
             auto const announce_str = setme.announce.toStdString();
             if (auto const parsed = tr_urlParse(announce_str)) {
                 auto const sitename = parsed->sitename;
-                setme.sitename = QString::fromUtf8(
-                    std::data(sitename),
-                    static_cast<IF_QT6(qsizetype, int)>(std::size(sitename)));
+                setme.sitename = QString::fromUtf8(std::data(sitename), static_cast<QtrSizeArgType>(std::size(sitename)));
             }
         }
 
@@ -68,7 +67,7 @@ namespace
 bool toQString(tr_variant const& src, QString* tgt)
 {
     if (auto const val = src.value_if<std::string_view>()) {
-        *tgt = QString::fromUtf8(std::data(*val), static_cast<IF_QT6(qsizetype, int)>(std::size(*val)));
+        *tgt = Utils::qstringFromUtf8(*val);
         return true;
     }
 

@@ -35,7 +35,6 @@
 #include "OptionsDialog.h"
 #include "Prefs.h"
 #include "PrefsDialog.h"
-#include "QtCompat.h"
 #include "RelocateDialog.h"
 #include "Session.h"
 #include "SessionDialog.h"

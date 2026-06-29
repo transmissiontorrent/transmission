@@ -1258,7 +1258,7 @@ void DetailsDialog::onAddTrackerClicked()
     for (auto const& info : announce_list) {
         // for each selected torrent...
         auto sv = info.announce.sv();
-        auto const announce_url = QString::fromUtf8(std::data(sv), static_cast<IF_QT6(qsizetype, int)>(std::size(sv)));
+        auto const announce_url = Utils::qstringFromUtf8(sv);
         for (auto const& id : ids_) {
             // make a note if the torrent doesn't already have the URL
             if (tracker_model_->find(id, announce_url) == -1) {
@@ -1279,7 +1279,7 @@ void DetailsDialog::onAddTrackerClicked()
     } else {
         for (auto const& [ids, urls] : ids_to_urls) {
             auto urls_list = QList<QString>{};
-            urls_list.reserve(static_cast<IF_QT6(qsizetype, int)>(std::size(urls)));
+            urls_list.reserve(static_cast<QtrSizeArgType>(std::size(urls)));
             for (auto const& url : urls) {
                 urls_list << url;
             }

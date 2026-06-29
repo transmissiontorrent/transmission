@@ -14,7 +14,6 @@
 #include <libtransmission-app/favicon-cache.h>
 
 #include "Formatter.h"
-#include "QtCompat.h"
 #include "Torrent.h"
 #include "TrackerDelegate.h"
 #include "TrackerModel.h"
@@ -194,10 +193,7 @@ QString TrackerDelegate::getText(TrackerInfo const& inf) const
     str += inf.st.is_backup ? QStringLiteral("<i>") : QStringLiteral("<b>");
     auto const announce_url = inf.st.announce.toStdString();
     if (auto const parsed = tr_urlParse(announce_url); parsed) {
-        str += QStringLiteral("%1:%2")
-                   .arg(
-                       QString::fromUtf8(std::data(parsed->host), static_cast<IF_QT6(qsizetype, int)>(std::size(parsed->host))))
-                   .arg(parsed->port);
+        str += QStringLiteral("%1:%2").arg(Utils::qstringFromUtf8(parsed->host)).arg(parsed->port);
     }
     str += inf.st.is_backup ? QStringLiteral("</i>") : QStringLiteral("</b>");
 
