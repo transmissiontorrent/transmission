@@ -20,9 +20,9 @@
 #include <gtkmm/filechooserbutton.h>
 #endif
 
-#include <list>
 #include <memory>
 #include <string>
+#include <vector>
 
 class PathButton : public IF_GTKMM4(Gtk::Button, Gtk::FileChooserButton)
 {
@@ -37,7 +37,7 @@ public:
     PathButton& operator=(PathButton const&) = delete;
     ~PathButton() override;
 
-    void set_shortcut_folders(std::list<std::string> const& value);
+    void set_recent_paths(std::vector<Glib::ustring> const& value);
 
 #if GTKMM_CHECK_VERSION(4, 0, 0)
     std::string get_filename() const;

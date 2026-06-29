@@ -112,7 +112,6 @@ void OptionsDialog::Impl::addResponseCB(int response)
                 gtr_file_trash_or_remove(filename_, nullptr);
             }
 
-            gtr_save_recent_dir("download", core_, downloadDir_);
             tor_ = nullptr;
         }
     }
@@ -260,7 +259,7 @@ OptionsDialog::Impl::Impl(
 
     auto* destination_chooser = gtr_get_widget_derived<PathButton>(builder, "destination_button");
     destination_chooser->set_filename(downloadDir_);
-    destination_chooser->set_shortcut_folders(gtr_get_recent_dirs("download"));
+    destination_chooser->set_recent_paths(core_->get_recent_download_paths());
 
     destination_chooser->signal_selection_changed().connect(
         [this, destination_chooser]() { downloadDirChanged(destination_chooser); });

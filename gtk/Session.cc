@@ -1205,6 +1205,58 @@ void Session::blocklist_update()
 
 // ---
 
+std::vector<Glib::ustring> Session::get_recent_download_paths() const
+{
+    return get_recent_dirs(TR_KEY_recent_download_paths);
+}
+
+std::vector<Glib::ustring> Session::get_recent_relocate_paths() const
+{
+    return get_recent_dirs(TR_KEY_recent_relocate_paths);
+}
+
+std::vector<Glib::ustring> Session::get_recent_dirs(tr_quark const key) const
+{
+    using Traits = PrefsStringTraits<Glib::ustring>;
+
+    auto dirs = std::vector<Glib::ustring>{};
+    auto done = false;
+
+    // ask the session for just this one field
+    auto fields = tr_variant::Vector{};
+    fields.emplace_back(tr_variant::unmanaged_string(tr_quark_get_string_view(key)));
+    auto params = tr_variant::Map{ 1U };
+    params.try_emplace(TR_KEY_fields, std::move(fields));
+
+    impl_->send_rpc_request(TR_KEY_session_get, std::move(params), [&dirs, &done, key](tr_variant& response) {
+        if (auto const* resmap = response.get_if<tr_variant::Map>()) {
+            if (auto const* result = resmap->find_if<tr_variant::Map>(TR_KEY_result)) {
+                if (auto const* recent = result->find_if<tr_variant::Vector>(key)) {
+                    dirs.reserve(std::size(*recent));
+                    for (auto const& dir : *recent) {
+                        if (auto const sv = dir.value_if<std::string_view>()) {
+                            dirs.emplace_back(Traits::from_utf8(*sv));
+                        }
+                    }
+                }
+            }
+        }
+
+        done = true;
+    });
+
+    // the response callback is dispatched on the main loop's idle queue,
+    // so pump the main context until it has run
+    auto const context = Glib::MainContext::get_default();
+    while (!done) {
+        context->iteration(true);
+    }
+
+    return dirs;
+}
+
+// ---
+
 void Session::exec(tr_quark method, tr_variant&& params)
 {
     impl_->send_rpc_request(method, std::move(params), {});

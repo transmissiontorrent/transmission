@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace
 {
@@ -144,9 +145,6 @@ void RelocateDialog::Impl::onResponse(int response)
         /* remember this location for the next torrent */
         targetLocation = location;
 
-        /* remember this location so that it can be the default next time */
-        gtr_save_recent_dir("relocate", core_, location);
-
         /* start the move and periodically check its status */
         done_ = TR_LOC_DONE;
         timer_ = Glib::signal_timeout().connect_seconds(sigc::mem_fun(*this, &Impl::onTimer), 1);
@@ -194,16 +192,15 @@ RelocateDialog::Impl::Impl(
     dialog_.set_default_response(TR_GTK_RESPONSE_TYPE(CANCEL));
     dialog_.signal_response().connect(sigc::mem_fun(*this, &Impl::onResponse));
 
-    auto recent_dirs = gtr_get_recent_dirs("relocate");
+    auto const recent_dirs = core_->get_recent_relocate_paths();
     if (recent_dirs.empty()) {
         /* default to download dir */
         chooser_->set_filename(gtr_pref_string_get(TR_KEY_download_dir));
     } else {
         /* set last used as target */
-        chooser_->set_filename(recent_dirs.front());
-        recent_dirs.pop_front();
+        chooser_->set_filename(recent_dirs.front().raw());
 
-        /* add remaining as shortcut */
-        chooser_->set_shortcut_folders(recent_dirs);
+        /* offer the rest as recent destinations */
+        chooser_->set_recent_paths(recent_dirs);
     }
 }
