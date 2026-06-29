@@ -138,7 +138,7 @@ void MakeProgressDialog::onProgress()
         } else {
             auto err_msg = QString::fromUtf8(
                 std::data(error.message()),
-                static_cast<IF_QT6(qsizetype, int)>(std::size(error.message())));
+                static_cast<QtrSizeArgType>(std::size(error.message())));
             str = tr("Couldn't create \"%1\": %2 (%3)").arg(base).arg(err_msg).arg(error.code());
         }
     }

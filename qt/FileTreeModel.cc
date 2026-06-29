@@ -28,7 +28,7 @@ namespace
 class PathIteratorBase
 {
 protected:
-    PathIteratorBase(QString const& path, IF_QT6(qsizetype, int) const slash_index)
+    PathIteratorBase(QString const& path, QtrSizeArgType const slash_index)
         : path_{ path }
         , slash_index_{ slash_index }
     {
@@ -37,7 +37,7 @@ protected:
 
     QString const& path_;
     QString token_;
-    IF_QT6(qsizetype, int) slash_index_;
+    QtrSizeArgType slash_index_;
 
     static QChar const SlashChar;
 };

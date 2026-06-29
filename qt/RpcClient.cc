@@ -23,7 +23,7 @@
 #include <libtransmission/transmission.h>
 #include <libtransmission/version.h> // LONG_VERSION_STRING
 
-#include "QtCompat.h"
+#include "Utils.h"
 #include "VariantHelpers.h"
 
 using ::trqt::variant_helpers::dictFind;
@@ -296,12 +296,12 @@ RpcResponse RpcClient::parseResponseData(tr_variant& response) const
 
         if (auto* error_map = response_map->find_if<tr_variant::Map>(TR_KEY_error)) {
             if (auto const errmsg = error_map->value_if<std::string_view>(TR_KEY_message)) {
-                ret.errmsg = QString::fromUtf8(std::data(*errmsg), static_cast<IF_QT6(qsizetype, int)>(std::size(*errmsg)));
+                ret.errmsg = Utils::qstringFromUtf8(*errmsg);
             }
 
             if (auto* const data = error_map->find_if<tr_variant::Map>(TR_KEY_data)) {
                 if (auto const errstr = data->value_if<std::string_view>(TR_KEY_error_string)) {
-                    ret.errmsg = QString::fromUtf8(std::data(*errstr), static_cast<IF_QT6(qsizetype, int)>(std::size(*errstr)));
+                    ret.errmsg = Utils::qstringFromUtf8(*errstr);
                 }
 
                 if (auto* const result = data->find_if<tr_variant::Map>(TR_KEY_result)) {

@@ -38,11 +38,11 @@
 #include "AddData.h"
 #include "Filters.h"
 #include "Prefs.h"
-#include "QtCompat.h"
 #include "RpcQueue.h"
 #include "SessionDialog.h"
 #include "Torrent.h"
 #include "UserMetaType.h"
+#include "Utils.h"
 #include "VariantHelpers.h"
 
 using namespace std::literals;
@@ -296,8 +296,7 @@ void Session::start()
 
         auto const root_path = prefs_.get<QString>(TR_KEY_remote_session_url_base_path);
         auto const relative_path = TrHttpServerRpcRelativePath;
-        url.setPath(
-            root_path + QString::fromUtf8(relative_path.data(), static_cast<IF_QT6(qsizetype, int)>(relative_path.size())));
+        url.setPath(root_path + Utils::qstringFromUtf8(relative_path));
 
         if (prefs_.get<bool>(TR_KEY_remote_session_requires_authentication)) {
             url.setUserName(prefs_.get<QString>(TR_KEY_remote_session_username));
@@ -836,9 +835,7 @@ void Session::addTorrent(AddData const& add_me, tr_variant::Map args_dict)
 
                 if (auto const iter = dup->find(TR_KEY_hash_string); iter != dup->end()) {
                     if (auto const hash = iter->second.value_if<std::string_view>()) {
-                        duplicates_.try_emplace(
-                            add_me.readableShortName(),
-                            QString::fromUtf8(std::data(*hash), static_cast<IF_QT6(qsizetype, int)>(std::size(*hash))));
+                        duplicates_.try_emplace(add_me.readableShortName(), Utils::qstringFromUtf8(*hash));
                         duplicates_timer_.start(1000);
                     }
                 }
@@ -934,8 +931,7 @@ void Session::launchWebInterface() const
 
         auto const root_path = prefs_.get<QString>(TR_KEY_remote_session_url_base_path);
         auto const relative_path = TrHttpServerWebRelativePath;
-        url.setPath(
-            root_path + QString::fromUtf8(relative_path.data(), static_cast<IF_QT6(qsizetype, int)>(relative_path.size())));
+        url.setPath(root_path + Utils::qstringFromUtf8(relative_path));
     } else // local session
     {
         url.setScheme(QStringLiteral("http"));

@@ -3,6 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
+#include <string_view>
+
 #include <QAbstractItemView>
 #include <QApplication>
 #include <QColor>
@@ -18,11 +20,15 @@
 #include <QMimeType>
 #include <QObject>
 #include <QPixmapCache>
+#include <QRect>
+#include <QSpinBox>
 #include <QStyle>
 
 #include <libtransmission/transmission.h>
 
 #include "Utils.h"
+
+#include "QtCompat.h"
 
 // ---
 
@@ -55,6 +61,11 @@ QIcon Utils::getIconFromIndex(QModelIndex const& index)
     default:
         return {};
     }
+}
+
+QString Utils::qstringFromUtf8(std::string_view const str)
+{
+    return QString::fromUtf8(str.data(), static_cast<QtrSizeArgType>(str.size()));
 }
 
 QString Utils::removeTrailingDirSeparator(QString const& path)
@@ -116,4 +127,13 @@ void Utils::updateSpinBoxFormat(QSpinBox* spinBox, char const* context, char con
     if (spinBox->suffix() != units_suffix) {
         spinBox->setSuffix(units_suffix);
     }
+}
+
+void Utils::narrowRect(QRect& rect, int dx1, int dx2, Qt::LayoutDirection direction)
+{
+    if (direction == Qt::RightToLeft) {
+        qSwap(dx1, dx2);
+    }
+
+    rect.adjust(dx1, 0, -dx2, 0);
 }

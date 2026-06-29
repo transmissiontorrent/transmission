@@ -19,8 +19,8 @@
 
 #include <libtransmission-app/prefs.h>
 
-#include "QtCompat.h"
 #include "UserMetaType.h"
+#include "Utils.h"
 #include "VariantHelpers.h"
 
 namespace tr::app
@@ -29,7 +29,7 @@ template<>
 struct PrefsStringTraits<QString> {
     [[nodiscard]] static QString from_utf8(std::string_view const str)
     {
-        return QString::fromUtf8(std::data(str), static_cast<IF_QT6(qsizetype, int)>(std::size(str)));
+        return Utils::qstringFromUtf8(str);
     }
 
     [[nodiscard]] static QString home_dir()
