@@ -35,7 +35,6 @@ Checks:
   - portability-*
   - -portability-template-virtual-member-function # TODO: Enable after https://github.com/llvm/llvm-project/issues/139031 is fixed
   - readability-*
-  - -readability-enum-initial-value
   - -readability-function-cognitive-complexity
   - -readability-identifier-length
   - -readability-magic-numbers

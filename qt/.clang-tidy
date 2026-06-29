@@ -39,7 +39,6 @@ Checks:
   - performance-*
   - readability-*
   - -readability-convert-member-functions-to-static
-  - -readability-enum-initial-value
   - -readability-function-cognitive-complexity
   - -readability-identifier-length
   - -readability-implicit-bool-conversion

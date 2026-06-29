@@ -33,7 +33,6 @@ Checks: >
   -modernize-use-trailing-return-type,
   performance-*,
   readability-*,
-  -readability-enum-initial-value,
   -readability-function-cognitive-complexity,
   -readability-identifier-length,
   -readability-magic-numbers,
