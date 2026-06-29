@@ -7,7 +7,6 @@
 
 #include "GtkCompat.h"
 #include "PathButton.h"
-#include "Prefs.h" /* gtr_pref_string_get */
 #include "Session.h"
 #include "Utils.h"
 
@@ -192,15 +191,9 @@ RelocateDialog::Impl::Impl(
     dialog_.set_default_response(TR_GTK_RESPONSE_TYPE(CANCEL));
     dialog_.signal_response().connect(sigc::mem_fun(*this, &Impl::onResponse));
 
-    auto const recent_dirs = core_->get_recent_relocate_paths();
-    if (recent_dirs.empty()) {
-        /* default to download dir */
-        chooser_->set_filename(gtr_pref_string_get(TR_KEY_download_dir));
-    } else {
-        /* set last used as target */
-        chooser_->set_filename(recent_dirs.front().raw());
-
-        /* offer the rest as recent destinations */
-        chooser_->set_recent_paths(recent_dirs);
+    auto const recent_paths = core_->get_recent_relocate_paths();
+    chooser_->set_recent_paths(recent_paths);
+    if (!recent_paths.empty()) {
+        chooser_->set_filename(recent_paths.front().raw());
     }
 }
