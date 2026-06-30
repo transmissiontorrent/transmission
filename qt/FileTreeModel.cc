@@ -442,9 +442,9 @@ void FileTreeModel::twiddleWanted(QModelIndexList const& indices)
         wanted_indices[item->isSubtreeWanted() != Qt::Checked] << i;
     }
 
-    for (int i = 0; i <= 1; ++i) {
-        if (wanted_indices.contains(i)) {
-            setWanted(wanted_indices[i], i != 0);
+    for (auto const wanted : { false, true }) {
+        if (wanted_indices.contains(wanted)) {
+            setWanted(wanted_indices[wanted], wanted);
         }
     }
 }
