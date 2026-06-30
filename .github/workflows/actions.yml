@@ -126,8 +126,8 @@ jobs:
           echo "When CI is done, the above patch will be uploaded as 'code-style.diff' to https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/ ."
           exit 1
 
-  sanitizer-tests-ubuntu:
-    runs-on: ubuntu-24.04
+  sanitizer-tests-linux:
+    runs-on: ubuntu-latest
     needs: [ what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
     steps:
@@ -145,6 +145,7 @@ jobs:
         with:
           compiler: clang
           enable-debugging: true
+          enable-qt: qt6
           use-sudo: true
       - name: Configure
         run: |
@@ -162,7 +163,7 @@ jobs:
             -DENABLE_DAEMON=OFF \
             -DENABLE_GTK=OFF \
             -DENABLE_MAC=OFF \
-            -DENABLE_QT=OFF \
+            -DENABLE_QT=ON \
             -DENABLE_TESTS=ON \
             -DENABLE_UTILS=ON \
             -DREBUILD_WEB=OFF \
@@ -181,6 +182,9 @@ jobs:
           build-dir: obj
           build-config: Debug
           enable-sanitizers: true
+          # disable container-overflow reports to avoid false errors
+          # that are caused by Qt libraries not being asan instrumented
+          extra-asan-options: detect_container_overflow=0
 
   sanitizer-tests-macos:
     runs-on: macos-26
@@ -345,14 +349,14 @@ jobs:
             enable-tests: true
             enabled: ${{ needs.what-to-make.outputs.tidy-core }}
             regex: '(libtransmission|libtransmission-app|tests/libtransmission)/.*'
-            runner: ubuntu-24.04
+            runner: ubuntu-latest
           - toolkit: gtk3
             enable-gtk: gtk3
             enable-qt: false
             enable-tests: false
             enabled: ${{ needs.what-to-make.outputs.tidy-gtk }}
             regex: 'gtk/.*'
-            runner: ubuntu-24.04
+            runner: ubuntu-latest
           - toolkit: gtk4
             enable-gtk: gtk4
             enable-qt: false
@@ -366,14 +370,14 @@ jobs:
             enable-tests: true
             enabled: ${{ needs.what-to-make.outputs.tidy-qt }}
             regex: '(qt|tests/qt)/.*'
-            runner: ubuntu-24.04
+            runner: ubuntu-latest
           - toolkit: qt6
             enable-gtk: false
             enable-qt: qt6
             enable-tests: true
             enabled: ${{ needs.what-to-make.outputs.tidy-qt }}
             regex: '(qt|tests/qt)/.*'
-            runner: ubuntu-24.04
+            runner: ubuntu-latest
     steps:
       - name: Show Configuration
         run: |
@@ -817,7 +821,7 @@ jobs:
           path: obj/dist/msi/*.msi
 
   make-source-tarball:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [ what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-source-tarball == 'true' }}
     steps:
@@ -832,10 +836,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             ca-certificates \
-            cmake \
             libcurl4-openssl-dev \
-            libssl-dev \
-            ninja-build
+            libssl-dev
       - name: Get Source
         uses: actions/checkout@v6
         with:
@@ -1264,10 +1266,10 @@ jobs:
       run: |
         gradle build
 
-  ubuntu-24-04-cxx-23:
+  cxx23:
     needs: [ what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     steps:
       - name: Show Configuration
         run: |
@@ -1751,99 +1753,6 @@ jobs:
               -DUSE_SYSTEM_SMALL=OFF `# Not packaged in NetBSD` \
               -DUSE_SYSTEM_UTP=OFF `# Not packaged in NetBSD` \
               -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in NetBSD`
-            cmake --build obj --config RelWithDebInfo
-            if [ '${{ needs.what-to-make.outputs.make-tests }}' = 'true' ]; then
-              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config RelWithDebInfo --output-on-failure
-            fi
-            cmake --install obj --config RelWithDebInfo --strip
-            rm -rf obj src
-      - uses: actions/upload-artifact@v6
-        with:
-          name: binaries-${{ github.job }}
-          path: pfx/**/*
-
-  dragonflybsd:
-    needs: [ make-source-tarball, what-to-make ]
-    if: |
-      needs.what-to-make.outputs.make-cli == 'true' ||
-      needs.what-to-make.outputs.make-daemon == 'true' ||
-      needs.what-to-make.outputs.make-gtk == 'true' ||
-      needs.what-to-make.outputs.make-qt == 'true' ||
-      needs.what-to-make.outputs.make-tests == 'true' ||
-      needs.what-to-make.outputs.make-utils == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Show Configuration
-        run: |
-          echo '${{ toJSON(needs) }}'
-          echo '${{ toJSON(runner) }}'
-      - name: Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-      - name: Get Source
-        uses: actions/download-artifact@v7
-        with:
-          name: source-tarball
-      - name: Extract, Build, Test and Install
-        uses: vmactions/dragonflybsd-vm@v1
-        with:
-          usesh: true
-          prepare: |
-            set -ex
-            uname -a
-            pkg update
-            pkg upgrade -y
-            pkg install -y \
-              curl \
-              cmake \
-              `# dht (somehow installing dht causes the build to fail with a bunch of "/usr/local/lib/libdht.so: error: undefined reference to 'dht_*'" messages` \
-              fast_float \
-              gcc14 \
-              gettext \
-              `[ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] && echo gtkmm30` \
-              libb64 \
-              libdeflate \
-              libevent \
-              libfmt \
-              libnatpmp \
-              libpsl \
-              miniupnpc \
-              ninja \
-              pkgconf \
-              `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-svg qt6-tools` \
-              rapidjson \
-              utf8cpp
-          run: |
-            set -ex
-            export TMPDIR=/var/tmp # gcc's LTO takes up a lot of space in TMPDIR, and /tmp is too small
-            export LANG=en_US.UTF-8 # Qt requires UTF-8 locales
-            mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
-            cmake \
-              -S src \
-              -B obj \
-              -G Ninja \
-              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-              -DCMAKE_CXX_COMPILER='/usr/local/bin/g++14' \
-              -DCMAKE_C_COMPILER='/usr/local/bin/gcc14' \
-              -DCMAKE_BUILD_RPATH='/usr/local/lib/gcc14' \
-              -DCMAKE_INSTALL_PREFIX=pfx \
-              -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
-              -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
-              -DENABLE_GTK=${{ (needs.what-to-make.outputs.make-gtk == 'true') && 'ON' || 'OFF' }} \
-              -DENABLE_QT=${{ (needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }} \
-              -DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }} \
-              -DENABLE_UTILS=${{ (needs.what-to-make.outputs.make-utils == 'true') && 'ON' || 'OFF' }} \
-              -DREBUILD_WEB=OFF `# Installing esbuild via npm is not supported on DragonFlyBSD, the full list of supported platforms can be found at https://esbuild.github.io/getting-started/#download-a-build` \
-              -DENABLE_WERROR=ON \
-              -DRUN_CLANG_TIDY=OFF \
-              -DUSE_SYSTEM_DEFAULT=ON \
-              -DUSE_SYSTEM_DHT=OFF `# DragonflyBSD port does not work` \
-              -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in DragonflyBSD` \
-              -DUSE_SYSTEM_SMALL=OFF `# Not packaged in DragonflyBSD` \
-              -DUSE_SYSTEM_UTP=OFF `# Not packaged in DragonflyBSD` \
-              -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in DragonflyBSD`
             cmake --build obj --config RelWithDebInfo
             if [ '${{ needs.what-to-make.outputs.make-tests }}' = 'true' ]; then
               QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config RelWithDebInfo --output-on-failure
