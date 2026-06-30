@@ -126,8 +126,8 @@ jobs:
           echo "When CI is done, the above patch will be uploaded as 'code-style.diff' to https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/ ."
           exit 1
 
-  sanitizer-tests-ubuntu:
-    runs-on: ubuntu-24.04
+  sanitizer-tests-linux:
+    runs-on: ubuntu-latest
     needs: [ what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
     steps:
@@ -145,6 +145,7 @@ jobs:
         with:
           compiler: clang
           enable-debugging: true
+          enable-qt: qt6
           use-sudo: true
       - name: Configure
         run: |
@@ -162,7 +163,7 @@ jobs:
             -DENABLE_DAEMON=OFF \
             -DENABLE_GTK=OFF \
             -DENABLE_MAC=OFF \
-            -DENABLE_QT=OFF \
+            -DENABLE_QT=ON \
             -DENABLE_TESTS=ON \
             -DENABLE_UTILS=ON \
             -DREBUILD_WEB=OFF \
@@ -181,6 +182,9 @@ jobs:
           build-dir: obj
           build-config: Debug
           enable-sanitizers: true
+          # disable container-overflow reports to avoid false errors
+          # that are caused by Qt libraries not being asan instrumented
+          extra-asan-options: detect_container_overflow=0
 
   sanitizer-tests-macos:
     runs-on: macos-26
