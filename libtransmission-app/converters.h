@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_APP_CONVERTERS_H
+#define TR_APP_CONVERTERS_H
 
 #include <chrono>
 
@@ -26,3 +27,5 @@ TR_DECLARE_CONVERTER(tr::app::StatsMode)
 TR_DECLARE_CONVERTER(std::chrono::sys_seconds)
 
 } // namespace tr::serializer
+
+#endif // TR_APP_CONVERTERS_H

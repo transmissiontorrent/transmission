@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TR_BUFFER_H
+#define TR_LIB_TR_BUFFER_H
 
 #include <algorithm> // for std::copy_n
 #include <cstddef> // size_t
@@ -274,3 +275,5 @@ private:
 };
 
 } // namespace tr
+
+#endif // TR_LIB_TR_BUFFER_H

@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_LRU_CACHE_H
+#define TR_LIB_LRU_CACHE_H
 
 #include <array>
 #include <cstddef> // size_t
@@ -113,3 +114,5 @@ private:
     uint64_t next_sequence_ = 1U;
     static uint64_t constexpr InvalidSeq = 0U;
 };
+
+#endif // TR_LIB_LRU_CACHE_H

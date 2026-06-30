@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_FILE_H
+#define TR_LIB_FILE_H
 
 #include <cstdint> // uint64_t
 #include <ctime> // time_t
@@ -506,3 +507,5 @@ bool tr_sys_dir_close(tr_sys_dir_t handle, tr_error* error = nullptr);
 
 /** @} */
 /** @} */
+
+#endif // TR_LIB_FILE_H

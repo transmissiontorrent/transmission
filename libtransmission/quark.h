@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_QUARK_H
+#define TR_LIB_QUARK_H
 
 #include <cstddef> // size_t
 #include <optional>
@@ -773,3 +774,5 @@ enum // NOLINT(performance-enum-size)
  * created.
  */
 [[nodiscard]] tr_quark tr_quark_new(std::string_view str);
+
+#endif // TR_LIB_QUARK_H

@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_PEER_MGR_WISHLIST_H
+#define TR_LIB_PEER_MGR_WISHLIST_H
 
 #ifndef LIBTRANSMISSION_PEER_MODULE
 #error only the libtransmission peer module should #include this header.
@@ -349,3 +350,5 @@ private:
 
     Mediator& mediator_;
 };
+
+#endif // TR_LIB_PEER_MGR_WISHLIST_H

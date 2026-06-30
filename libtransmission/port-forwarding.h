@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_PORT_FORWARDING_H
+#define TR_LIB_PORT_FORWARDING_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -43,3 +44,5 @@ public:
     virtual void local_port_changed() = 0;
     virtual void set_enabled(bool enabled) = 0;
 };
+
+#endif // TR_LIB_PORT_FORWARDING_H

@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TORRENT_QUEUE_H
+#define TR_LIB_TORRENT_QUEUE_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -71,3 +72,5 @@ private:
 
     Mediator const& mediator_;
 };
+
+#endif // TR_LIB_TORRENT_QUEUE_H

@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_WATCHDIR_H
+#define TR_LIB_WATCHDIR_H
 
 #include <chrono>
 #include <functional>
@@ -61,3 +62,5 @@ private:
 };
 
 } // namespace tr
+
+#endif // TR_LIB_WATCHDIR_H

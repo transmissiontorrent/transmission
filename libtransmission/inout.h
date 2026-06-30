@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_INOUT_H
+#define TR_LIB_INOUT_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -43,3 +44,5 @@ struct tr_torrent;
  * @brief Test to see if the piece matches its metainfo's SHA1 checksum.
  */
 [[nodiscard]] bool tr_ioTestPiece(tr_torrent const& tor, tr_piece_index_t piece);
+
+#endif // TR_LIB_INOUT_H

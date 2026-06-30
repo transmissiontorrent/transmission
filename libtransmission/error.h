@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_ERROR_H
+#define TR_LIB_ERROR_H
 
 #include <string>
 #include <string_view>
@@ -74,3 +75,5 @@ private:
     /** @brief Error code, platform-specific */
     tr_error_code_t code_ = 0;
 };
+
+#endif // TR_LIB_ERROR_H

@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_PEER_IO_H
+#define TR_LIB_PEER_IO_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -374,3 +375,5 @@ private:
     bool extended_protocol_supported_ = false;
     bool fast_extension_supported_ = false;
 };
+
+#endif // TR_LIB_PEER_IO_H

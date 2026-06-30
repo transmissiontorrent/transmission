@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_APP_APP_H
+#define TR_APP_APP_H
 
 namespace tr::app
 {
@@ -12,3 +13,5 @@ namespace tr::app
 void init();
 
 } // namespace tr::app
+
+#endif // TR_APP_APP_H

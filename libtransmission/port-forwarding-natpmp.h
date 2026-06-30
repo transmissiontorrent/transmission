@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_PORT_FORWARDING_NATPMP_H
+#define TR_LIB_PORT_FORWARDING_NATPMP_H
 
 #ifndef LIBTRANSMISSION_PORT_FORWARDING_MODULE
 #error only the libtransmission port forwarding module should #include this header.
@@ -71,3 +72,5 @@ private:
     bool has_discovered_ = false;
     bool is_mapped_ = false;
 };
+
+#endif // TR_LIB_PORT_FORWARDING_NATPMP_H

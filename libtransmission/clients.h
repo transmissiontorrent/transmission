@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_CLIENTS_H
+#define TR_LIB_CLIENTS_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -18,3 +19,5 @@
  * @ingroup utils
  */
 void tr_clientForId(char* buf, size_t buflen, tr_peer_id_t peer_id);
+
+#endif // TR_LIB_CLIENTS_H

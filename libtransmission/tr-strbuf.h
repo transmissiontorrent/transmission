@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TR_STRBUF_H
+#define TR_LIB_TR_STRBUF_H
 
 #include <cstddef>
 #include <string_view>
@@ -294,3 +295,5 @@ using tr_urlbuf = tr_strbuf<char, 2000>;
  * https://stackoverflow.com/a/65174437
  */
 using tr_pathbuf = tr_strbuf<char, 4096>;
+
+#endif // TR_LIB_TR_STRBUF_H

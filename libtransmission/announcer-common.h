@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_ANNOUNCER_COMMON_H
+#define TR_LIB_ANNOUNCER_COMMON_H
 
 #ifndef LIBTRANSMISSION_ANNOUNCER_MODULE
 #error only the libtransmission announcer module should #include this header.
@@ -230,3 +231,5 @@ struct tr_scrape_response {
      * this is an unofficial extension that some trackers won't support. */
     time_t min_request_interval;
 };
+
+#endif // TR_LIB_ANNOUNCER_COMMON_H

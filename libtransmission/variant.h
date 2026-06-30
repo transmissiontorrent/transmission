@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_VARIANT_H
+#define TR_LIB_VARIANT_H
 
 #include <algorithm> // std::move()
 #include <cstddef> // size_t
@@ -577,3 +578,5 @@ tr_variant* tr_variantDictAddStrView(tr_variant* var, tr_quark key, std::string_
 tr_variant* tr_variantDictFind(tr_variant* var, tr_quark key);
 tr_variant* tr_variantListChild(tr_variant* var, size_t pos);
 void tr_variantMergeDicts(tr_variant* tgt, tr_variant const* src);
+
+#endif // TR_LIB_VARIANT_H

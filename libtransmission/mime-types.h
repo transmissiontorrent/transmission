@@ -6,7 +6,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_MIME_TYPES_H
+#define TR_LIB_MIME_TYPES_H
 
 #include <array>
 #include <string_view>
@@ -1264,3 +1265,5 @@ inline auto constexpr MimeTypeSuffixes = std::to_array<mime_type_suffix>({
     { .suffix = R"(zirz)", .mime_type = R"(application/vnd.zul)" },
     { .suffix = R"(zmm)", .mime_type = R"(application/vnd.handheld-entertainment+xml)" },
 });
+
+#endif // TR_LIB_MIME_TYPES_H

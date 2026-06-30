@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TR_GETOPT_H
+#define TR_LIB_TR_GETOPT_H
 
 #include <cstdint>
 
@@ -51,3 +52,5 @@ int tr_getopt(char const* usage, int argc, char const* const* argv, tr_option co
 void tr_getopt_usage(char const* app_name, char const* description, tr_option const* opts);
 
 /** @} */
+
+#endif // TR_LIB_TR_GETOPT_H

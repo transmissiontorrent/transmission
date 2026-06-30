@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_ERROR_TYPES_H
+#define TR_LIB_ERROR_TYPES_H
 
 #ifdef _WIN32
 #include <cstdint>
@@ -54,3 +55,5 @@ constexpr bool tr_error_is_enospc(tr_error_code_t code) noexcept
     return code == ENOSPC;
 #endif
 }
+
+#endif // TR_LIB_ERROR_TYPES_H

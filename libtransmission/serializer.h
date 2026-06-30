@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_SERIALIZER_H
+#define TR_LIB_SERIALIZER_H
 
 #include <algorithm>
 #include <array>
@@ -501,3 +502,5 @@ template<Serializable S, Serializable... Ss>
 }
 
 } // namespace tr::serializer
+
+#endif // TR_LIB_SERIALIZER_H

@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_CONVERTERS_H
+#define TR_LIB_CONVERTERS_H
 
 #include <array>
 #include <chrono>
@@ -439,3 +440,5 @@ bool to_optional(tr_variant const& src, std::optional<T>* ptgt)
 
 } // namespace detail
 } // namespace tr::serializer
+
+#endif // TR_LIB_CONVERTERS_H

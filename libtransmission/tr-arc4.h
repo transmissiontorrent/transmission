@@ -2,7 +2,8 @@
 // It may be used under the 3-clause BSD (SPDX: BSD-3-Clause).
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TR_ARC4_H
+#define TR_LIB_TR_ARC4_H
 
 #include <array>
 #include <cstddef> // size_t
@@ -81,3 +82,5 @@ private:
     uint8_t i_ = 0;
     uint8_t j_ = 0;
 };
+
+#endif // TR_LIB_TR_ARC4_H
