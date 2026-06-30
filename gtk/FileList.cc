@@ -471,6 +471,8 @@ void FileList::set_torrent(tr_torrent_id_t torrent_id)
     impl_->set_torrent(torrent_id);
 }
 
+namespace
+{
 struct PairHash {
     template<typename T1, typename T2>
     auto operator()(std::pair<T1, T2> const& pair) const
@@ -478,6 +480,7 @@ struct PairHash {
         return std::hash<T1>{}(pair.first) ^ std::hash<T2>{}(pair.second);
     }
 };
+} // namespace
 
 void FileList::Impl::set_torrent(tr_torrent_id_t torrent_id)
 {

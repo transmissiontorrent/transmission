@@ -32,9 +32,7 @@
 
 class AddData;
 
-extern "C" {
 struct tr_variant;
-}
 
 class Session : public QObject
 {

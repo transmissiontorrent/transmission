@@ -22,6 +22,8 @@
 
 using namespace std::literals;
 
+namespace
+{
 class IPCacheTest : public ::tr::test::TransmissionTest
 {
 protected:
@@ -87,6 +89,7 @@ protected:
     // To be created within the test body
     std::shared_ptr<tr_ip_cache> ip_cache_;
 };
+} // namespace
 
 TEST_F(IPCacheTest, bindAddr)
 {
