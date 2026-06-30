@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_QT_TEST_QT_TEST_FIXTURES_H
+#define TR_QT_TEST_QT_TEST_FIXTURES_H
 
 #include <type_traits>
 
@@ -84,3 +85,5 @@ public:
 private:
     QTemporaryDir sandbox_{};
 };
+
+#endif // TR_QT_TEST_QT_TEST_FIXTURES_H
