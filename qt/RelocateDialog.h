@@ -9,6 +9,7 @@
 #include "Typedefs.h"
 #include "ui_RelocateDialog.h"
 
+class Prefs;
 class Session;
 class TorrentModel;
 
@@ -17,7 +18,12 @@ class RelocateDialog : public BaseDialog
     Q_OBJECT
 
 public:
-    RelocateDialog(Session& session, TorrentModel const& model, torrent_ids_t ids, QWidget* parent = nullptr);
+    RelocateDialog(
+        Session& session,
+        Prefs const& prefs,
+        TorrentModel const& model,
+        torrent_ids_t ids,
+        QWidget* parent = nullptr);
     ~RelocateDialog() override = default;
     RelocateDialog(RelocateDialog&&) = delete;
     RelocateDialog(RelocateDialog const&) = delete;
