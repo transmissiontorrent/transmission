@@ -105,7 +105,7 @@ constexpr size_t base64AllocSize(std::string_view input)
     size_t ret_length = 4 * ((std::size(input) + 2) / 3); // NOLINT misc-const-correctness
 #ifdef USE_SYSTEM_B64
     // Additional space is needed for newlines if we're using unpatched libb64
-    ret_length += ret_length / 72 + 1;
+    ret_length += (ret_length / 72) + 1;
 #endif
     return ret_length * 8;
 }
