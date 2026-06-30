@@ -522,7 +522,7 @@ void FileList::Impl::set_torrent(tr_torrent_id_t torrent_id)
                         node = parent->prepend_data({});
                         auto& node_data = node->data();
                         node_data.name = std::string{ token };
-                        node_data.index = is_leaf ? (int)i : -1;
+                        node_data.index = is_leaf ? static_cast<int>(i) : -1;
                         node_data.length = is_leaf ? file.length : 0;
                     }
 
