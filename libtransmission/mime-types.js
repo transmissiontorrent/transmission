@@ -58,8 +58,8 @@ async function main() {
     .filter(({ extension }, pos, arr) => pos === 0 || extension !== arr[pos - 1].extension);
 
   const mime_type_lines = extensions
-    .map(({ extension, mime_type }) => `      { .suffix = R"(${extension})", .mime_type = R"(${mime_type})" }`)
-    .join(',\n')
+    .map(({ extension, mime_type }) => `    { .suffix = R"(${extension})", .mime_type = R"(${mime_type})" },`)
+    .join('\n')
     .trim();
 
   fs.writeFileSync('mime-types.h', `${copyright}
@@ -69,15 +69,14 @@ async function main() {
 #include <array>
 #include <string_view>
 
-struct mime_type_suffix
-{
+struct mime_type_suffix {
     std::string_view suffix;
     std::string_view mime_type;
 };
 
-inline auto constexpr MimeTypeSuffixes = std::array<mime_type_suffix, ${extensions.length}>{
-    { ${mime_type_lines} }
-};
+inline auto constexpr MimeTypeSuffixes = std::to_array<mime_type_suffix>({
+    ${mime_type_lines}
+});
 `);
 }
 
