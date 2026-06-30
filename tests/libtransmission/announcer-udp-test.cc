@@ -53,14 +53,13 @@ using MessageBuffer = tr::StackBuffer<4096, std::byte>;
 
 class AnnouncerUdpTest : public ::tr::test::TransmissionTest
 {
-private:
+protected:
     void SetUp() override
     {
         ::testing::Test::SetUp();
         tr_timeUpdate(time(nullptr));
     }
 
-protected:
     class MockMediator final : public tr_announcer_udp::Mediator
     {
     public:
