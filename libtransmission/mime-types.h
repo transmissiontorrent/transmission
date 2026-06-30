@@ -11,12 +11,13 @@
 #include <array>
 #include <string_view>
 
-struct mime_type_suffix {
+struct mime_type_suffix
+{
     std::string_view suffix;
     std::string_view mime_type;
 };
 
-inline auto constexpr MimeTypeSuffixes = std::array<mime_type_suffix, 1245>{
+inline auto constexpr MimeTypeSuffixes = std::array<mime_type_suffix, 1246>{
     { { .suffix = R"(123)", .mime_type = R"(application/vnd.lotus-1-2-3)" },
       { .suffix = R"(1km)", .mime_type = R"(application/vnd.1000minds.decision-model+xml)" },
       { .suffix = R"(210)", .mime_type = R"(model/step)" },
@@ -595,11 +596,11 @@ inline auto constexpr MimeTypeSuffixes = std::array<mime_type_suffix, 1245>{
       { .suffix = R"(mj2)", .mime_type = R"(video/mj2)" },
       { .suffix = R"(mjp2)", .mime_type = R"(video/mj2)" },
       { .suffix = R"(mjs)", .mime_type = R"(text/javascript)" },
-      { .suffix = R"(mk3d)", .mime_type = R"(video/x-matroska)" },
-      { .suffix = R"(mka)", .mime_type = R"(audio/x-matroska)" },
+      { .suffix = R"(mk3d)", .mime_type = R"(video/matroska-3d)" },
+      { .suffix = R"(mka)", .mime_type = R"(audio/matroska)" },
       { .suffix = R"(mkd)", .mime_type = R"(text/x-markdown)" },
       { .suffix = R"(mks)", .mime_type = R"(video/x-matroska)" },
-      { .suffix = R"(mkv)", .mime_type = R"(video/x-matroska)" },
+      { .suffix = R"(mkv)", .mime_type = R"(video/matroska)" },
       { .suffix = R"(mlp)", .mime_type = R"(application/vnd.dolby.mlp)" },
       { .suffix = R"(mmd)", .mime_type = R"(application/vnd.chipnuts.karaoke-mmd)" },
       { .suffix = R"(mmf)", .mime_type = R"(application/vnd.smaf)" },
@@ -748,6 +749,7 @@ inline auto constexpr MimeTypeSuffixes = std::array<mime_type_suffix, 1245>{
       { .suffix = R"(p8)", .mime_type = R"(application/pkcs8)" },
       { .suffix = R"(pac)", .mime_type = R"(application/x-ns-proxy-autoconfig)" },
       { .suffix = R"(pages)", .mime_type = R"(application/vnd.apple.pages)" },
+      { .suffix = R"(parquet)", .mime_type = R"(application/vnd.apache.parquet)" },
       { .suffix = R"(pas)", .mime_type = R"(text/x-pascal)" },
       { .suffix = R"(paw)", .mime_type = R"(application/vnd.pawaafile)" },
       { .suffix = R"(pbd)", .mime_type = R"(application/vnd.powerbuilder6)" },
