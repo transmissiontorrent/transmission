@@ -211,7 +211,7 @@ bool set_from_variant_one(S& tgt, tr_quark key, tr_variant const& value, bool& c
 
         matched = true;
         using FieldType = std::remove_cvref_t<decltype(field)>;
-        changed = set(tgt.*(FieldType::MemberPointer), value);
+        changed = set(tgt.*FieldType::MemberPointer, value);
         return true;
     };
 
@@ -232,7 +232,7 @@ bool set_one(S& tgt, tr_quark key, T& val, bool& type_ok, bool& changed)
         matched = true;
         using FieldType = std::remove_cvref_t<decltype(field)>;
         if constexpr (std::is_same_v<T, typename FieldType::value_type>) {
-            changed = set(tgt.*(FieldType::MemberPointer), std::move(val));
+            changed = set(tgt.*FieldType::MemberPointer, std::move(val));
         } else {
             type_ok = false;
         }
