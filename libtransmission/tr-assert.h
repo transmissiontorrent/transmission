@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TR_ASSERT_H
+#define TR_LIB_TR_ASSERT_H
 
 #if !defined(NDEBUG) || defined(TR_FORCE_ASSERTIONS)
 
@@ -24,3 +25,5 @@
 #undef TR_ENABLE_ASSERTS
 
 #endif
+
+#endif // TR_LIB_TR_ASSERT_H

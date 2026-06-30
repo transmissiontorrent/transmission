@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_LOG_H
+#define TR_LIB_LOG_H
 
 #include <chrono>
 #include <cstddef> // size_t
@@ -80,3 +81,5 @@ void tr_logAddMessage(
 
 std::string_view tr_logGetTimeStr(std::chrono::system_clock::time_point now, char* buf, size_t buflen);
 std::string_view tr_logGetTimeStr(char* buf, size_t buflen);
+
+#endif // TR_LIB_LOG_H

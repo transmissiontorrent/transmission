@@ -3,11 +3,12 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
+#ifndef TR_LIB_IP_CACHE_H
+#define TR_LIB_IP_CACHE_H
+
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
 #endif
-
-#pragma once
 
 #include <array>
 #include <chrono> // std::chrono::milliseconds
@@ -149,3 +150,5 @@ private:
 
     array_ip_t<size_t> ix_service_ = {};
 };
+
+#endif // TR_LIB_IP_CACHE_H

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TR_LIB_VERSION_H
+#define TR_LIB_VERSION_H
 
 // NOLINTBEGIN
 
@@ -19,3 +20,5 @@
 #cmakedefine TR_STABLE_RELEASE 1
 
 // NOLINTEND
+
+#endif // TR_LIB_VERSION_H

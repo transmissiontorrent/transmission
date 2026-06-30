@@ -2,7 +2,8 @@
 // This file is licensed under the MIT (SPDX: MIT) license,
 // A copy of this license can be found in licenses/ .
 
-#pragma once
+#ifndef TR_LIB_NET_H
+#define TR_LIB_NET_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -526,3 +527,5 @@ void tr_netSetDiffServ(tr_socket_t sock, int tos, tr_address_type type);
 [[nodiscard]] std::string tr_net_strerror(int err);
 
 [[nodiscard]] int tr_make_listen_socket_ipv6only(tr_socket_t sock);
+
+#endif // TR_LIB_NET_H

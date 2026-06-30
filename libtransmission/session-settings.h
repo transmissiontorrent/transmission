@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_SESSION_SETTINGS_H
+#define TR_LIB_SESSION_SETTINGS_H
 
 #include <chrono>
 #include <concepts>
@@ -333,3 +334,5 @@ public:
         Field<&RpcServerSettings::is_whitelist_enabled>{ TR_KEY_rpc_whitelist_enabled });
 };
 } // namespace tr
+
+#endif // TR_LIB_SESSION_SETTINGS_H

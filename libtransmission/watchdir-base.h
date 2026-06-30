@@ -3,11 +3,12 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
+#ifndef TR_LIB_WATCHDIR_BASE_H
+#define TR_LIB_WATCHDIR_BASE_H
+
 #ifndef LIBTRANSMISSION_WATCHDIR_MODULE
 #error only the wathcdir module should #include this header.
 #endif
-
-#pragma once
 
 #include <algorithm>
 #include <chrono>
@@ -144,3 +145,5 @@ private:
 };
 
 } // namespace tr::impl
+
+#endif // TR_LIB_WATCHDIR_BASE_H

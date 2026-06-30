@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_VALUES_H
+#define TR_LIB_VALUES_H
 
 #include <array>
 #include <cstddef> // size_t
@@ -205,3 +206,5 @@ using Storage = Value<StorageUnits, Config::storage>;
 using Speed = Value<SpeedUnits, Config::speed>;
 
 } // namespace tr::Values
+
+#endif // TR_LIB_VALUES_H

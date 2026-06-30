@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_APP_FAVICON_CACHE_H
+#define TR_APP_FAVICON_CACHE_H
 
 #include <array>
 #include <chrono>
@@ -233,3 +234,5 @@ private:
 };
 
 } // namespace tr::app
+
+#endif // TR_APP_FAVICON_CACHE_H

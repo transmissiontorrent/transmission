@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_PEER_SOCKET_H
+#define TR_LIB_PEER_SOCKET_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -133,3 +134,5 @@ protected:
 private:
     static inline std::atomic<size_t> n_open_sockets = {};
 };
+
+#endif // TR_LIB_PEER_SOCKET_H

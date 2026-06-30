@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_STRING_UTILS_H
+#define TR_LIB_STRING_UTILS_H
 
 #include <algorithm>
 #include <cctype>
@@ -115,3 +116,5 @@ template <typename... Args> constexpr bool tr_strv_sep(std::string_view* sv, std
 [[nodiscard]] std::string tr_strv_replace_invalid(std::string_view sv, uint32_t replacement = 0xFFFD /*�*/);
 
 [[nodiscard]] std::string_view::size_type tr_strv_find_invalid_utf8(std::string_view sv);
+
+#endif // TR_LIB_STRING_UTILS_H

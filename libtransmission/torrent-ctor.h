@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TORRENT_CTOR_H
+#define TR_LIB_TORRENT_CTOR_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -257,3 +258,5 @@ private:
 
     bool should_delete_source_file_ = false;
 };
+
+#endif // TR_LIB_TORRENT_CTOR_H

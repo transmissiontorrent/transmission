@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_SESSION_H
+#define TR_LIB_SESSION_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -1334,3 +1335,5 @@ private:
 public:
     std::unique_ptr<tr::Timer> utp_timer;
 };
+
+#endif // TR_LIB_SESSION_H

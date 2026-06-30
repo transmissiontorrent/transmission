@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_API_COMPAT_H
+#define TR_LIB_API_COMPAT_H
 
 #include <cstdint> // uint8_t
 
@@ -28,3 +29,5 @@ void convert_outgoing_data(tr_variant::Map& top);
 void set_default_style(Style style);
 
 } // namespace tr::api_compat
+
+#endif // TR_LIB_API_COMPAT_H

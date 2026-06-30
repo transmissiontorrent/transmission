@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TORRENTS_H
+#define TR_LIB_TORRENTS_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -136,3 +137,5 @@ private:
 
     std::vector<std::pair<tr_torrent_id_t, time_t>> removed_;
 };
+
+#endif // TR_LIB_TORRENTS_H

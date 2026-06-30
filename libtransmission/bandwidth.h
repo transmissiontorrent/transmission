@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_BANDWIDTH_H
+#define TR_LIB_BANDWIDTH_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -271,3 +272,5 @@ constexpr auto tr_isPriority(tr_priority_t p)
 {
     return p == TR_PRI_LOW || p == TR_PRI_NORMAL || p == TR_PRI_HIGH;
 }
+
+#endif // TR_LIB_BANDWIDTH_H

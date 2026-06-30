@@ -6,7 +6,8 @@
 
 // This file defines the public API for the libtransmission library.
 
-#pragma once
+#ifndef TR_LIB_TRANSMISSION_H
+#define TR_LIB_TRANSMISSION_H
 
 // --- Basic Types
 
@@ -903,3 +904,5 @@ tr_stat tr_torrentStat(tr_torrent* torrent);
 // Prefer calling this over calling the single-torrent version in a loop.
 // TODO(c++20) take a std::span argument
 std::vector<tr_stat> tr_torrentStat(tr_torrent* const* torrents, size_t n_torrents);
+
+#endif // TR_LIB_TRANSMISSION_H

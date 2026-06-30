@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TORRENT_FILES_H
+#define TR_LIB_TORRENT_FILES_H
 
 #include <algorithm> // std::sort()
 #include <cstddef>
@@ -193,3 +194,5 @@ private:
     std::vector<file_t> files_;
     uint64_t total_size_ = 0;
 };
+
+#endif // TR_LIB_TORRENT_FILES_H

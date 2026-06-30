@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_APP_DISPLAY_MODES_H
+#define TR_APP_DISPLAY_MODES_H
 
 #include <cstdint>
 
@@ -47,3 +48,5 @@ inline auto constexpr StatsModeCount = 4U;
 inline auto constexpr DefaultStatsMode = StatsMode::TotalRatio;
 
 } // namespace tr::app
+
+#endif // TR_APP_DISPLAY_MODES_H

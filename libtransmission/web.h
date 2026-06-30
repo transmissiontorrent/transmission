@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_WEB_H
+#define TR_LIB_WEB_H
 
 #include <chrono>
 #include <cstddef> // size_t
@@ -181,3 +182,5 @@ private:
 };
 
 void tr_sessionFetch(struct tr_session* session, tr_web::FetchOptions&& options);
+
+#endif // TR_LIB_WEB_H

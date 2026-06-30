@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_SUBPROCESS_H
+#define TR_LIB_SUBPROCESS_H
 
 #include <map>
 #include <string_view>
@@ -15,3 +16,5 @@ bool tr_spawn_async(
     std::map<std::string_view, std::string_view> const& env,
     std::string_view work_dir,
     tr_error* error);
+
+#endif // TR_LIB_SUBPROCESS_H

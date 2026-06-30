@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_BLOCK_INFO_H
+#define TR_LIB_BLOCK_INFO_H
 
 #include <cstdint> // uint32_t, uint64_t
 
@@ -163,3 +164,5 @@ private:
     uint32_t piece_size_ = {};
     uint32_t final_piece_size_ = {};
 };
+
+#endif // TR_LIB_BLOCK_INFO_H

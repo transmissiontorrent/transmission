@@ -2,7 +2,8 @@
 // It may be used under the MIT (SPDX: MIT) license.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_TR_UTP_H
+#define TR_LIB_TR_UTP_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -25,3 +26,5 @@ bool tr_utp_packet(unsigned char const* buf, size_t buflen, struct sockaddr cons
 void tr_utp_issue_deferred_acks(tr_session* ss);
 
 void tr_utp_close(tr_session* session);
+
+#endif // TR_LIB_TR_UTP_H

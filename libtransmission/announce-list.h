@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_ANNOUNCE_LIST_H
+#define TR_LIB_ANNOUNCE_LIST_H
 
 #include <compare>
 #include <cstddef> // size_t
@@ -125,3 +126,5 @@ private:
 
     trackers_t trackers_;
 };
+
+#endif // TR_LIB_ANNOUNCE_LIST_H

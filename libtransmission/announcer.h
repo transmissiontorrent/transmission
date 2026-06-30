@@ -3,7 +3,8 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#pragma once
+#ifndef TR_LIB_ANNOUNCER_H
+#define TR_LIB_ANNOUNCER_H
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -154,3 +155,5 @@ public:
 
     [[nodiscard]] virtual bool is_idle() const noexcept = 0;
 };
+
+#endif // TR_LIB_ANNOUNCER_H
