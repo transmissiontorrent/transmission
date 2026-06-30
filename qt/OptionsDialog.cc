@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <utility>
 
+#include <QComboBox>
 #include <QFileInfo>
+#include <QLineEdit>
 #include <QPushButton>
 
 #include <libtransmission/transmission.h>
@@ -68,18 +70,24 @@ OptionsDialog::OptionsDialog(Session& session, Prefs const& prefs, AddData addme
     ui_.freeSpaceLabel->setSession(session_);
     ui_.freeSpaceLabel->setPath(download_dir);
 
+    auto const recent_download_paths = prefs.get<QStringList>(TR_KEY_recent_download_paths);
+
     ui_.destinationButton->setMode(PathButton::DirectoryMode);
     ui_.destinationButton->setTitle(tr("Select Destination"));
     ui_.destinationButton->setPath(download_dir);
-    ui_.destinationEdit->setText(download_dir);
+    ui_.destinationButton->setRecentPaths(recent_download_paths);
+
+    ui_.destinationCombo->addItems(recent_download_paths);
+    ui_.destinationCombo->setCurrentText(download_dir);
 
     if (is_local_) {
         local_destination_.setPath(download_dir);
     }
 
     connect(ui_.destinationButton, &PathButton::pathChanged, this, &OptionsDialog::onDestinationChanged);
-    connect(ui_.destinationEdit, &QLineEdit::textEdited, &edit_timer_, qOverload<>(&QTimer::start));
-    connect(ui_.destinationEdit, &QLineEdit::editingFinished, this, &OptionsDialog::onDestinationChanged);
+    connect(ui_.destinationCombo, &QComboBox::editTextChanged, &edit_timer_, qOverload<>(&QTimer::start));
+    connect(ui_.destinationCombo->lineEdit(), &QLineEdit::editingFinished, this, &OptionsDialog::onDestinationChanged);
+    connect(ui_.destinationCombo, qOverload<int>(&QComboBox::activated), this, &OptionsDialog::onDestinationChanged);
 
     ui_.filesView->setEditable(false);
     ui_.priorityCombo->addItem(tr("High"), TR_PRI_HIGH);
@@ -179,7 +187,7 @@ void OptionsDialog::reload()
 
 void OptionsDialog::updateWidgetsLocality()
 {
-    ui_.destinationStack->setCurrentWidget(is_local_ ? static_cast<QWidget*>(ui_.destinationButton) : ui_.destinationEdit);
+    ui_.destinationStack->setCurrentWidget(is_local_ ? static_cast<QWidget*>(ui_.destinationButton) : ui_.destinationCombo);
     ui_.destinationStack->setFixedHeight(ui_.destinationStack->currentWidget()->sizeHint().height());
     ui_.destinationLabel->setBuddy(ui_.destinationStack->currentWidget());
 }
@@ -219,7 +227,7 @@ void OptionsDialog::onAccepted()
     if (ui_.destinationStack->currentWidget() == ui_.destinationButton) {
         download_dir = local_destination_.absolutePath();
     } else {
-        download_dir = ui_.destinationEdit->text();
+        download_dir = ui_.destinationCombo->currentText();
     }
 
     args.insert_or_assign(TR_KEY_download_dir, download_dir.toStdString());
@@ -305,6 +313,6 @@ void OptionsDialog::onDestinationChanged()
         local_destination_.setPath(ui_.destinationButton->path());
         ui_.freeSpaceLabel->setPath(local_destination_.absolutePath());
     } else {
-        ui_.freeSpaceLabel->setPath(ui_.destinationEdit->text());
+        ui_.freeSpaceLabel->setPath(ui_.destinationCombo->currentText());
     }
 }

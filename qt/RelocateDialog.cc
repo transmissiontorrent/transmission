@@ -5,8 +5,13 @@
 
 #include <utility>
 
+#include <QComboBox>
 #include <QDir>
+#include <QLineEdit>
 
+#include <libtransmission/quark.h>
+
+#include "Prefs.h"
 #include "RelocateDialog.h"
 #include "Session.h"
 #include "Torrent.h"
@@ -26,7 +31,12 @@ void RelocateDialog::onMoveToggled(bool b) const
     move_flag = b;
 }
 
-RelocateDialog::RelocateDialog(Session& session, TorrentModel const& model, torrent_ids_t ids, QWidget* parent)
+RelocateDialog::RelocateDialog(
+    Session& session,
+    Prefs const& prefs,
+    TorrentModel const& model,
+    torrent_ids_t ids,
+    QWidget* parent)
     : BaseDialog{ parent }
     , session_{ session }
     , ids_{ std::move(ids) }
@@ -56,10 +66,12 @@ RelocateDialog::RelocateDialog(Session& session, TorrentModel const& model, torr
         ui_.newLocationButton->setMode(PathButton::DirectoryMode);
         ui_.newLocationButton->setTitle(tr("Select Location"));
         ui_.newLocationButton->setPath(path);
+        ui_.newLocationButton->setRecentPaths(prefs.get<QStringList>(TR_KEY_recent_relocate_paths));
     } else {
-        ui_.newLocationStack->setCurrentWidget(ui_.newLocationEdit);
-        ui_.newLocationEdit->setText(path);
-        ui_.newLocationEdit->selectAll();
+        ui_.newLocationStack->setCurrentWidget(ui_.newLocationCombo);
+        ui_.newLocationCombo->addItems(prefs.get<QStringList>(TR_KEY_recent_relocate_paths));
+        ui_.newLocationCombo->setCurrentText(path);
+        ui_.newLocationCombo->lineEdit()->selectAll();
     }
 
     ui_.newLocationStack->setFixedHeight(ui_.newLocationStack->currentWidget()->sizeHint().height());
@@ -79,5 +91,5 @@ RelocateDialog::RelocateDialog(Session& session, TorrentModel const& model, torr
 QString RelocateDialog::newLocation() const
 {
     return ui_.newLocationStack->currentWidget() == ui_.newLocationButton ? ui_.newLocationButton->path() :
-                                                                            ui_.newLocationEdit->text();
+                                                                            ui_.newLocationCombo->currentText();
 }
