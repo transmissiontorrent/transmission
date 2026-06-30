@@ -41,9 +41,7 @@ class TorrentDelegate;
 class TorrentDelegateMin;
 class TorrentModel;
 
-extern "C" {
 struct tr_variant;
-}
 
 class MainWindow : public QMainWindow
 {

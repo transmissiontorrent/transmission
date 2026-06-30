@@ -46,6 +46,8 @@
 
 using namespace std::literals;
 
+namespace
+{
 using tau_connection_t = uint64_t;
 using tau_transaction_t = uint32_t;
 
@@ -375,6 +377,7 @@ protected:
 
     static auto constexpr DefaultScrapeUrl = "https://127.0.0.1/scrape"sv;
 };
+} // namespace
 
 TEST_F(AnnouncerUdpTest, canInstantiate)
 {
