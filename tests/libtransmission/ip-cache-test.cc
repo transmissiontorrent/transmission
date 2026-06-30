@@ -25,17 +25,14 @@ using namespace std::literals;
 class IPCacheTest : public ::tr::test::TransmissionTest
 {
 protected:
-    class MockTimerMaker final : public tr::TimerMaker
-    {
-    public:
+    struct MockTimerMaker final : public tr::TimerMaker {
         [[nodiscard]] std::unique_ptr<tr::Timer> create() override
         {
             return std::make_unique<MockTimer>();
         }
     };
 
-    class MockTimer final : public tr::Timer
-    {
+    struct MockTimer final : public tr::Timer {
         void stop() override
         {
         }

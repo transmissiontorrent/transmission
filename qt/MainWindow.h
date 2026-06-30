@@ -90,6 +90,8 @@ protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dropEvent(QDropEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
+    void showEvent(QShowEvent* event) override;
     bool event(QEvent* e) override;
 
 private slots:
@@ -132,10 +134,6 @@ private:
     void clearSelection();
     void addTorrentFromClipboard();
     void addTorrent(AddData const& add_me, bool show_options);
-
-    // QWidget
-    void hideEvent(QHideEvent* event) override;
-    void showEvent(QShowEvent* event) override;
 
     Session& session_;
     Prefs& prefs_;

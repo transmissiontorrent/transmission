@@ -1875,7 +1875,7 @@ public:
         Glib::RefPtr<Session> const& core,
         tr_torrent const* tor);
 
-private:
+protected:
     void on_response(int response) override;
 
 private:
@@ -1990,7 +1990,7 @@ public:
         Glib::RefPtr<Session> const& core,
         tr_torrent const* tor);
 
-private:
+protected:
     void on_response(int response) override;
 
 private:
