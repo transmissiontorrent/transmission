@@ -711,7 +711,7 @@ bool tr_announcerCanManualAnnounce(tr_torrent const* tor)
 
 time_t tr_announcerNextManualAnnounce(tr_torrent const* tor)
 {
-    time_t ret = ~(time_t)0;
+    time_t ret = ~static_cast<time_t>(0);
 
     for (auto const& tier : tor->torrent_announcer->tiers) {
         if (tier.isRunning) {

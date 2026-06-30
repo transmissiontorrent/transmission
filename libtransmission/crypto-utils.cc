@@ -168,7 +168,7 @@ constexpr void tr_hex_to_binary(char const* input, void* voutput, size_t byte_le
     for (size_t i = 0; i < byte_length; ++i) {
         auto const upper_nibble = Hex.find(static_cast<char>(std::tolower(*input++)));
         auto const lower_nibble = Hex.find(static_cast<char>(std::tolower(*input++)));
-        *output++ = (uint8_t)((upper_nibble << 4) | lower_nibble);
+        *output++ = static_cast<uint8_t>((upper_nibble << 4) | lower_nibble);
     }
 }
 
