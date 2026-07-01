@@ -130,6 +130,8 @@ int main(int argc, char** argv)
     /* init notifications */
     gtr_notify_init();
 
+    start_iconified |= gtr_pref_flag_get(TR_KEY_start_minimized);
+
     /* init the application for the specified config dir */
     return Application(config_dir, start_paused, start_iconified).run(argc, argv);
 }
