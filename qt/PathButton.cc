@@ -3,11 +3,13 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
+#include <QAction>
 #include <QApplication>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileIconProvider>
 #include <QFileInfo>
+#include <QMenu>
 #include <QStyle>
 #include <QStyleOptionToolButton>
 #include <QStylePainter>
@@ -61,6 +63,12 @@ void PathButton::setPath(QString const& path)
     emit pathChanged(path_);
 }
 
+void PathButton::setRecentPaths(QStringList const& paths)
+{
+    recent_paths_ = paths;
+    rebuildMenu();
+}
+
 QSize PathButton::sizeHint() const
 {
     auto const sh = QToolButton::sizeHint();
@@ -78,7 +86,7 @@ void PathButton::paintEvent(QPaintEvent* /*event*/)
 
     int text_width = width() - (fake_size_hint.width() - fake_content_size.width()) - iconSize().width() - 6;
 
-    if (popupMode() == MenuButtonPopup) {
+    if (popupMode() == MenuButtonPopup || popupMode() == InstantPopup) {
         text_width -= style()->pixelMetric(QStyle::PM_MenuButtonIndicator, &option, this);
     }
 
@@ -128,6 +136,43 @@ void PathButton::onFileSelected(QString const& path)
     if (!path.isEmpty()) {
         setPath(path);
     }
+}
+
+void PathButton::rebuildMenu()
+{
+    // The button has no menu of its own until recent paths arrive; rebuild it
+    // from scratch each time so a refreshed session_get reply stays in sync.
+    setMenu(nullptr);
+    delete menu_;
+    menu_ = nullptr;
+
+    if (recent_paths_.isEmpty()) {
+        // Without recents the button behaves like a plain chooser: a click opens
+        // the dialog directly (e.g. file pickers).
+        setPopupMode(DelayedPopup);
+        update();
+        return;
+    }
+
+    menu_ = new QMenu{ this };
+    menu_->setToolTipsVisible(true);
+
+    auto const metrics = fontMetrics();
+    for (auto const& path : recent_paths_) {
+        auto const native = QDir::toNativeSeparators(path);
+        auto* const action = menu_->addAction(metrics.elidedText(native, Qt::ElideLeft, 400));
+        action->setToolTip(native);
+        connect(action, &QAction::triggered, this, [this, native]() { setPath(native); });
+    }
+
+    menu_->addSeparator();
+    connect(menu_->addAction(tr("Other\u2026")), &QAction::triggered, this, &PathButton::onClicked);
+
+    // With recents present, clicking anywhere on the button drops down the menu;
+    // the "Other\u2026" entry is what opens the full file chooser.
+    setMenu(menu_);
+    setPopupMode(InstantPopup);
+    update();
 }
 
 void PathButton::updateAppearance()

@@ -197,6 +197,8 @@ private:
     StringType script_torrent_done_filename_;
     StringType script_torrent_done_seeding_filename_;
     StringType socket_diffserv_;
+    std::vector<StringType> recent_download_paths_ = { download_dir_ }; // must be declared after download_dir_
+    std::vector<StringType> recent_relocate_paths_ = { download_dir_ }; // must be declared after download_dir_
     double ratio_ = 0.0;
     int alt_speed_limit_down_ = 0;
     int alt_speed_limit_time_begin_ = 0;
@@ -303,6 +305,8 @@ public:
         Field<&Prefs::ratio_>{ TR_KEY_seed_ratio_limit },
         Field<&Prefs::ratio_enabled_>{ TR_KEY_seed_ratio_limited },
         Field<&Prefs::read_clipboard_>{ TR_KEY_read_clipboard },
+        Field<&Prefs::recent_download_paths_>{ TR_KEY_recent_download_paths },
+        Field<&Prefs::recent_relocate_paths_>{ TR_KEY_recent_relocate_paths },
         Field<&Prefs::rename_partial_files_>{ TR_KEY_rename_partial_files },
         Field<&Prefs::rpc_auth_required_>{ TR_KEY_rpc_authentication_required },
         Field<&Prefs::rpc_enabled_>{ TR_KEY_rpc_enabled },

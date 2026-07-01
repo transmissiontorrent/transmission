@@ -14,10 +14,12 @@
 #if GTKMM_CHECK_VERSION(4, 0, 0)
 #include <glibmm/error.h>
 #include <glibmm/property.h>
+#include <gtkmm/button.h>
 #include <gtkmm/dialog.h>
 #include <gtkmm/filechoosernative.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
+#include <gtkmm/popover.h>
 #include <gtkmm/separator.h>
 #endif
 
@@ -37,7 +39,7 @@ public:
     std::string const& get_filename() const;
     void set_filename(std::string const& value);
 
-    void set_shortcut_folders(std::list<std::string> const& value);
+    void set_recent_paths(std::vector<Glib::ustring> const& value);
 
     void add_filter(Glib::RefPtr<Gtk::FileFilter> const& value);
 
@@ -49,6 +51,8 @@ public:
 
 private:
 #if GTKMM_CHECK_VERSION(4, 0, 0)
+    void on_clicked();
+    void populate_menu();
     void show_dialog();
 
     void update();
@@ -64,24 +68,22 @@ private:
 
     sigc::signal<void()> selection_changed_;
 
-    Gtk::Image* const image_ = nullptr;
-    Gtk::Label* const label_ = nullptr;
-    Gtk::Image* const mode_ = nullptr;
+    Gtk::Image* const image_ = Gtk::make_managed<Gtk::Image>();
+    Gtk::Label* const label_ = Gtk::make_managed<Gtk::Label>();
+    Gtk::Image* const mode_ = Gtk::make_managed<Gtk::Image>();
+    Gtk::Popover* const popover_ = Gtk::make_managed<Gtk::Popover>();
 
     std::string current_file_;
-    std::list<std::string> shortcut_folders_;
+    std::vector<Glib::ustring> recent_paths_;
     std::vector<Glib::RefPtr<Gtk::FileFilter>> filters_;
 #endif
 };
 
 PathButton::Impl::Impl([[maybe_unused]] PathButton& widget)
 #if GTKMM_CHECK_VERSION(4, 0, 0)
-    : widget_(widget)
-    , action_(widget, "action", Gtk::FileChooser::Action::OPEN)
-    , title_(widget, "title", {})
-    , image_(Gtk::make_managed<Gtk::Image>())
-    , label_(Gtk::make_managed<Gtk::Label>())
-    , mode_(Gtk::make_managed<Gtk::Image>())
+    : widget_{ widget }
+    , action_{ widget, "action", Gtk::FileChooser::Action::OPEN }
+    , title_{ widget, "title", {} }
 #endif
 {
 #if GTKMM_CHECK_VERSION(4, 0, 0)
@@ -98,7 +100,10 @@ PathButton::Impl::Impl([[maybe_unused]] PathButton& widget)
     layout->append(*mode_);
     widget_.set_child(*layout);
 
-    widget_.signal_clicked().connect(sigc::mem_fun(*this, &Impl::show_dialog));
+    popover_->set_parent(widget_);
+    popover_->set_position(Gtk::PositionType::BOTTOM);
+
+    widget_.signal_clicked().connect(sigc::mem_fun(*this, &Impl::on_clicked));
 
     update();
     update_mode();
@@ -119,9 +124,9 @@ void PathButton::Impl::set_filename(std::string const& value)
     selection_changed_.emit();
 }
 
-void PathButton::Impl::set_shortcut_folders(std::list<std::string> const& value)
+void PathButton::Impl::set_recent_paths(std::vector<Glib::ustring> const& value)
 {
-    shortcut_folders_ = value;
+    recent_paths_ = value;
 }
 
 void PathButton::Impl::add_filter(Glib::RefPtr<Gtk::FileFilter> const& value)
@@ -144,6 +149,57 @@ sigc::signal<void()>& PathButton::Impl::signal_selection_changed()
     return selection_changed_;
 }
 
+void PathButton::Impl::on_clicked()
+{
+    // When there are no recent paths to offer (e.g. file pickers), fall back to
+    // opening the file chooser directly so the button behaves like a plain one.
+    if (recent_paths_.empty()) {
+        show_dialog();
+        return;
+    }
+
+    populate_menu();
+    popover_->popup();
+}
+
+void PathButton::Impl::populate_menu()
+{
+    auto* const box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 0);
+
+    for (auto const& path : recent_paths_) {
+        auto* const path_label = Gtk::make_managed<Gtk::Label>(path);
+        path_label->set_halign(Gtk::Align::START);
+        path_label->set_ellipsize(Pango::EllipsizeMode::START);
+        path_label->set_max_width_chars(40);
+
+        auto* const row = Gtk::make_managed<Gtk::Button>();
+        row->set_child(*path_label);
+        row->set_has_frame(false);
+        row->set_tooltip_text(path);
+        row->signal_clicked().connect([this, path = path.raw()]() {
+            popover_->popdown();
+            set_filename(path);
+        });
+        box->append(*row);
+    }
+
+    box->append(*Gtk::make_managed<Gtk::Separator>(Gtk::Orientation::HORIZONTAL));
+
+    auto* const other_label = Gtk::make_managed<Gtk::Label>(_("Other…"));
+    other_label->set_halign(Gtk::Align::START);
+
+    auto* const other = Gtk::make_managed<Gtk::Button>();
+    other->set_child(*other_label);
+    other->set_has_frame(false);
+    other->signal_clicked().connect([this]() {
+        popover_->popdown();
+        show_dialog();
+    });
+    box->append(*other);
+
+    popover_->set_child(*box);
+}
+
 void PathButton::Impl::show_dialog()
 {
     auto const title = title_.get_value();
@@ -158,11 +214,6 @@ void PathButton::Impl::show_dialog()
 
     if (!current_file_.empty()) {
         dialog->set_file(Gio::File::create_for_path(current_file_));
-    }
-
-    for (auto const& folder : shortcut_folders_) {
-        dialog->remove_shortcut_folder(Gio::File::create_for_path(folder));
-        dialog->add_shortcut_folder(Gio::File::create_for_path(folder));
     }
 
     for (auto const& filter : filters_) {
@@ -224,14 +275,14 @@ PathButton::PathButton(BaseObjectType* cast_item, Glib::RefPtr<Gtk::Builder> con
 
 PathButton::~PathButton() = default;
 
-void PathButton::set_shortcut_folders(std::list<std::string> const& value)
+void PathButton::set_recent_paths(std::vector<Glib::ustring> const& value)
 {
 #if GTKMM_CHECK_VERSION(4, 0, 0)
-    impl_->set_shortcut_folders(value);
+    impl_->set_recent_paths(value);
 #else
     for (auto const& folder : value) {
-        remove_shortcut_folder(folder);
-        add_shortcut_folder(folder);
+        remove_shortcut_folder(folder.raw());
+        add_shortcut_folder(folder.raw());
     }
 #endif
 }

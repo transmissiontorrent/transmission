@@ -26,6 +26,8 @@ bool prefs_is_core(tr_quark const key)
     case TR_KEY_speed_limit_down:
     case TR_KEY_speed_limit_down_enabled:
     case TR_KEY_download_dir:
+    case TR_KEY_recent_download_paths:
+    case TR_KEY_recent_relocate_paths:
     case TR_KEY_download_queue_enabled:
     case TR_KEY_download_queue_size:
     case TR_KEY_encryption:

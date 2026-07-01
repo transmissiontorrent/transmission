@@ -32,7 +32,6 @@
 #include <cstdint>
 #include <ctime>
 #include <functional>
-#include <list>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -184,10 +183,6 @@ std::string gtr_get_full_resource_path(std::string const& rel_path);
 ***/
 
 class Session;
-
-extern size_t const max_recent_dirs;
-std::list<std::string> gtr_get_recent_dirs(std::string const& pref);
-void gtr_save_recent_dir(std::string const& pref, Glib::RefPtr<Session> const& core, std::string const& dir);
 
 template<typename T, typename U>
 inline Glib::RefPtr<T> gtr_ptr_static_cast(Glib::RefPtr<U> const& ptr)

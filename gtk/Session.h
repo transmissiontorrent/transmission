@@ -167,6 +167,10 @@ public:
     void port_test(PortTestIpProtocol ip_protocol);
     bool port_test_pending(PortTestIpProtocol ip_protocol) const noexcept;
 
+    // Recently-used directories, fetched from the session via a blocking RPC.
+    [[nodiscard]] std::vector<Glib::ustring> get_recent_download_paths() const;
+    [[nodiscard]] std::vector<Glib::ustring> get_recent_relocate_paths() const;
+
     void blocklist_update();
 
     void exec(tr_quark method, tr_variant&& params);
@@ -185,6 +189,8 @@ protected:
     explicit Session(tr_session* session);
 
 private:
+    [[nodiscard]] std::vector<Glib::ustring> get_recent_dirs(tr_quark key) const;
+
     class Impl;
     std::unique_ptr<Impl> const impl_;
 };
