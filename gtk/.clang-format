@@ -13,6 +13,8 @@ IncludeCategories:
     SortPriority: 4
   - Regex: '^<(cairo|gdk|gio|glib|gtk|pango)mm([-./]|config)'
     Priority: 5
+  - Regex: '^<sigc\+\+([-./]|config)'
+    Priority: 6
   - Regex: '^<(fmt|small)/'
     Priority: 6
   - Regex: '^<(cairo|gdk|gio|glib|gtk|pango)[-./]'

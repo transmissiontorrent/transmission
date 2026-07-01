@@ -93,7 +93,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFileChooserButton" id="destination_button">
+                      <object class="gtkmm__CustomObject_10PathButton" id="destination_button">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
@@ -122,7 +122,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFileChooserButton" id="source_folder_button">
+                      <object class="gtkmm__CustomObject_10PathButton" id="source_folder_button">
                         <property name="visible">True</property>
                         <property name="sensitive" bind-source="source_folder_radio" bind-property="active" bind-flags="sync-create">False</property>
                         <property name="can-focus">False</property>
@@ -152,7 +152,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFileChooserButton" id="source_file_button">
+                      <object class="gtkmm__CustomObject_10PathButton" id="source_file_button">
                         <property name="visible">True</property>
                         <property name="sensitive" bind-source="source_file_radio" bind-property="active" bind-flags="sync-create">False</property>
                         <property name="can-focus">False</property>

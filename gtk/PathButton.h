@@ -7,26 +7,19 @@
 
 #include "GtkCompat.h"
 
-#include <glibmm/propertyproxy.h>
 #include <glibmm/refptr.h>
 #include <glibmm/ustring.h>
 #include <gtkmm/builder.h>
-#include <gtkmm/filechooser.h>
-#include <gtkmm/filefilter.h>
-
-#if GTKMM_CHECK_VERSION(4, 0, 0)
 #include <gtkmm/button.h>
-#else
-#include <gtkmm/filechooserbutton.h>
-#endif
+#include <gtkmm/filefilter.h>
 
 #include <memory>
 #include <string>
 #include <vector>
 
-class PathButton : public IF_GTKMM4(Gtk::Button, Gtk::FileChooserButton)
+class PathButton : public Gtk::Button
 {
-    using BaseWidgetType = IF_GTKMM4(Gtk::Button, Gtk::FileChooserButton);
+    using BaseWidgetType = Gtk::Button;
 
 public:
     PathButton();
@@ -39,17 +32,12 @@ public:
 
     void set_recent_paths(std::vector<Glib::ustring> const& value);
 
-#if GTKMM_CHECK_VERSION(4, 0, 0)
     std::string get_filename() const;
     void set_filename(std::string const& value);
 
     void add_filter(Glib::RefPtr<Gtk::FileFilter> const& value);
 
-    Glib::PropertyProxy<Gtk::FileChooser::Action> property_action();
-    Glib::PropertyProxy<Glib::ustring> property_title();
-
     sigc::signal<void()>& signal_selection_changed();
-#endif
 
 private:
     class Impl;

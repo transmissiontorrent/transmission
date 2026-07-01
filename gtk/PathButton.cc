@@ -9,21 +9,121 @@
 #include "Utils.h"
 
 #include <giomm/file.h>
-#include <glibmm/i18n.h>
-#include <gtkmm/box.h>
-#if GTKMM_CHECK_VERSION(4, 0, 0)
+#include <giomm/icon.h>
 #include <glibmm/error.h>
+#include <glibmm/i18n.h>
 #include <glibmm/property.h>
+#include <glibmm/refptr.h>
+#include <glibmm/ustring.h>
+#include <gtkmm/box.h>
 #include <gtkmm/button.h>
 #include <gtkmm/dialog.h>
+#include <gtkmm/filechooser.h>
 #include <gtkmm/filechoosernative.h>
 #include <gtkmm/image.h>
 #include <gtkmm/label.h>
 #include <gtkmm/popover.h>
 #include <gtkmm/separator.h>
-#endif
 
+#include <sigc++/signal.h>
+
+#include <string>
 #include <vector>
+
+namespace
+{
+
+using TrFileChooserAction = IF_GTKMM4(Gtk::FileChooser::Action, Gtk::FileChooserAction);
+
+// gtkmm4 uses Widget::set_child(); gtkmm3 (a GtkBin subclass) uses add().
+template<typename WidgetT>
+void tr_set_child(WidgetT& parent, Gtk::Widget& child)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    parent.set_child(child);
+#else
+    parent.add(child);
+#endif
+}
+
+// A popover may have its child replaced repeatedly; gtkmm3 needs the old one removed first.
+void tr_popover_set_child(Gtk::Popover& popover, Gtk::Widget& child)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    popover.set_child(child);
+#else
+    // Gtk::Bin::remove() takes no argument and removes the single child.
+    if (popover.get_child() != nullptr) {
+        popover.remove();
+    }
+    popover.add(child);
+#endif
+}
+
+void tr_box_append(Gtk::Box& box, Gtk::Widget& child)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    box.append(child);
+#else
+    box.pack_start(child, child.get_hexpand() || child.get_vexpand(), true, 0);
+#endif
+}
+
+void tr_button_set_flat(Gtk::Button& button)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    button.set_has_frame(false);
+#else
+    button.set_relief(Gtk::RELIEF_NONE);
+#endif
+}
+
+void tr_popover_set_parent(Gtk::Popover& popover, Gtk::Widget& parent)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    popover.set_parent(parent);
+#else
+    popover.set_relative_to(parent);
+#endif
+}
+
+void tr_popover_unparent([[maybe_unused]] Gtk::Popover& popover)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    if (popover.get_parent() != nullptr) {
+        popover.unparent();
+    }
+#endif
+}
+
+void tr_image_set_from_icon_name(Gtk::Image& image, Glib::ustring const& icon_name)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    image.set_from_icon_name(icon_name);
+#else
+    image.set_from_icon_name(icon_name, Gtk::ICON_SIZE_BUTTON);
+#endif
+}
+
+// The const qualifier picks the Gio::Icon overload; gtkmm3 also offers an IconSet one.
+void tr_image_set_from_gicon(Gtk::Image& image, Glib::RefPtr<Gio::Icon const> const& icon)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    image.set(icon);
+#else
+    image.set(icon, Gtk::ICON_SIZE_BUTTON);
+#endif
+}
+
+// gtkmm4 widgets are visible by default; gtkmm3 needs children shown explicitly.
+void tr_show_all([[maybe_unused]] Gtk::Widget& widget)
+{
+#if !GTKMM_CHECK_VERSION(4, 0, 0)
+    widget.show_all();
+#endif
+}
+
+} // namespace
 
 class PathButton::Impl
 {
@@ -33,9 +133,8 @@ public:
     Impl(Impl const&) = delete;
     Impl& operator=(Impl&&) = delete;
     Impl& operator=(Impl const&) = delete;
-    ~Impl() = default;
+    ~Impl();
 
-#if GTKMM_CHECK_VERSION(4, 0, 0)
     std::string const& get_filename() const;
     void set_filename(std::string const& value);
 
@@ -43,27 +142,20 @@ public:
 
     void add_filter(Glib::RefPtr<Gtk::FileFilter> const& value);
 
-    Glib::Property<Gtk::FileChooser::Action>& property_action();
-    Glib::Property<Glib::ustring>& property_title();
-
     sigc::signal<void()>& signal_selection_changed();
-#endif
 
 private:
-#if GTKMM_CHECK_VERSION(4, 0, 0)
     void on_clicked();
     void populate_menu();
     void show_dialog();
 
     void update();
     void update_mode();
-#endif
 
 private:
-#if GTKMM_CHECK_VERSION(4, 0, 0)
     PathButton& widget_;
 
-    Glib::Property<Gtk::FileChooser::Action> action_;
+    Glib::Property<TrFileChooserAction> action_;
     Glib::Property<Glib::ustring> title_;
 
     sigc::signal<void()> selection_changed_;
@@ -71,46 +163,49 @@ private:
     Gtk::Image* const image_ = Gtk::make_managed<Gtk::Image>();
     Gtk::Label* const label_ = Gtk::make_managed<Gtk::Label>();
     Gtk::Image* const mode_ = Gtk::make_managed<Gtk::Image>();
-    Gtk::Popover* const popover_ = Gtk::make_managed<Gtk::Popover>();
+    Gtk::Popover popover_;
 
     std::string current_file_;
     std::vector<Glib::ustring> recent_paths_;
     std::vector<Glib::RefPtr<Gtk::FileFilter>> filters_;
-#endif
 };
 
-PathButton::Impl::Impl([[maybe_unused]] PathButton& widget)
-#if GTKMM_CHECK_VERSION(4, 0, 0)
+PathButton::Impl::Impl(PathButton& widget)
     : widget_{ widget }
-    , action_{ widget, "action", Gtk::FileChooser::Action::OPEN }
+    , action_{ widget, "action", TR_GTK_FILE_CHOOSER_ACTION(OPEN) }
     , title_{ widget, "title", {} }
-#endif
 {
-#if GTKMM_CHECK_VERSION(4, 0, 0)
     action_.get_proxy().signal_changed().connect([this]() { update_mode(); });
 
-    label_->set_ellipsize(Pango::EllipsizeMode::END);
+    label_->set_ellipsize(TR_PANGO_ELLIPSIZE_MODE(END));
     label_->set_hexpand(true);
-    label_->set_halign(Gtk::Align::START);
+    label_->set_halign(TR_GTK_ALIGN(START));
 
-    auto* const layout = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::HORIZONTAL, 5);
-    layout->append(*image_);
-    layout->append(*label_);
-    layout->append(*Gtk::make_managed<Gtk::Separator>(Gtk::Orientation::VERTICAL));
-    layout->append(*mode_);
-    widget_.set_child(*layout);
+    auto* const layout = Gtk::make_managed<Gtk::Box>(TR_GTK_ORIENTATION(HORIZONTAL), 5);
+    tr_box_append(*layout, *image_);
+    tr_box_append(*layout, *label_);
+    tr_box_append(*layout, *Gtk::make_managed<Gtk::Separator>(TR_GTK_ORIENTATION(VERTICAL)));
+    tr_box_append(*layout, *mode_);
+    tr_set_child(widget_, *layout);
+    tr_show_all(*layout);
 
-    popover_->set_parent(widget_);
-    popover_->set_position(Gtk::PositionType::BOTTOM);
+    tr_popover_set_parent(popover_, widget_);
+    popover_.set_position(TR_GTK_POSITION_TYPE(BOTTOM));
+
+    // gtkmm4 parents the popover to the button; unparent it while the button is
+    // being disposed (::destroy), before it is finalized. On gtkmm3 this is a no-op.
+    widget_.signal_destroy().connect([this]() { tr_popover_unparent(popover_); });
 
     widget_.signal_clicked().connect(sigc::mem_fun(*this, &Impl::on_clicked));
 
     update();
     update_mode();
-#endif
 }
 
-#if GTKMM_CHECK_VERSION(4, 0, 0)
+PathButton::Impl::~Impl()
+{
+    tr_popover_unparent(popover_);
+}
 
 std::string const& PathButton::Impl::get_filename() const
 {
@@ -134,16 +229,6 @@ void PathButton::Impl::add_filter(Glib::RefPtr<Gtk::FileFilter> const& value)
     filters_.push_back(value);
 }
 
-Glib::Property<Gtk::FileChooser::Action>& PathButton::Impl::property_action()
-{
-    return action_;
-}
-
-Glib::Property<Glib::ustring>& PathButton::Impl::property_title()
-{
-    return title_;
-}
-
 sigc::signal<void()>& PathButton::Impl::signal_selection_changed()
 {
     return selection_changed_;
@@ -159,45 +244,46 @@ void PathButton::Impl::on_clicked()
     }
 
     populate_menu();
-    popover_->popup();
+    popover_.popup();
 }
 
 void PathButton::Impl::populate_menu()
 {
-    auto* const box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::VERTICAL, 0);
+    auto* const box = Gtk::make_managed<Gtk::Box>(TR_GTK_ORIENTATION(VERTICAL), 0);
 
     for (auto const& path : recent_paths_) {
         auto* const path_label = Gtk::make_managed<Gtk::Label>(path);
-        path_label->set_halign(Gtk::Align::START);
-        path_label->set_ellipsize(Pango::EllipsizeMode::START);
+        path_label->set_halign(TR_GTK_ALIGN(START));
+        path_label->set_ellipsize(TR_PANGO_ELLIPSIZE_MODE(START));
         path_label->set_max_width_chars(40);
 
         auto* const row = Gtk::make_managed<Gtk::Button>();
-        row->set_child(*path_label);
-        row->set_has_frame(false);
+        tr_set_child(*row, *path_label);
+        tr_button_set_flat(*row);
         row->set_tooltip_text(path);
         row->signal_clicked().connect([this, path = path.raw()]() {
-            popover_->popdown();
+            popover_.popdown();
             set_filename(path);
         });
-        box->append(*row);
+        tr_box_append(*box, *row);
     }
 
-    box->append(*Gtk::make_managed<Gtk::Separator>(Gtk::Orientation::HORIZONTAL));
+    tr_box_append(*box, *Gtk::make_managed<Gtk::Separator>(TR_GTK_ORIENTATION(HORIZONTAL)));
 
     auto* const other_label = Gtk::make_managed<Gtk::Label>(_("Other…"));
-    other_label->set_halign(Gtk::Align::START);
+    other_label->set_halign(TR_GTK_ALIGN(START));
 
     auto* const other = Gtk::make_managed<Gtk::Button>();
-    other->set_child(*other_label);
-    other->set_has_frame(false);
+    tr_set_child(*other, *other_label);
+    tr_button_set_flat(*other);
     other->signal_clicked().connect([this]() {
-        popover_->popdown();
+        popover_.popdown();
         show_dialog();
     });
-    box->append(*other);
+    tr_box_append(*box, *other);
 
-    popover_->set_child(*box);
+    tr_popover_set_child(popover_, *box);
+    tr_show_all(*box);
 }
 
 void PathButton::Impl::show_dialog()
@@ -238,14 +324,14 @@ void PathButton::Impl::update()
         auto const file = Gio::File::create_for_path(current_file_);
 
         try {
-            image_->set(file->query_info()->get_icon());
+            tr_image_set_from_gicon(*image_, file->query_info()->get_icon());
         } catch (Glib::Error const&) {
-            image_->set_from_icon_name("image-missing");
+            tr_image_set_from_icon_name(*image_, "image-missing");
         }
 
         label_->set_text(file->get_basename());
     } else {
-        image_->set_from_icon_name("image-missing");
+        tr_image_set_from_icon_name(*image_, "image-missing");
         label_->set_text(_("(None)"));
     }
 
@@ -254,11 +340,10 @@ void PathButton::Impl::update()
 
 void PathButton::Impl::update_mode()
 {
-    mode_->set_from_icon_name(
-        action_.get_value() == Gtk::FileChooser::Action::SELECT_FOLDER ? "folder-open-symbolic" : "document-open-symbolic");
+    tr_image_set_from_icon_name(
+        *mode_,
+        action_.get_value() == TR_GTK_FILE_CHOOSER_ACTION(SELECT_FOLDER) ? "folder-open-symbolic" : "document-open-symbolic");
 }
-
-#endif
 
 PathButton::PathButton()
     : Glib::ObjectBase(typeid(PathButton))
@@ -277,17 +362,8 @@ PathButton::~PathButton() = default;
 
 void PathButton::set_recent_paths(std::vector<Glib::ustring> const& value)
 {
-#if GTKMM_CHECK_VERSION(4, 0, 0)
     impl_->set_recent_paths(value);
-#else
-    for (auto const& folder : value) {
-        remove_shortcut_folder(folder.raw());
-        add_shortcut_folder(folder.raw());
-    }
-#endif
 }
-
-#if GTKMM_CHECK_VERSION(4, 0, 0)
 
 std::string PathButton::get_filename() const
 {
@@ -304,19 +380,7 @@ void PathButton::add_filter(Glib::RefPtr<Gtk::FileFilter> const& value)
     impl_->add_filter(value);
 }
 
-Glib::PropertyProxy<Gtk::FileChooser::Action> PathButton::property_action()
-{
-    return impl_->property_action().get_proxy();
-}
-
-Glib::PropertyProxy<Glib::ustring> PathButton::property_title()
-{
-    return impl_->property_title().get_proxy();
-}
-
 sigc::signal<void()>& PathButton::signal_selection_changed()
 {
     return impl_->signal_selection_changed();
 }
-
-#endif
