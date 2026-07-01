@@ -51,6 +51,7 @@ Checks:
   - -readability-implicit-bool-conversion
   - -readability-magic-numbers
   - -readability-redundant-access-specifiers # keep: 'private' vs 'private slots'
+  - -readability-redundant-typename # TODO: enable after https://github.com/llvm/llvm-project/issues/206995 is fixed
 
 CheckOptions:
   - { key: cppcoreguidelines-avoid-do-while.IgnoreMacros,                   value: true       }
