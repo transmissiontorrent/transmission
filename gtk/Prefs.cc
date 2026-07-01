@@ -47,7 +47,7 @@ std::string gl_confdir;
 {
     auto const dir = get_default_download_dir();
 
-    auto map = tr::Settings{ 29U };
+    auto map = tr::Settings{ 30U };
     map.try_emplace(TR_KEY_blocklist_updates_enabled, true);
     map.try_emplace(TR_KEY_compact_view, false);
     map.try_emplace(TR_KEY_details_window_height, 500);
@@ -70,6 +70,7 @@ std::string gl_confdir;
     map.try_emplace(TR_KEY_show_tracker_scrapes, false);
     map.try_emplace(TR_KEY_sort_mode, to_variant(DefaultSortMode));
     map.try_emplace(TR_KEY_sort_reversed, false);
+    map.try_emplace(TR_KEY_start_minimized, false);
     map.try_emplace(TR_KEY_statusbar_stats, to_variant(DefaultStatsMode));
     map.try_emplace(TR_KEY_torrent_added_notification_enabled, true);
     map.try_emplace(TR_KEY_torrent_complete_notification_enabled, true);
