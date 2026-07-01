@@ -208,12 +208,13 @@ private:
 std::optional<tr_variant> tr_variant_serde::parse_json(std::string_view input)
 {
     auto* begin = std::data(input);
+    auto size = std::size(input);
     if (begin == nullptr) {
         // RapidJSON will dereference a nullptr otherwise
         begin = "";
+        size = 0;
     }
 
-    auto const size = std::size(input);
     auto top = tr_variant{};
     auto handler = parse_helpers::json_to_variant_handler{ &top };
     auto ms = rapidjson::MemoryStream{ begin, size };
