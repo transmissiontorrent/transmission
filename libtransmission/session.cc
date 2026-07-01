@@ -68,6 +68,8 @@ struct tr_ctor;
 using namespace std::literals;
 using namespace tr::Values;
 
+static_assert(tr::serializer::has_unique_keys<tr::SessionSettings, tr::SessionAltSpeedSettings, tr::RpcServerSettings>());
+
 namespace
 {
 [[nodiscard]] auto get_settings_filename(std::string_view const config_dir)

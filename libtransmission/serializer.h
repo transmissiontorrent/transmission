@@ -6,6 +6,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <concepts>
 #include <cstddef>
 #include <optional>
@@ -115,6 +116,27 @@ template<typename T>
 concept Serializable = requires {
     { std::tuple_size_v<std::remove_cvref_t<decltype(T::Fields)>> } -> std::convertible_to<std::size_t>;
 } && detail::is_fields_tuple_v<std::remove_cvref_t<decltype(T::Fields)>>;
+
+/**
+ * Compile-time check that no serialization key is shared between the
+ * given Serializable types' `Fields`. Example:
+ * static_assert(has_unique_keys<SessionSettings, RpcServerSettings>());
+ */
+template<Serializable... S>
+[[nodiscard]] constexpr bool has_unique_keys()
+{
+    constexpr auto Total = (std::size_t{ 0 } + ... + std::tuple_size_v<std::remove_cvref_t<decltype(S::Fields)>>);
+
+    auto keys = std::array<tr_quark, Total>{};
+    auto idx = std::size_t{ 0 };
+    auto append_keys = [&keys, &idx](auto const& fields) {
+        std::apply([&keys, &idx](auto const&... field) { ((keys[idx++] = field.key), ...); }, fields);
+    };
+    (append_keys(S::Fields), ...);
+
+    std::ranges::sort(keys);
+    return std::ranges::adjacent_find(keys) == std::end(keys);
+}
 
 template<Serializable S>
 [[nodiscard]] std::optional<tr_variant> to_variant(S const& src, tr_quark key);
