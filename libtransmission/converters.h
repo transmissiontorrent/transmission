@@ -223,6 +223,22 @@ template<typename T>
     return {};
 }
 
+// Alternative version of `to_value()` that takes a map + key
+template<typename T>
+[[nodiscard]] bool to_value(tr_variant::Map const& src, tr_quark const key, T* const ptgt)
+{
+    auto const iter = src.find(key);
+    return iter != src.end() && to_value(iter->second, ptgt);
+}
+
+// Alternative version of `to_value()` that takes a map + key and returns a std::optional
+template<typename T>
+[[nodiscard]] std::optional<T> to_value(tr_variant::Map const& src, tr_quark const key)
+{
+    auto const iter = src.find(key);
+    return iter != src.end() ? to_value<T>(iter->second) : std::nullopt;
+}
+
 // returns true iff the value changed
 template<typename T>
 bool set(T& tgt, T src)

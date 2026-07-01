@@ -342,6 +342,65 @@ TEST_F(SerializerTest, optionalRejectsWrongType)
     EXPECT_EQ(out, "keep"s);
 }
 
+TEST_F(SerializerTest, mapKeyOutParamWritesValue)
+{
+    auto map = tr_variant::Map{};
+    map.insert_or_assign(TR_KEY_seed_ratio_limit, to_variant(2.5));
+    map.insert_or_assign(TR_KEY_address, to_variant("localhost"s));
+
+    auto ratio = 0.0;
+    EXPECT_TRUE(to_value(map, TR_KEY_seed_ratio_limit, &ratio));
+    EXPECT_DOUBLE_EQ(ratio, 2.5);
+
+    auto address = std::string{};
+    EXPECT_TRUE(to_value(map, TR_KEY_address, &address));
+    EXPECT_EQ(address, "localhost"s);
+}
+
+TEST_F(SerializerTest, mapKeyOutParamMissingKeyReturnsFalse)
+{
+    auto const map = tr_variant::Map{};
+
+    auto ratio = 9.0;
+    EXPECT_FALSE(to_value(map, TR_KEY_seed_ratio_limit, &ratio));
+    EXPECT_DOUBLE_EQ(ratio, 9.0);
+}
+
+TEST_F(SerializerTest, mapKeyOutParamWrongTypeReturnsFalse)
+{
+    auto map = tr_variant::Map{};
+    map.insert_or_assign(TR_KEY_dht_enabled, to_variant(true));
+
+    auto out = std::string{ "keep" };
+    EXPECT_FALSE(to_value(map, TR_KEY_dht_enabled, &out));
+    EXPECT_EQ(out, "keep"s);
+}
+
+TEST_F(SerializerTest, mapKeyOptionalReturnsValue)
+{
+    auto map = tr_variant::Map{};
+    map.insert_or_assign(TR_KEY_seed_ratio_limit, to_variant(2.5));
+
+    auto const ratio = to_value<double>(map, TR_KEY_seed_ratio_limit);
+    ASSERT_TRUE(ratio.has_value());
+    EXPECT_DOUBLE_EQ(*ratio, 2.5);
+}
+
+TEST_F(SerializerTest, mapKeyOptionalMissingKeyReturnsNullopt)
+{
+    auto const map = tr_variant::Map{};
+
+    EXPECT_FALSE(to_value<double>(map, TR_KEY_seed_ratio_limit).has_value());
+}
+
+TEST_F(SerializerTest, mapKeyOptionalWrongTypeReturnsNullopt)
+{
+    auto map = tr_variant::Map{};
+    map.insert_or_assign(TR_KEY_dht_enabled, to_variant(true));
+
+    EXPECT_FALSE(to_value<std::string>(map, TR_KEY_dht_enabled).has_value());
+}
+
 // ---
 
 using tr::serializer::Field;
