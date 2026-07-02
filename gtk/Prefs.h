@@ -28,13 +28,7 @@
 template<typename T>
 [[nodiscard]] std::optional<T> gtr_pref_lookup(tr_quark const key)
 {
-    auto const& prefs = gtr_pref_get_all();
-
-    if (auto iter = prefs.find(key); iter != prefs.end()) {
-        return tr::serializer::to_value<T>(iter->second);
-    }
-
-    return std::nullopt;
+    return tr::serializer::to_value<T>(gtr_pref_get_all(), key);
 }
 
 template<typename T>

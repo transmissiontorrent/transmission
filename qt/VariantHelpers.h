@@ -72,9 +72,7 @@ std::optional<T> dictFind(tr_variant* dict, tr_quark key)
 {
     if (dict) {
         if (auto const* const map = dict->get_if<tr_variant::Map>()) {
-            if (auto const iter = map->find(key); iter != map->end()) {
-                return tr::serializer::to_value<T>(iter->second);
-            }
+            return tr::serializer::to_value<T>(*map, key);
         }
     }
 
