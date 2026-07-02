@@ -266,7 +266,7 @@ template<typename ArgTuple, std::size_t... PairIndex>
  * `has_unique_keys()` to guarantee at most one owner.
  */
 template<Serializable S, Serializable... Ss>
-[[nodiscard]] std::optional<tr_variant> to_variant(tr_quark key, S const& src, Ss const&... srcs)
+[[nodiscard]] std::optional<tr_variant> to_variant(tr_quark const key, S const& src, Ss const&... srcs)
 {
     auto result = detail::to_variant_one(src, key);
     if constexpr (sizeof...(Ss) != 0U) {
@@ -281,7 +281,7 @@ template<Serializable S, Serializable... Ss>
 }
 
 template<typename T, Serializable S, Serializable... Ss>
-[[nodiscard]] std::optional<T> get(tr_quark key, S const& src, Ss const&... srcs)
+[[nodiscard]] std::optional<T> get(tr_quark const key, S const& src, Ss const&... srcs)
 {
     if (auto value = to_variant(key, src, srcs...)) {
         return to_value<T>(*value);
@@ -331,7 +331,7 @@ constexpr bool set(S& tgt, T val)
  * `true` iff a matching field was found, had the same value type, and changed.
  */
 template<typename T, Serializable S, Serializable... Ss>
-bool set(tr_quark key, T val, S& tgt, Ss&... tgts)
+bool set(tr_quark const key, T val, S& tgt, Ss&... tgts)
 {
     auto type_ok = true;
     auto changed = false;
@@ -351,7 +351,7 @@ bool set(tr_quark key, T val, S& tgt, Ss&... tgts)
  * it. Returns `true` iff a matching field was found and its value changed.
  */
 template<Serializable S, Serializable... Ss>
-bool set_from_variant(tr_quark key, tr_variant const& value, S& tgt, Ss&... tgts)
+bool set_from_variant(tr_quark const key, tr_variant const& value, S& tgt, Ss&... tgts)
 {
     auto changed = false;
     auto matched = false;
