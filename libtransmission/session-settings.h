@@ -317,4 +317,10 @@ public:
         Field<&RpcServerSettings::whitelist_str>{ TR_KEY_rpc_whitelist },
         Field<&RpcServerSettings::is_whitelist_enabled>{ TR_KEY_rpc_whitelist_enabled });
 };
+
+[[nodiscard]] constexpr bool is_settings_key(tr_quark const key)
+{
+    return tr::serializer::has_key<tr::RpcServerSettings, tr::SessionAltSpeedSettings, tr::SessionSettings>(key);
+}
+
 } // namespace tr

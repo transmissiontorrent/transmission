@@ -274,6 +274,12 @@ struct SessionPrefs {
         Field<&SessionPrefs::utp_enabled_>{ TR_KEY_utp_enabled });
 };
 
+[[nodiscard]] constexpr bool is_prefs_key(tr_quark const key)
+{
+    using SomeType = int; // not actually used; just needs to be a concrete type
+    return tr::serializer::has_key<SessionPrefs<SomeType>, AppPrefs<SomeType>>(key);
+}
+
 template<typename StringType>
 class Prefs
 {
@@ -330,20 +336,14 @@ public:
         return val.value_or(T{});
     }
 
-    [[nodiscard]] tr::Settings current_settings() const
+    [[nodiscard]] tr::Settings app_settings() const
     {
-        auto map = tr::serializer::save(app_prefs_, session_prefs_);
-        map.erase(TR_KEY_filter_text);
-        return map;
+        return tr::serializer::save(app_prefs_);
     }
 
-    void save(StringType const& filename_in) const
+    [[nodiscard]] tr::Settings session_settings() const
     {
-        auto const filename = Traits::to_utf8(filename_in);
-        auto settings = current_settings();
-        settings.merge(tr::settings::load(filename));
-        settings.erase(TR_KEY_filter_text);
-        tr::settings::save(filename, settings);
+        return tr::serializer::save(session_prefs_);
     }
 
 protected:

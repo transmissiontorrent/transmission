@@ -22,7 +22,8 @@
 
 #include <libtransmission/converters.h>
 #include <libtransmission/quark.h>
-#include <libtransmission/transmission.h>
+#include <libtransmission/types.h>
+#include <libtransmission/variant.h>
 
 #include "Prefs.h"
 #include "RpcClient.h"
@@ -50,6 +51,8 @@ public:
 
     void stop();
     void restart();
+
+    [[nodiscard]] std::optional<tr::Settings> local_settings() const;
 
     [[nodiscard]] constexpr auto const& getRemoteUrl() const noexcept
     {

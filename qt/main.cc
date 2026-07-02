@@ -6,6 +6,7 @@
 #include <array>
 #include <memory>
 #include <string_view>
+#include <vector>
 
 #include <QDir>
 #include <QNetworkAccessManager>
@@ -14,6 +15,8 @@
 
 #include <libtransmission/transmission.h>
 
+#include <libtransmission/serializer.h>
+#include <libtransmission/session-settings.h>
 #include <libtransmission/tr-getopt.h>
 #include <libtransmission/utils.h>
 #include <libtransmission/version.h>
@@ -151,6 +154,38 @@ bool tryDelegate(QStringList const& filenames)
     }
 
     return delegated;
+}
+
+void save_settings(QString config_dir, Prefs const& prefs, Application const& app)
+{
+    auto const filename_qstr = QDir{ config_dir }.absoluteFilePath(QStringLiteral("settings.json"));
+    auto filename = filename_qstr.toStdString();
+
+    // 1. start with live app settings
+    auto settings = prefs.app_settings();
+
+    // 2. if it's a local session, add live session settings
+    if (auto val = app.local_session_settings())
+        settings.merge(*val);
+
+    // 3. fill in any missing values (eg not a local session) from the existing settings file
+    settings.merge(tr::settings::load(filename));
+
+    // 4. fill in any missing values (eg missing settings file) from session defaults
+    settings.merge(tr_sessionGetDefaultSettings());
+
+    // remove transient keys
+    for (auto const key : { TR_KEY_filter_text })
+        settings.erase(key);
+
+    // remove any non-canonical keys that crept in from the settings file
+    settings.erase_if([](auto const& item) {
+        auto const& [key, value] = item;
+        return !tr::app::is_prefs_key(key) && !tr::is_settings_key(key);
+    });
+
+    // save it
+    tr::settings::save(filename, settings);
 }
 
 } // namespace
@@ -291,8 +326,7 @@ int tr_main(int argc, char** argv)
     auto const ret = QApplication::exec();
 
     // save prefs before exiting
-    auto const filename = QDir{ config_dir }.absoluteFilePath(QStringLiteral("settings.json"));
-    prefs.save(filename);
+    save_settings(config_dir, prefs, app);
 
     return ret;
 }

@@ -941,3 +941,13 @@ void Session::launchWebInterface() const
 
     QDesktopServices::openUrl(url);
 }
+
+// ---
+
+std::optional<tr::Settings> Session::local_settings() const
+{
+    if (session_)
+        return tr_sessionGetSettings(session_);
+
+    return {};
+}

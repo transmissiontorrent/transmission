@@ -153,6 +153,23 @@ template<Serializable... S>
     return (fields_contain(S::Fields) || ...);
 }
 
+/**
+ * Compile-time check whether any of the given Serializable types has a
+ * field with `key`. Takes the Serializables as template arguments so it
+ * can be used in constant expressions. Example:
+ * static_assert(has_key<SessionSettings, RpcServerSettings>(TR_KEY_utp_enabled));
+ */
+template<Serializable... S>
+[[nodiscard]] constexpr bool has_key(tr_quark key)
+{
+    auto fields_contain = [key](auto const& fields) {
+        auto found = false;
+        std::apply([key, &found](auto const&... field) { ((found = found || field.key == key), ...); }, fields);
+        return found;
+    };
+    return (fields_contain(S::Fields) || ...);
+}
+
 namespace detail
 {
 

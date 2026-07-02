@@ -455,9 +455,14 @@ void Application::addTorrent(AddData addme) const
     raise();
 }
 
-/***
-****
-***/
+// ---
+
+std::optional<tr::Settings> Application::local_session_settings() const
+{
+    return session_->local_settings();
+}
+
+// ---
 
 void Application::raise() const
 {

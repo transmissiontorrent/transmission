@@ -7,6 +7,7 @@
 
 #include <ctime>
 #include <memory>
+#include <optional>
 #include <unordered_set>
 
 #include <QApplication>
@@ -17,8 +18,10 @@
 #include <QTranslator>
 #include <QWeakPointer>
 
-#include <libtransmission-app/favicon-cache.h>
 #include <libtransmission/quark.h>
+#include <libtransmission/variant.h>
+
+#include <libtransmission-app/favicon-cache.h>
 
 #include "AddData.h"
 #include "Prefs.h"
@@ -57,6 +60,8 @@ public:
     bool notifyApp(QString const& title, QString const& body, QStringList const& actions = {}) const;
 
     QString intern(QString const& in);
+
+    [[nodiscard]] std::optional<tr::Settings> local_session_settings() const;
 
     [[nodiscard]] QPixmap find_favicon(QString const& sitename) const
     {
