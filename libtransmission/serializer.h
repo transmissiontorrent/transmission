@@ -138,6 +138,21 @@ template<Serializable... S>
     return std::ranges::adjacent_find(keys) == std::end(keys);
 }
 
+/**
+ * Returns `true` iff any of the given Serializables has a field with `key`.
+ * Example: has_key(TR_KEY_peer_port, session_settings, rpc_server_settings)
+ */
+template<Serializable... S>
+[[nodiscard]] bool has_key(tr_quark key, S const&... /*objs*/)
+{
+    auto fields_contain = [key](auto const& fields) {
+        auto found = false;
+        std::apply([key, &found](auto const&... field) { ((found = found || field.key == key), ...); }, fields);
+        return found;
+    };
+    return (fields_contain(S::Fields) || ...);
+}
+
 namespace detail
 {
 

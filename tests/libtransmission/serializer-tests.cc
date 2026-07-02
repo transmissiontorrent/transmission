@@ -683,4 +683,25 @@ TEST_F(SerializerTest, multiObjectSetRoutesToOwner)
     EXPECT_FALSE(set_from_variant(TR_KEY_comment, tr_variant{ true }, endpoint, simple));
 }
 
+TEST_F(SerializerTest, hasKeyAcrossMultipleObjects)
+{
+    auto const endpoint = Endpoint{ .address = "localhost", .port = tr_port::from_host(TrDefaultPeerPort) };
+    auto const simple = Simple{ .blocks = 1, .enabled = false };
+
+    using tr::serializer::has_key;
+
+    // single object: key present / absent
+    EXPECT_TRUE(has_key(TR_KEY_address, endpoint));
+    EXPECT_FALSE(has_key(TR_KEY_blocks, endpoint));
+
+    // key owned by the first object
+    EXPECT_TRUE(has_key(TR_KEY_port, endpoint, simple));
+
+    // key owned by the second object
+    EXPECT_TRUE(has_key(TR_KEY_blocks, endpoint, simple));
+
+    // owned by neither
+    EXPECT_FALSE(has_key(TR_KEY_comment, endpoint, simple));
+}
+
 } // namespace
