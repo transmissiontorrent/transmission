@@ -167,6 +167,129 @@ namespace
 {
 int constexpr DeflateLevel = 6; // medium / default
 
+// ---
+// [rpc-diag] TEMPORARY instrumentation to triage slow / stalled RPC responses on
+// the `chore/investigate-rpc-lag` branch. Every line is prefixed with "[rpc-diag]"
+// and (where possible) tagged with a per-request "#N" id so lines can be grepped
+// and correlated. Emitted at INFO level, so run the daemon with:
+//     transmission-daemon --foreground --log-level=info
+// (or set "message-level": 4 in settings.json). Remove this whole block, the
+// call sites, and the `heartbeat_timer` member once the regression is understood.
+//
+// The tracers deliberately test several theories at once:
+//   * ENTER / "#N COMPLETE" bracket each request with wall-clock + monotonic timing
+//     so we can line them up against the client's HTTP `Date` headers and tell
+//     whether the multi-second gaps are actually spent inside the server.
+//   * The event-loop heartbeat fires every 500ms; if a beat arrives late, the
+//     single libevent/session thread was blocked (starved) during that window --
+//     which would explain why even empty 401/409 replies are slow.
+//   * make_response / handle_rpc timers separate JSON serialization from gzip
+//     from the actual socket flush, so a slow *send* is distinguishable from slow
+//     *processing*.
+namespace rpc_diag
+{
+using clock = std::chrono::steady_clock;
+
+auto constexpr HeartbeatIntervalMs = 500;
+auto constexpr HeartbeatStallThresholdMs = 900; // report if a "beat" is at least this late
+auto constexpr StepWarnMs = 50; // only log an in-handler step if it took at least this long
+
+// handle_request() and the timers all run on the single libevent thread, so the
+// plain statics below need no atomics/locks.
+[[nodiscard]] std::uint64_t next_id() noexcept
+{
+    static std::uint64_t counter = 0U;
+    return ++counter;
+}
+
+// Wall-clock UTC HH:MM:SS.mmm so lines line up with the client's HTTP `Date`
+// headers (which are in GMT).
+[[nodiscard]] std::string now_str()
+{
+    auto const now = std::chrono::system_clock::now();
+    auto const secs = std::chrono::time_point_cast<std::chrono::seconds>(now);
+    auto const ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - secs).count();
+    return fmt::format("{:%H:%M:%S}.{:03d} UTC", fmt::gmtime(std::chrono::system_clock::to_time_t(now)), ms);
+}
+
+[[nodiscard]] std::int64_t ms_since(clock::time_point start) noexcept
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(clock::now() - start).count();
+}
+
+[[nodiscard]] constexpr std::string_view method_name(evhttp_cmd_type cmd) noexcept
+{
+    switch (cmd) {
+    case EVHTTP_REQ_GET:
+        return "GET"sv;
+    case EVHTTP_REQ_POST:
+        return "POST"sv;
+    case EVHTTP_REQ_HEAD:
+        return "HEAD"sv;
+    case EVHTTP_REQ_PUT:
+        return "PUT"sv;
+    case EVHTTP_REQ_DELETE:
+        return "DELETE"sv;
+    case EVHTTP_REQ_OPTIONS:
+        return "OPTIONS"sv;
+    default:
+        return "?"sv;
+    }
+}
+
+// Log an in-handler segment only if it was slow enough to matter.
+void step(std::uint64_t id, std::string_view name, clock::time_point since)
+{
+    if (auto const ms = ms_since(since); ms >= StepWarnMs) {
+        tr_logAddInfo(fmt::format("[rpc-diag] #{:d} step '{:s}' took {:d}ms", id, name, ms));
+    }
+}
+
+// Per-request context handed to libevent's on-complete callback so we can log
+// exactly when (and whether) the whole reply finished flushing to the socket.
+struct Context {
+    std::uint64_t id = 0U;
+    clock::time_point enter;
+};
+
+// Fires after evhttp has written the entire reply to the socket. If a transfer is
+// aborted (e.g. the client times out mid-download) libevent may free the request
+// without invoking this -- in that case the *absence* of a "#N COMPLETE" line is
+// itself the signal that the send never finished. The tiny leak of `ctx` on that
+// path is acceptable for a throwaway triage build.
+void on_complete(struct evhttp_request* /*req*/, void* arg)
+{
+    auto* const ctx = static_cast<Context*>(arg);
+    tr_logAddInfo(
+        fmt::format(
+            "[rpc-diag] #{:d} COMPLETE at {:s}: entire reply flushed to socket {:d}ms after the request was accepted",
+            ctx->id,
+            now_str(),
+            ms_since(ctx->enter)));
+    delete ctx;
+}
+
+// Event-loop stall detector. Updated on each beat; a beat arriving much later than
+// HeartbeatIntervalMs means the single event/session thread was blocked.
+clock::time_point heartbeat_last{};
+
+void heartbeat_tick()
+{
+    auto const now = clock::now();
+    auto const elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - heartbeat_last).count();
+    heartbeat_last = now;
+    if (elapsed >= HeartbeatStallThresholdMs) {
+        tr_logAddInfo(
+            fmt::format(
+                "[rpc-diag] heartbeat STALL at {:s}: event loop was blocked ~{:d}ms (expected ~{:d}ms). "
+                "Something monopolized the single RPC/session event thread during this window.",
+                now_str(),
+                elapsed,
+                HeartbeatIntervalMs));
+    }
+}
+} // namespace rpc_diag
+
 // Prevent clickjacking on the browser-facing WebUI and RPC responses.
 // https://github.com/transmission/transmission/issues/8726
 // https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking_Defense_Cheat_Sheet.html.
@@ -227,7 +350,12 @@ void send_simple_response(struct evhttp_request* req, int code, char const* text
 
     if (bool const do_compress = encoding != nullptr && tr_strv_contains(encoding, "gzip"sv); !do_compress) {
         evbuffer_add(out, std::data(content), std::size(content));
+        tr_logAddInfo(
+            fmt::format(
+                "[rpc-diag] make_response: {:d} bytes sent uncompressed (client did not advertise gzip)",
+                std::size(content)));
     } else {
+        auto const compress_start = rpc_diag::clock::now();
         auto const max_compressed_len = libdeflate_deflate_compress_bound(server->compressor.get(), std::size(content));
 
         auto iov = evbuffer_iovec{};
@@ -239,15 +367,25 @@ void send_simple_response(struct evhttp_request* req, int code, char const* text
             std::size(content),
             iov.iov_base,
             iov.iov_len);
+        auto used_gzip = false;
         if (0 < compressed_len && compressed_len < std::size(content)) {
             iov.iov_len = compressed_len;
             evhttp_add_header(output_headers, "Content-Encoding", "gzip");
+            used_gzip = true;
         } else {
             std::ranges::copy(content, static_cast<char*>(iov.iov_base));
             iov.iov_len = std::size(content);
         }
 
         evbuffer_commit_space(out, &iov, 1);
+        tr_logAddInfo(
+            fmt::format(
+                "[rpc-diag] make_response: gzip {:s} in {:d}ms; {:d} bytes in -> {:d} bytes out ({:d}% of original)",
+                used_gzip ? "applied" : "skipped (did not shrink payload)",
+                rpc_diag::ms_since(compress_start),
+                std::size(content),
+                iov.iov_len,
+                std::size(content) != 0U ? iov.iov_len * 100U / std::size(content) : 0U));
     }
 
     return out;
@@ -345,21 +483,47 @@ void handle_web_client(struct evhttp_request* req, tr_rpc_server const* server)
 
 void handle_rpc_from_json(struct evhttp_request* req, tr_rpc_server* server, std::string_view json)
 {
+    auto const exec_start = rpc_diag::clock::now();
+    tr_logAddInfo(
+        fmt::format(
+            "[rpc-diag] handle_rpc: dispatching {:d}-byte request body to tr_rpc_request_exec() (synchronous, on the event thread)",
+            std::size(json)));
+
     tr_rpc_request_exec(
         server->session,
         json,
         // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-        [req, server](tr_variant&& content) {
+        [req, server, exec_start](tr_variant&& content) {
+            tr_logAddInfo(
+                fmt::format(
+                    "[rpc-diag] handle_rpc: tr_rpc_request_exec() returned after {:d}ms; building the reply next",
+                    rpc_diag::ms_since(exec_start)));
+
             if (!content.has_value()) {
                 evhttp_send_reply(req, HTTP_NOCONTENT, "OK", nullptr);
                 return;
             }
 
+            auto const serialize_start = rpc_diag::clock::now();
+            auto const body = tr_variant_serde::json().compact().to_string(content);
+            tr_logAddInfo(
+                fmt::format(
+                    "[rpc-diag] handle_rpc: serialized JSON reply to {:d} bytes in {:d}ms",
+                    std::size(body),
+                    rpc_diag::ms_since(serialize_start)));
+
             auto* const output_headers = evhttp_request_get_output_headers(req);
-            auto* const response = make_response(req, server, tr_variant_serde::json().compact().to_string(content));
+            auto* const response = make_response(req, server, body);
             evhttp_add_header(output_headers, "Content-Type", "application/json; charset=UTF-8");
+
+            auto const send_start = rpc_diag::clock::now();
             evhttp_send_reply(req, HTTP_OK, "OK", response);
             evbuffer_free(response);
+            tr_logAddInfo(
+                fmt::format(
+                    "[rpc-diag] handle_rpc: evhttp_send_reply() returned in {:d}ms -- note this only *queues* the reply; "
+                    "watch for the matching '#N COMPLETE' line to see when the socket actually drains",
+                    rpc_diag::ms_since(send_start)));
         });
 }
 
@@ -496,6 +660,39 @@ void handle_request(struct evhttp_request* req, void* arg)
     auto remote_port = ev_uint16_t{};
     evhttp_connection_get_peer(con, &remote_host, &remote_port);
 
+    // [rpc-diag] begin per-request tracing (see the rpc_diag namespace near the top of this file)
+    auto const diag_enter = rpc_diag::clock::now();
+    auto const diag_id = rpc_diag::next_id();
+    {
+        static auto diag_prev_enter = diag_enter;
+        auto const gap_ms = std::chrono::duration_cast<std::chrono::milliseconds>(diag_enter - diag_prev_enter).count();
+        diag_prev_enter = diag_enter;
+
+        auto const* const diag_in_headers = evhttp_request_get_input_headers(req);
+        auto const* const diag_clen = evhttp_find_header(diag_in_headers, "Content-Length");
+        auto const diag_has_auth = evhttp_find_header(diag_in_headers, "Authorization") != nullptr;
+        auto const diag_has_sid = evhttp_find_header(diag_in_headers, std::data(TrRpcSessionIdHeader)) != nullptr;
+        auto const* const diag_uri = evhttp_request_get_uri(req);
+        tr_logAddInfo(
+            fmt::format(
+                "[rpc-diag] #{:d} ENTER at {:s}: {:s} {:s} from {:s}:{:d}; content-length={:s}, has-auth={:s}, "
+                "has-session-id={:s}; {:d}ms since the previous request entered handle_request()",
+                diag_id,
+                rpc_diag::now_str(),
+                rpc_diag::method_name(evhttp_request_get_command(req)),
+                diag_uri != nullptr ? diag_uri : "(none)",
+                remote_host != nullptr ? remote_host : "?",
+                remote_port,
+                diag_clen != nullptr ? diag_clen : "(none)",
+                diag_has_auth ? "yes" : "no",
+                diag_has_sid ? "yes" : "no",
+                gap_ms));
+    }
+#if LIBEVENT_VERSION_NUMBER >= 0x02010100
+    // NOLINTNEXTLINE(cppcoreguidelines-owning-memory) -- freed in rpc_diag::on_complete()
+    evhttp_request_set_on_complete_cb(req, rpc_diag::on_complete, new rpc_diag::Context{ .id = diag_id, .enter = diag_enter });
+#endif
+
     auto* const output_headers = evhttp_request_get_output_headers(req);
     evhttp_add_header(output_headers, "Server", MY_REALM);
     add_clickjacking_prevention_headers(output_headers);
@@ -537,6 +734,9 @@ void handle_request(struct evhttp_request* req, void* arg)
     }
 
     server->login_attempts_ = 0;
+
+    // [rpc-diag] how long did the per-request preamble (whitelist + auth/ssha1 + header parsing) take?
+    rpc_diag::step(diag_id, "auth + pre-routing checks", diag_enter);
 
     // eg '/transmission/web/' and '/transmission/rpc'
     auto const& base_path = server->url();
@@ -600,10 +800,15 @@ void handle_request(struct evhttp_request* req, void* arg)
             "<p><code>{0:s}: {1:s}</code></p>",
             TrRpcSessionIdHeader,
             session_id);
+        tr_logAddInfo(
+            fmt::format(
+                "[rpc-diag] #{:d} returning 409 Conflict (missing/stale session id); sending the client the current id to retry with",
+                diag_id));
         send_simple_response(req, 409, body.c_str());
     }
 #endif
     else {
+        tr_logAddInfo(fmt::format("[rpc-diag] #{:d} routing to RPC handler", diag_id));
         handle_rpc(req, server);
     }
 }
@@ -764,6 +969,14 @@ void start_server(tr_rpc_server* server)
         evhttp_set_gencb(httpd, handle_request, server);
         server->httpd.reset(httpd);
 
+        // [rpc-diag] start the event-loop stall detector on the same base that serves HTTP.
+        rpc_diag::heartbeat_last = rpc_diag::clock::now();
+        server->heartbeat_timer = server->session->timerMaker().create([]() { rpc_diag::heartbeat_tick(); });
+        server->heartbeat_timer->start_repeating(std::chrono::milliseconds{ rpc_diag::HeartbeatIntervalMs });
+        tr_logAddInfo(
+            "[rpc-diag] instrumentation active: per-request tracing + 500ms event-loop heartbeat. "
+            "Run with --log-level=info to see [rpc-diag] lines.");
+
         tr_logAddInfo(
             fmt::format(
                 fmt::runtime(_("Listening for RPC and Web requests on '{address}'")),
@@ -786,6 +999,7 @@ void stop_server(tr_rpc_server* server)
 
     auto const address = server->get_bind_address();
 
+    server->heartbeat_timer.reset(); // [rpc-diag]
     httpd.reset();
 
     if (server->bind_address_->is_unix_addr()) {

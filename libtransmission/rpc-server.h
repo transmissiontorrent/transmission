@@ -147,6 +147,8 @@ public:
     std::unique_ptr<tr_rpc_address> bind_address_;
 
     std::unique_ptr<tr::Timer> start_retry_timer;
+    std::unique_ptr<tr::Timer>
+        heartbeat_timer; // [rpc-diag] event-loop stall detector; remove with the rest of the instrumentation
     tr::evhelpers::evhttp_unique_ptr httpd;
     tr_session* const session;
 
