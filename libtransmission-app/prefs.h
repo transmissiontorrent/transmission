@@ -25,14 +25,6 @@
 
 namespace tr::app
 {
-
-/**
- * Returns `true` iff `key` is a setting owned by the session core (as opposed
- * to a UI-only preference). Kept as a free function so the big `switch` lives
- * in one translation unit instead of being re-instantiated per `std::string`.
- */
-[[nodiscard]] bool prefs_is_core(tr_quark key);
-
 /**
  * Local application preferences
  *
@@ -256,6 +248,11 @@ struct SessionPrefs {
         Field<&SessionPrefs::uspeed_enabled_>{ TR_KEY_speed_limit_up_enabled },
         Field<&SessionPrefs::utp_enabled_>{ TR_KEY_utp_enabled });
 };
+
+[[nodiscard]] constexpr bool prefs_is_core(tr_quark const key)
+{
+    return tr::serializer::has_key<SessionPrefs>(key);
+}
 
 class Prefs
 {
