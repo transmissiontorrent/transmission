@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_QT_TEST_RPC_FIXTURES_H
-#define TR_QT_TEST_RPC_FIXTURES_H
+#pragma once
 
 #include <string_view>
 
@@ -110,5 +109,3 @@ protected:
         return new FakeReply{ op, req, this };
     }
 };
-
-#endif // TR_QT_TEST_RPC_FIXTURES_H
