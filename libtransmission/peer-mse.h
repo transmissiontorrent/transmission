@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_PEER_MSE_H
-#define TR_LIB_PEER_MSE_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -131,5 +130,3 @@ private:
 };
 
 } // namespace tr_message_stream_encryption
-
-#endif // TR_LIB_PEER_MSE_H

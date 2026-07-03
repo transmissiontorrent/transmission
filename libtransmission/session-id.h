@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_SESSION_ID_H
-#define TR_LIB_SESSION_ID_H
+#pragma once
 
 #include <array>
 #include <cstddef> // for size_t
@@ -58,5 +57,3 @@ private:
     mutable tr_sys_file_t previous_lock_file_ = TR_BAD_SYS_FILE;
     mutable time_t expires_at_ = 0;
 };
-
-#endif // TR_LIB_SESSION_ID_H

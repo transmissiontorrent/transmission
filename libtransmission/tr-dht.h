@@ -2,8 +2,7 @@
 // It may be used under the MIT (SPDX: MIT) license.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_TR_DHT_H
-#define TR_LIB_TR_DHT_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -115,5 +114,3 @@ public:
     virtual void maybe_add_node(tr_address const& address, tr_port port) = 0;
     virtual void handle_message(unsigned char const* msg, size_t msglen, struct sockaddr* from, socklen_t fromlen) = 0;
 };
-
-#endif // TR_LIB_TR_DHT_H

@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_WEB_UTILS_H
-#define TR_LIB_WEB_UTILS_H
+#pragma once
 
 #include <cstdint> // uint16_t
 #include <optional>
@@ -87,5 +86,3 @@ constexpr void tr_urlPercentEncode(BackInsertIter out, tr_sha1_digest_t const& d
 [[nodiscard]] char const* tr_webGetResponseStr(long response_code);
 
 [[nodiscard]] std::string tr_urlPercentDecode(std::string_view /*url*/);
-
-#endif // TR_LIB_WEB_UTILS_H

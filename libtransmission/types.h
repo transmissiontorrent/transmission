@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_TYPES_H
-#define TR_LIB_TYPES_H
+#pragma once
 
 #include <array>
 #include <compare>
@@ -698,5 +697,3 @@ using tr_rpc_func = std::function<tr_rpc_callback_status(tr_rpc_callback_type ty
 
 using tr_torrent_rename_done_func = std::function<
     void(tr_torrent_id_t, std::string_view oldpath, std::string_view newname, tr_error const&)>;
-
-#endif // TR_LIB_TYPES_H

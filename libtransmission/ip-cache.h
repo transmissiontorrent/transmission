@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_IP_CACHE_H
-#define TR_LIB_IP_CACHE_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -150,5 +149,3 @@ private:
 
     array_ip_t<size_t> ix_service_ = {};
 };
-
-#endif // TR_LIB_IP_CACHE_H

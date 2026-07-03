@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_ENV_H
-#define TR_LIB_ENV_H
+#pragma once
 
 #include <string>
 #include <string_view>
@@ -14,5 +13,3 @@
 
 /** @brief Get environment variable value as string. */
 [[nodiscard]] std::string tr_env_get_string(std::string_view key, std::string_view default_value = {});
-
-#endif // TR_LIB_ENV_H

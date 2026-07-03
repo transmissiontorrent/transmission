@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_RESUME_H
-#define TR_LIB_RESUME_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -53,5 +52,3 @@ fields_t load(tr_torrent* tor, tr_torrent::ResumeHelper& helper, fields_t fields
 void save(tr_torrent* tor, tr_torrent::ResumeHelper const& helper);
 
 } // namespace tr_resume
-
-#endif // TR_LIB_RESUME_H

@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_APP_PREFS_H
-#define TR_APP_PREFS_H
+#pragma once
 
 #include <cassert>
 #include <chrono>
@@ -344,5 +343,3 @@ public:
 };
 
 } // namespace tr::app
-
-#endif // TR_APP_PREFS_H

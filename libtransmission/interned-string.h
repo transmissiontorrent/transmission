@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_INTERNED_STRING_H
-#define TR_LIB_INTERNED_STRING_H
+#pragma once
 
 #include <algorithm>
 #include <compare>
@@ -144,5 +143,3 @@ struct fmt::formatter<tr_interned_string> : formatter<std::string_view> {
         return formatter<std::string_view>::format(is.sv(), ctx);
     }
 };
-
-#endif // TR_LIB_INTERNED_STRING_H

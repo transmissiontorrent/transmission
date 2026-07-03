@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_RPC_SERVER_H
-#define TR_LIB_RPC_SERVER_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -154,5 +153,3 @@ public:
     size_t login_attempts_ = 0U;
     int start_retry_counter = 0;
 };
-
-#endif // TR_LIB_RPC_SERVER_H

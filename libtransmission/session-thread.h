@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_SESSION_THREAD_H
-#define TR_LIB_SESSION_THREAD_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -47,5 +46,3 @@ public:
         run(callback_t{ std::bind_front(std::forward<Func>(func), std::forward<Args>(args)...) });
     }
 };
-
-#endif // TR_LIB_SESSION_THREAD_H

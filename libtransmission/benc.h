@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_BENC_H
-#define TR_LIB_BENC_H
+#pragma once
 
 #include <array>
 #include <cerrno>
@@ -390,5 +389,3 @@ bool parse(
 }
 
 } // namespace tr::benc
-
-#endif // TR_LIB_BENC_H

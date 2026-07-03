@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_TORRENT_METAINFO_H
-#define TR_LIB_TORRENT_METAINFO_H
+#pragma once
 
 #include <cstdint> // uint32_t, uint64_t
 #include <ctime>
@@ -233,5 +232,3 @@ private:
     bool is_private_ = false;
     bool is_v2_ = false;
 };
-
-#endif // TR_LIB_TORRENT_METAINFO_H

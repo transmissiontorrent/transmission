@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_TIMER_EV_H
-#define TR_LIB_TIMER_EV_H
+#pragma once
 
 #include <memory>
 
@@ -32,5 +31,3 @@ private:
 };
 
 } // namespace tr
-
-#endif // TR_LIB_TIMER_EV_H

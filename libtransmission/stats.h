@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_STATS_H
-#define TR_LIB_STATS_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -90,5 +89,3 @@ private:
     tr_session_stats old_ = Zero;
     bool is_dirty_ = false;
 };
-
-#endif // TR_LIB_STATS_H

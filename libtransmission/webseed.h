@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_WEBSEED_H
-#define TR_LIB_WEBSEED_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -34,5 +33,3 @@ public:
 
     [[nodiscard]] virtual tr_webseed_view get_view() const = 0;
 };
-
-#endif // TR_LIB_WEBSEED_H

@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_TR_MACROS_H
-#define TR_LIB_TR_MACROS_H
+#pragma once
 
 #if __cpp_lib_constexpr_vector >= 201907L
 #define TR_CONSTEXPR_VEC constexpr
@@ -39,5 +38,3 @@
 #else
 #define TR_UCLIBC_CHECK_VERSION(major, minor, micro) 0
 #endif
-
-#endif // TR_LIB_TR_MACROS_H

@@ -64,8 +64,7 @@ async function main() {
 
   fs.writeFileSync('mime-types.h', `${copyright}
 
-#ifndef TR_LIB_MIME_TYPES_H
-#define TR_LIB_MIME_TYPES_H
+#pragma once
 
 #include <array>
 #include <string_view>
@@ -78,8 +77,6 @@ struct mime_type_suffix {
 inline auto constexpr MimeTypeSuffixes = std::to_array<mime_type_suffix>({
     ${mime_type_lines}
 });
-
-#endif // TR_LIB_MIME_TYPES_H
 `);
 }
 

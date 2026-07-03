@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_PORT_FORWARDING_UPNP_H
-#define TR_LIB_PORT_FORWARDING_UPNP_H
+#pragma once
 
 #ifndef LIBTRANSMISSION_PORT_FORWARDING_MODULE
 #error only the libtransmission port forwarding module should #include this header.
@@ -33,5 +32,3 @@ tr_port_forwarding_state tr_upnpPulse(
     std::string bindaddr);
 
 /* @} */
-
-#endif // TR_LIB_PORT_FORWARDING_UPNP_H

@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_SESSION_ALT_SPEEDS_H
-#define TR_LIB_SESSION_ALT_SPEEDS_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -152,5 +151,3 @@ private:
     // recent change that was made by the scheduler
     std::optional<bool> scheduler_set_is_active_to_;
 };
-
-#endif // TR_LIB_SESSION_ALT_SPEEDS_H

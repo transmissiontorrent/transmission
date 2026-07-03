@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_HISTORY_H
-#define TR_LIB_HISTORY_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -65,5 +64,3 @@ private:
     std::array<SizeType, Seconds> count_ = {};
     uint32_t newest_ = 0;
 };
-
-#endif // TR_LIB_HISTORY_H

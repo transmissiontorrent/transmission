@@ -84,8 +84,7 @@ fi
 vcs_revision=$(echo $vcs_revision | head -c10)
 
 cat > libtransmission/version.h.new << EOF
-#ifndef TR_LIB_VERSION_H
-#define TR_LIB_VERSION_H
+#pragma once
 
 #define PEERID_PREFIX             "${peer_id_prefix}"
 #define USERAGENT_PREFIX          "${user_agent_prefix}"
@@ -98,8 +97,6 @@ cat > libtransmission/version.h.new << EOF
 #define MAJOR_VERSION             ${major_version}
 #define MINOR_VERSION             ${minor_version}
 #define PATCH_VERSION             ${patch_version}
-
-#endif // TR_LIB_VERSION_H
 EOF
 
 # Add a release definition

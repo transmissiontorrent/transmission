@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_UTILS_H
-#define TR_LIB_UTILS_H
+#pragma once
 
 #include <cstdint> // uint8_t, uint32_t, uint64_t
 #include <ctime> // time_t
@@ -156,5 +155,3 @@ constexpr void tr_timeUpdate(time_t now) noexcept
 
 /** @brief Initialise libtransmission for each app */
 void tr_lib_init();
-
-#endif // TR_LIB_UTILS_H

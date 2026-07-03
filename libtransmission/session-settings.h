@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_SESSION_SETTINGS_H
-#define TR_LIB_SESSION_SETTINGS_H
+#pragma once
 
 #include <chrono>
 #include <concepts>
@@ -325,5 +324,3 @@ public:
 }
 
 } // namespace tr
-
-#endif // TR_LIB_SESSION_SETTINGS_H

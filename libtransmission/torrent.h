@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_TORRENT_H
-#define TR_LIB_TORRENT_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -1419,5 +1418,3 @@ constexpr bool tr_isTorrent(tr_torrent const* tor)
 #define tr_logAddInfoTor(tor, msg) tr_logAddInfo(msg, (tor)->name())
 #define tr_logAddDebugTor(tor, msg) tr_logAddDebug(msg, (tor)->name())
 #define tr_logAddTraceTor(tor, msg) tr_logAddTrace(msg, (tor)->name())
-
-#endif // TR_LIB_TORRENT_H

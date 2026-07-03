@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_MAKEMETA_H
-#define TR_LIB_MAKEMETA_H
+#pragma once
 
 #include <cstddef> // std::byte
 #include <cstdint>
@@ -205,5 +204,3 @@ private:
     bool anonymize_ = false;
     bool cancel_ = false;
 };
-
-#endif // TR_LIB_MAKEMETA_H

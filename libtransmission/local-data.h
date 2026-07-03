@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_LOCAL_DATA_H
-#define TR_LIB_LOCAL_DATA_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -106,5 +105,3 @@ private:
 };
 
 } // namespace tr
-
-#endif // TR_LIB_LOCAL_DATA_H

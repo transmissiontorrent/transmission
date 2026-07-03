@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_PLATFORM_H
-#define TR_LIB_PLATFORM_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -19,5 +18,3 @@ struct tr_session;
 
 /** @brief return the directory where session id lock files are stored */
 [[nodiscard]] std::string tr_getSessionIdDir();
-
-#endif // TR_LIB_PLATFORM_H

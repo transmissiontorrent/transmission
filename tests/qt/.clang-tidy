@@ -45,6 +45,7 @@ Checks:
   - performance-*
   - -performance-move-const-arg
   - portability-*
+  - -portability-avoid-pragma-once
   - -portability-template-virtual-member-function
   - readability-*
   - -readability-function-cognitive-complexity

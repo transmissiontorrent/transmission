@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_OPEN_FILES_H
-#define TR_LIB_OPEN_FILES_H
+#pragma once
 
 #ifndef __TRANSMISSION__
 #error only libtransmission should #include this header.
@@ -69,5 +68,3 @@ private:
     static constexpr size_t MaxOpenFiles = 32U;
     tr_lru_cache<Key, Val, MaxOpenFiles> pool_;
 };
-
-#endif // TR_LIB_OPEN_FILES_H

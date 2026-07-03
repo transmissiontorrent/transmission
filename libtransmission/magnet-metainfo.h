@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_MAGNET_METAINFO_H
-#define TR_LIB_MAGNET_METAINFO_H
+#pragma once
 
 #include <cstddef> // size_t
 #include <string>
@@ -79,5 +78,3 @@ protected:
     tr_sha256_string info_hash2_str_;
     std::string name_;
 };
-
-#endif // TR_LIB_MAGNET_METAINFO_H

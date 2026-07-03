@@ -3,8 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
-#ifndef TR_LIB_FILE_UTILS_H
-#define TR_LIB_FILE_UTILS_H
+#pragma once
 
 #include <iterator> // for std::data(), std::size()
 #include <string_view>
@@ -33,5 +32,3 @@ constexpr auto tr_file_save(std::string_view filename, ContiguousRange const& x,
 {
     return tr_file_save(filename, std::string_view{ std::data(x), std::size(x) }, error);
 }
-
-#endif // TR_LIB_FILE_UTILS_H
