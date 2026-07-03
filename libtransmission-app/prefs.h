@@ -143,15 +143,15 @@ struct SessionPrefs {
 
     // Initialize to empty defaults here to make the linter happy.
     // The real defaults are in the ctor, which gets libtransmission's defaults.
-    std::string blocklist_url_ = {};
-    std::string default_trackers_ = {};
-    std::string download_dir_ = {};
-    std::string incomplete_dir_ = {};
-    std::string rpc_password_ = {};
-    std::string rpc_username_ = {};
-    std::string rpc_whitelist_ = {};
-    std::string script_torrent_done_filename_ = {};
-    std::string script_torrent_done_seeding_filename_ = {};
+    std::string blocklist_url_;
+    std::string default_trackers_;
+    std::string download_dir_;
+    std::string incomplete_dir_;
+    std::string rpc_password_;
+    std::string rpc_username_;
+    std::string rpc_whitelist_;
+    std::string script_torrent_done_filename_;
+    std::string script_torrent_done_seeding_filename_;
     double ratio_ = {};
     size_t alt_speed_limit_down_ = {};
     size_t alt_speed_limit_time_begin_ = {};
@@ -164,16 +164,16 @@ struct SessionPrefs {
     size_t queue_stalled_minutes_ = {};
     size_t upload_slots_per_torrent_ = {};
     size_t uspeed_ = {};
-    tr_diffserv_t socket_diffserv_ = {};
-    tr_port peer_port_ = {};
-    tr_port peer_port_random_high_ = {};
-    tr_port peer_port_random_low_ = {};
-    tr_port rpc_port_ = {};
+    tr_diffserv_t socket_diffserv_;
+    tr_port peer_port_;
+    tr_port peer_port_random_high_;
+    tr_port peer_port_random_low_;
+    tr_port rpc_port_;
     uint16_t idle_limit_ = {};
     tr_encryption_mode encryption_ = {};
     tr_file_preallocation preallocation_ = {};
     tr_log_level msglevel_ = {};
-    tr_sched_day alt_speed_limit_time_day_ = {};
+    tr_sched_day alt_speed_limit_time_day_ = TR_SCHED_ALL;
     bool alt_speed_limit_enabled_ = {};
     bool alt_speed_limit_time_enabled_ = {};
     bool blocklist_enabled_ = {};
