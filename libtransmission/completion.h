@@ -111,7 +111,7 @@ struct tr_completion {
         return TR_LEECH;
     }
 
-    [[nodiscard]] std::vector<uint8_t> create_piece_bitfield() const;
+    [[nodiscard]] std::vector<std::byte> create_piece_bitfield() const;
 
     [[nodiscard]] size_t count_missing_blocks_in_piece(tr_piece_index_t piece) const
     {

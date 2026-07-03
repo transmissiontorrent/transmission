@@ -91,7 +91,7 @@ void tr_completion::amount_done(float* tab, size_t n_tabs) const
     }
 }
 
-std::vector<uint8_t> tr_completion::create_piece_bitfield() const
+std::vector<std::byte> tr_completion::create_piece_bitfield() const
 {
     size_t const n = block_info_->piece_count();
     auto pieces = tr_bitfield{ n };
@@ -101,7 +101,7 @@ std::vector<uint8_t> tr_completion::create_piece_bitfield() const
     for (tr_piece_index_t piece = 0; piece < n; ++piece) {
         flags[piece] = has_piece(piece);
     }
-    pieces.set_from_bools(flags.get(), n);
+    pieces.set_from_bools({ flags.get(), n });
 
     return pieces.raw();
 }
