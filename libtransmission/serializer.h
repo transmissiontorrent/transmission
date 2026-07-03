@@ -480,7 +480,7 @@ template<typename... Args>
 
     auto map = tr_variant::Map{ detail::pair_fields_capacity<ArgTuple>(std::make_index_sequence<PairCount>{}) };
     [&]<std::size_t... PairIndex>(std::index_sequence<PairIndex...> /*pairs*/) {
-        (detail::save_one(std::get<2U * PairIndex>(arg_tuple), std::get<2U * PairIndex + 1U>(arg_tuple), map), ...);
+        (detail::save_one(std::get<2U * PairIndex>(arg_tuple), std::get<(2U * PairIndex) + 1U>(arg_tuple), map), ...);
     }(std::make_index_sequence<PairCount>{});
     return map;
 }

@@ -13,11 +13,11 @@
 #include <vector>
 
 #include <libtransmission/constants.h>
-#include <libtransmission/quark.h>
-#include <libtransmission/types.h>
 #include <libtransmission/converters.h>
-#include <libtransmission/transmission.h>
+#include <libtransmission/quark.h>
 #include <libtransmission/serializer.h>
+#include <libtransmission/transmission.h>
+#include <libtransmission/types.h>
 #include <libtransmission/variant.h>
 
 #include <libtransmission-app/converters.h>
@@ -289,12 +289,6 @@ public:
     explicit Prefs(tr::Settings const& settings)
     {
         tr::serializer::load(settings, app_prefs_, session_prefs_);
-    }
-
-    explicit Prefs(StringType const& config_dir_in)
-    {
-        auto const config_dir = Traits::to_utf8(config_dir_in);
-        tr::serializer::load(tr_sessionLoadSettings(config_dir), app_prefs_, session_prefs_);
     }
 
     Prefs(Prefs&&) = delete;

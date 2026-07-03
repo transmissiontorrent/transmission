@@ -56,11 +56,6 @@ public:
     {
     }
 
-    explicit Prefs(QString const& dir)
-        : tr::app::Prefs<QString>{ dir }
-    {
-    }
-
     Prefs(Prefs&&) = delete;
     Prefs(Prefs const&) = delete;
     Prefs& operator=(Prefs&&) = delete;

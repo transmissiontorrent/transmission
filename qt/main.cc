@@ -156,36 +156,62 @@ bool tryDelegate(QStringList const& filenames)
     return delegated;
 }
 
-void save_settings(QString config_dir, Prefs const& prefs, Application const& app)
+namespace
 {
-    auto const filename_qstr = QDir{ config_dir }.absoluteFilePath(QStringLiteral("settings.json"));
-    auto filename = filename_qstr.toStdString();
 
-    // 1. start with live app settings
-    auto settings = prefs.app_settings();
+[[nodiscard]] std::string get_settings_filename(QString const& config_dir)
+{
+    return fmt::format("{:s}/settings.json", config_dir.toStdString());
+}
 
-    // 2. if it's a local session, add live session settings
-    if (auto val = app.local_session_settings())
-        settings.merge(*val);
+[[nodiscard]] auto get_fallback_settings(std::string_view const settings_filename)
+{
+    // get pre-existing settings from the settings config file
+    auto fallbacks = tr::settings::load(settings_filename);
 
-    // 3. fill in any missing values (eg not a local session) from the existing settings file
-    settings.merge(tr::settings::load(filename));
+    // fill in any missing values with defaults (eg missing/incomplete config file)
+    fallbacks.merge(tr_sessionGetDefaultSettings());
 
-    // 4. fill in any missing values (eg missing settings file) from session defaults
-    settings.merge(tr_sessionGetDefaultSettings());
+    return fallbacks;
+}
 
+void remove_transient_keys(tr::Settings& settings)
+{
     // remove transient keys
     for (auto const key : { TR_KEY_filter_text })
         settings.erase(key);
+}
 
-    // remove any non-canonical keys that crept in from the settings file
+void remove_unrecognized_keys(tr::Settings& settings)
+{
     settings.erase_if([](auto const& item) {
         auto const& [key, value] = item;
         return !tr::app::is_prefs_key(key) && !tr::is_settings_key(key);
     });
+}
 
-    // save it
-    tr::settings::save(filename, settings);
+} // namespace
+
+Prefs load_settings(QString const& config_dir)
+{
+    return Prefs{ get_fallback_settings(get_settings_filename(config_dir)) };
+}
+
+void save_settings(QString config_dir, Prefs const& prefs, Application const& app)
+{
+    auto const settings_filename = get_settings_filename(config_dir);
+
+    // get live app settings and (if it's a local session) live session settings
+    auto settings = prefs.app_settings();
+    if (auto val = app.local_session_settings())
+        settings.merge(*val);
+
+    // fill in any missing settings
+    settings.merge(get_fallback_settings(settings_filename));
+
+    remove_transient_keys(settings);
+    remove_unrecognized_keys(settings);
+    tr::settings::save(settings_filename, settings);
 }
 
 } // namespace
@@ -281,8 +307,7 @@ int tr_main(int argc, char** argv)
         config_dir = QString::fromStdString(tr::platform::get_default_config_dir("transmission"));
     }
 
-    // initialize the prefs
-    auto prefs = Prefs{ config_dir };
+    auto prefs = load_settings(config_dir);
 
     if (!host.isNull()) {
         prefs.set(TR_KEY_remote_session_host, host);
