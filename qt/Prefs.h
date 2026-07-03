@@ -21,38 +21,16 @@
 #include "Utils.h"
 #include "VariantHelpers.h"
 
-namespace tr::app
-{
-template<>
-struct PrefsStringTraits<QString> {
-    [[nodiscard]] static QString from_utf8(std::string_view const str)
-    {
-        return Utils::qstringFromUtf8(str);
-    }
-
-    [[nodiscard]] static std::string to_utf8(QString const& str)
-    {
-        return str.toStdString();
-    }
-
-    [[nodiscard]] static QString home_dir()
-    {
-        return QDir::home().absolutePath();
-    }
-};
-} // namespace tr::app
-
 class Prefs final
     : public QObject
-    , public tr::app::Prefs<QString>
+    , public tr::app::Prefs
 {
     Q_OBJECT
 
 public:
     Prefs() = default;
 
-    explicit Prefs(tr::Settings const& settings)
-        : tr::app::Prefs<QString>{ settings }
+    explicit Prefs(tr::Settings const& settings): tr::app::Prefs{ settings }
     {
     }
 

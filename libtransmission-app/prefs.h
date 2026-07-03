@@ -27,18 +27,9 @@ namespace tr::app
 {
 
 /**
- * Customization point that supplies the toolkit-specific bits.
- *
- * Specializations should provide:
- *  - `static StringType from_utf8(std::string_view);`
- */
-template<typename StringType>
-struct PrefsStringTraits;
-
-/**
  * Returns `true` iff `key` is a setting owned by the session core (as opposed
  * to a UI-only preference). Kept as a free function so the big `switch` lives
- * in one translation unit instead of being re-instantiated per `StringType`.
+ * in one translation unit instead of being re-instantiated per `std::string`.
  */
 [[nodiscard]] bool prefs_is_core(tr_quark key);
 
@@ -48,25 +39,22 @@ struct PrefsStringTraits;
  * These belong to this client and are always meaningful,
  * whether we run an in-process session or are connected to a remote one.
  */
-template<typename StringType>
 struct AppPrefs {
     template<auto MemberPtr>
     using Field = tr::serializer::Field<MemberPtr>;
 
-    using Traits = PrefsStringTraits<StringType>;
-
     // sorted in descending-alignment order to minimize struct padding.
     std::chrono::sys_seconds blocklist_date_;
-    StringType dir_watch_ = Traits::from_utf8(tr::platform::get_download_dir());
-    StringType filter_text_;
-    StringType filter_trackers_;
-    StringType main_window_layout_order_ = Traits::from_utf8("menu,toolbar,filter,list,statusbar");
-    StringType open_dialog_folder_ = Traits::from_utf8(tr::platform::get_home_dir());
-    StringType session_remote_host_ = Traits::from_utf8("localhost");
-    StringType session_remote_password_;
-    StringType session_remote_url_base_path_ = Traits::from_utf8("/transmission/");
-    StringType session_remote_username_;
-    std::vector<StringType> complete_sound_command_;
+    std::string dir_watch_ = tr::platform::get_download_dir();
+    std::string filter_text_;
+    std::string filter_trackers_;
+    std::string main_window_layout_order_ = "menu,toolbar,filter,list,statusbar";
+    std::string open_dialog_folder_ = tr::platform::get_home_dir();
+    std::string session_remote_host_ = "localhost";
+    std::string session_remote_password_;
+    std::string session_remote_url_base_path_ = "/transmission/";
+    std::string session_remote_username_;
+    std::vector<std::string> complete_sound_command_;
     int details_window_height_ = 500;
     int details_window_width_ = 700;
     int main_window_height_ = 500;
@@ -152,24 +140,21 @@ struct AppPrefs {
  * These mirror settings owned by the session.
  * They give us a place to hold the values when connected to a remote session.
  */
-template<typename StringType>
 struct SessionPrefs {
     template<auto MemberPtr>
     using Field = tr::serializer::Field<MemberPtr>;
 
-    using Traits = PrefsStringTraits<StringType>;
-
     // sorted in descending-alignment order to minimize struct padding.
-    StringType blocklist_url_;
-    StringType default_trackers_;
-    StringType download_dir_ = Traits::from_utf8(tr::platform::get_download_dir());
-    StringType incomplete_dir_;
-    StringType rpc_password_;
-    StringType rpc_username_;
-    StringType rpc_whitelist_;
-    StringType script_torrent_done_filename_;
-    StringType script_torrent_done_seeding_filename_;
-    StringType socket_diffserv_;
+    std::string blocklist_url_;
+    std::string default_trackers_;
+    std::string download_dir_ = tr::platform::get_download_dir();
+    std::string incomplete_dir_;
+    std::string rpc_password_;
+    std::string rpc_username_;
+    std::string rpc_whitelist_;
+    std::string script_torrent_done_filename_;
+    std::string script_torrent_done_seeding_filename_;
+    std::string socket_diffserv_;
     double ratio_ = 0.0;
     int alt_speed_limit_down_ = 0;
     int alt_speed_limit_time_begin_ = 0;
@@ -274,16 +259,12 @@ struct SessionPrefs {
 
 [[nodiscard]] constexpr bool is_prefs_key(tr_quark const key)
 {
-    using SomeType = int; // not actually used; just needs to be a concrete type
-    return tr::serializer::has_key<SessionPrefs<SomeType>, AppPrefs<SomeType>>(key);
+    return tr::serializer::has_key<SessionPrefs, AppPrefs>(key);
 }
 
-template<typename StringType>
 class Prefs
 {
 public:
-    using Traits = PrefsStringTraits<StringType>;
-
     Prefs() = default;
 
     explicit Prefs(tr::Settings const& settings)
@@ -342,8 +323,8 @@ protected:
     virtual void on_changed(tr_quark const key) = 0;
 
 private:
-    AppPrefs<StringType> app_prefs_;
-    SessionPrefs<StringType> session_prefs_;
+    AppPrefs app_prefs_;
+    SessionPrefs session_prefs_;
 };
 
 } // namespace tr::app
