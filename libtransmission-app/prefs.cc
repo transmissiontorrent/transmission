@@ -59,7 +59,6 @@ void remove_unrecognized_keys(tr::Settings& settings)
 }
 } // namespace
 
-// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init): members are initialized by load() below
 SessionPrefs::SessionPrefs()
 {
     tr::serializer::load(tr_sessionGetDefaultSettings(), *this);
