@@ -156,6 +156,7 @@ bool tryDelegate(QStringList const& filenames)
     return delegated;
 }
 
+#if 0
 namespace
 {
 
@@ -213,6 +214,7 @@ void save_settings(QString config_dir, Prefs const& prefs, Application const& ap
     remove_unrecognized_keys(settings);
     tr::settings::save(settings_filename, settings);
 }
+#endif
 
 } // namespace
 
@@ -307,7 +309,7 @@ int tr_main(int argc, char** argv)
         config_dir = QString::fromStdString(tr::platform::get_default_config_dir("transmission"));
     }
 
-    auto prefs = load_settings(config_dir);
+    auto prefs = Prefs{ config_dir };
 
     if (!host.isNull()) {
         prefs.set(TR_KEY_remote_session_host, host);
@@ -351,7 +353,7 @@ int tr_main(int argc, char** argv)
     auto const ret = QApplication::exec();
 
     // save prefs before exiting
-    save_settings(config_dir, prefs, app);
+    prefs.save(config_dir.toStdString(), app.local_session_settings());
 
     return ret;
 }

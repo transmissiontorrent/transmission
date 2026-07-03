@@ -257,40 +257,20 @@ struct SessionPrefs {
         Field<&SessionPrefs::utp_enabled_>{ TR_KEY_utp_enabled });
 };
 
-[[nodiscard]] constexpr bool is_prefs_key(tr_quark const key)
-{
-    return tr::serializer::has_key<SessionPrefs, AppPrefs>(key);
-}
-
 class Prefs
 {
 public:
     Prefs() = default;
-
-    explicit Prefs(tr::Settings const& settings)
-    {
-        tr::serializer::load(settings, app_prefs_, session_prefs_);
-    }
-
+    explicit Prefs(std::string_view const config_dir);
+    explicit Prefs(tr::Settings const& settings);
     Prefs(Prefs&&) = delete;
     Prefs(Prefs const&) = delete;
     Prefs& operator=(Prefs&&) = delete;
     Prefs& operator=(Prefs const&) = delete;
     virtual ~Prefs() = default;
 
-    [[nodiscard]] std::pair<tr_quark, tr_variant> keyval(tr_quark const key) const
-    {
-        if (auto val = tr::serializer::to_variant(key, app_prefs_, session_prefs_))
-            return { key, std::move(*val) };
-
-        return { key, tr_variant{} };
-    }
-
-    void set(tr_quark const key, tr_variant const& var)
-    {
-        if (tr::serializer::set_from_variant(key, var, app_prefs_, session_prefs_))
-            on_changed(key);
-    }
+    void set(tr_quark const key, tr_variant const& var);
+    void set(tr_quark /*key*/, char const* /*value*/) = delete;
 
     template<typename T>
     void set(tr_quark const key, T const& val)
@@ -299,25 +279,17 @@ public:
             on_changed(key);
     }
 
-    void set(tr_quark /*key*/, char const* /*value*/) = delete;
-
     template<typename T>
     [[nodiscard]] T get(tr_quark const key) const
     {
-        auto const val = tr::serializer::get<T>(key, app_prefs_, session_prefs_);
-        assert(val.has_value());
-        return val.value_or(T{});
+        if constexpr (std::is_same_v<T, tr_variant>) {
+            return tr::serializer::to_variant(key, app_prefs_, session_prefs_).value_or(T{});
+        } else {
+            return tr::serializer::get<T>(key, app_prefs_, session_prefs_).value_or(T{});
+        }
     }
 
-    [[nodiscard]] tr::Settings app_settings() const
-    {
-        return tr::serializer::save(app_prefs_);
-    }
-
-    [[nodiscard]] tr::Settings session_settings() const
-    {
-        return tr::serializer::save(session_prefs_);
-    }
+    void save(std::string_view const config_dir, std::optional<tr::Settings> const& local_session_settings) const;
 
 protected:
     virtual void on_changed(tr_quark const key) = 0;

@@ -30,7 +30,13 @@ class Prefs final
 public:
     Prefs() = default;
 
-    explicit Prefs(tr::Settings const& settings): tr::app::Prefs{ settings }
+    explicit Prefs(tr::Settings const& settings)
+        : tr::app::Prefs{ settings }
+    {
+    }
+
+    explicit Prefs(QString const& config_dir)
+        : tr::app::Prefs{ config_dir.toStdString() }
     {
     }
 
