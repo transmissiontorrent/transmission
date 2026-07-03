@@ -7,6 +7,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
 #include <fmt/format.h>
@@ -106,10 +107,32 @@ TEST_F(PrefsTest, defaultConstructorUsesDefaults)
     EXPECT_FALSE(prefs.get<bool>(TR_KEY_sort_reversed));
     EXPECT_EQ(prefs.get<int>(TR_KEY_main_window_height), 500);
     EXPECT_EQ(prefs.get<int>(TR_KEY_main_window_width), 600);
+}
 
-    // session-owned defaults
-    EXPECT_FALSE(prefs.get<bool>(TR_KEY_speed_limit_down_enabled));
-    EXPECT_EQ(prefs.get<double>(TR_KEY_seed_ratio_limit), 0.0);
+TEST_F(PrefsTest, defaultConstructorMatchesEverySessionDefault)
+{
+    // Exhaustive guard: every proxied SessionPrefs field must be initialized to
+    // exactly the session's own default for its key. Compact-JSON serialization
+    // gives a type-agnostic equality check across all field types.
+    auto const prefs = TestPrefs{};
+    auto const defaults = tr_sessionGetDefaultSettings();
+
+    auto const to_json = [](tr_variant const& var) {
+        return tr_variant_serde::json().compact().to_string(var);
+    };
+
+    std::apply(
+        [&](auto const&... field) {
+            (
+                [&] {
+                    auto const key = field.key;
+                    auto const iter = defaults.find(key);
+                    ASSERT_NE(iter, std::end(defaults)) << tr_quark_get_string_view(key);
+                    EXPECT_EQ(to_json(prefs.get<tr_variant>(key)), to_json(iter->second)) << tr_quark_get_string_view(key);
+                }(),
+                ...);
+        },
+        tr::app::SessionPrefs::Fields);
 }
 
 TEST_F(PrefsTest, getSetRoundTripsBool)

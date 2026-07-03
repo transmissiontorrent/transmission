@@ -7,6 +7,9 @@
 
 #include <cassert>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <string>
 #include <string_view>
 #include <tuple>
 #include <utility>
@@ -136,61 +139,64 @@ struct SessionPrefs {
     template<auto MemberPtr>
     using Field = tr::serializer::Field<MemberPtr>;
 
-    // sorted in descending-alignment order to minimize struct padding.
+    SessionPrefs();
+
+    // don't use NSDMI here;
+    // let the constructor initialize using libtransmission's session defaults
     std::string blocklist_url_;
     std::string default_trackers_;
-    std::string download_dir_ = tr::platform::get_download_dir();
+    std::string download_dir_;
     std::string incomplete_dir_;
     std::string rpc_password_;
     std::string rpc_username_;
     std::string rpc_whitelist_;
     std::string script_torrent_done_filename_;
     std::string script_torrent_done_seeding_filename_;
-    std::string socket_diffserv_;
-    double ratio_ = 0.0;
-    int alt_speed_limit_down_ = 0;
-    int alt_speed_limit_time_begin_ = 0;
-    int alt_speed_limit_time_day_ = 0;
-    int alt_speed_limit_time_end_ = 0;
-    int alt_speed_limit_up_ = 0;
-    int download_queue_size_ = 0;
-    int dspeed_ = 0;
-    int idle_limit_ = 0;
-    int msglevel_ = 0;
-    int peer_limit_global_ = 0;
-    int peer_limit_torrent_ = 0;
-    int peer_port_ = 0;
-    int peer_port_random_high_ = 0;
-    int peer_port_random_low_ = 0;
-    int preallocation_ = 0;
-    int queue_stalled_minutes_ = 0;
-    int rpc_port_ = 0;
-    int upload_slots_per_torrent_ = 0;
-    int uspeed_ = 0;
-    tr_encryption_mode encryption_ = {};
-    bool alt_speed_limit_enabled_ = false;
-    bool alt_speed_limit_time_enabled_ = false;
-    bool blocklist_enabled_ = false;
-    bool dht_enabled_ = false;
-    bool download_queue_enabled_ = false;
-    bool dspeed_enabled_ = false;
-    bool idle_limit_enabled_ = false;
-    bool incomplete_dir_enabled_ = false;
-    bool lpd_enabled_ = false;
-    bool peer_port_random_on_start_ = false;
-    bool pex_enabled_ = false;
-    bool port_forwarding_ = false;
-    bool ratio_enabled_ = false;
-    bool rename_partial_files_ = false;
-    bool rpc_auth_required_ = false;
-    bool rpc_enabled_ = false;
-    bool rpc_whitelist_enabled_ = false;
-    bool script_torrent_done_enabled_ = false;
-    bool script_torrent_done_seeding_enabled_ = false;
-    bool start_ = false;
-    bool trash_original_ = false;
-    bool uspeed_enabled_ = false;
-    bool utp_enabled_ = false;
+    double ratio_;
+    size_t alt_speed_limit_down_;
+    size_t alt_speed_limit_time_begin_;
+    size_t alt_speed_limit_time_end_;
+    size_t alt_speed_limit_up_;
+    size_t download_queue_size_;
+    size_t dspeed_;
+    size_t peer_limit_global_;
+    size_t peer_limit_torrent_;
+    size_t queue_stalled_minutes_;
+    size_t upload_slots_per_torrent_;
+    size_t uspeed_;
+    tr_diffserv_t socket_diffserv_;
+    tr_port peer_port_;
+    tr_port peer_port_random_high_;
+    tr_port peer_port_random_low_;
+    tr_port rpc_port_;
+    uint16_t idle_limit_;
+    tr_encryption_mode encryption_;
+    tr_file_preallocation preallocation_;
+    tr_log_level msglevel_;
+    tr_sched_day alt_speed_limit_time_day_;
+    bool alt_speed_limit_enabled_;
+    bool alt_speed_limit_time_enabled_;
+    bool blocklist_enabled_;
+    bool dht_enabled_;
+    bool download_queue_enabled_;
+    bool dspeed_enabled_;
+    bool idle_limit_enabled_;
+    bool incomplete_dir_enabled_;
+    bool lpd_enabled_;
+    bool peer_port_random_on_start_;
+    bool pex_enabled_;
+    bool port_forwarding_;
+    bool ratio_enabled_;
+    bool rename_partial_files_;
+    bool rpc_auth_required_;
+    bool rpc_enabled_;
+    bool rpc_whitelist_enabled_;
+    bool script_torrent_done_enabled_;
+    bool script_torrent_done_seeding_enabled_;
+    bool start_;
+    bool trash_original_;
+    bool uspeed_enabled_;
+    bool utp_enabled_;
 
     static constexpr auto Fields = std::make_tuple(
         Field<&SessionPrefs::alt_speed_limit_down_>{ TR_KEY_alt_speed_down },

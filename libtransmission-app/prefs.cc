@@ -59,6 +59,11 @@ void remove_unrecognized_keys(tr::Settings& settings)
 }
 } // namespace
 
+SessionPrefs::SessionPrefs()
+{
+    tr::serializer::load(tr_sessionGetDefaultSettings(), *this);
+}
+
 Prefs::Prefs(tr::Settings const& settings)
 {
     tr::serializer::load(settings, app_prefs_, session_prefs_);
