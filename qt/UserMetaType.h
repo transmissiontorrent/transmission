@@ -5,25 +5,9 @@
 
 #pragma once
 
-#include <libtransmission/transmission.h>
-
 #include <libtransmission-app/display-modes.h>
 
 #include <QMetaType>
-
-class UserMetaType
-{
-public:
-    // NOLINTNEXTLINE(performance-enum-size)
-    enum {
-        ShowModeType = QMetaType::User,
-        SortModeType,
-        StatsModeType,
-        EncryptionModeType,
-    };
-};
-
-Q_DECLARE_METATYPE(tr_encryption_mode)
 
 using ShowMode = tr::app::ShowMode;
 Q_DECLARE_METATYPE(ShowMode)
