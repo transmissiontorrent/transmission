@@ -44,7 +44,6 @@ runs:
         if [[ "$PKG_FAMILY" == "dnf" ]]; then
           # Fedora/DNF-based installation
           dnf install -y \
-            ca-certificates \
             cmake \
             gettext \
             ninja-build \
@@ -106,7 +105,6 @@ runs:
           # Base packages
           BASE_PACKAGES=(
             appstream
-            ca-certificates
             cmake
             gettext
             libb64-dev
