@@ -15,16 +15,15 @@
 #include <utility>
 #include <vector>
 
-#include <libtransmission/constants.h>
-#include <libtransmission/converters.h>
-#include <libtransmission/quark.h>
-#include <libtransmission/serializer.h>
-#include <libtransmission/transmission.h>
-#include <libtransmission/types.h>
-#include <libtransmission/variant.h>
+#include "libtransmission/constants.h"
+#include "libtransmission/converters.h"
+#include "libtransmission/quark.h"
+#include "libtransmission/serializer.h"
+#include "libtransmission/types.h"
+#include "libtransmission/variant.h"
 
-#include <libtransmission-app/converters.h>
-#include <libtransmission-app/display-modes.h>
+#include "libtransmission-app/converters.h"
+#include "libtransmission-app/display-modes.h"
 
 namespace tr::app
 {

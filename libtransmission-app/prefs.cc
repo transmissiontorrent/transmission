@@ -12,6 +12,7 @@
 
 #include "libtransmission/quark.h"
 #include "libtransmission/session-settings.h"
+#include "libtransmission/transmission.h"
 
 #include "libtransmission-app/prefs.h"
 

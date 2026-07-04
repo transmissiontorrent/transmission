@@ -7,22 +7,17 @@
 
 #include <chrono>
 
-#include <libtransmission/converters.h>
-#include <libtransmission/variant.h>
+#include "libtransmission/converters.h"
+#include "libtransmission/variant.h"
 
 #include "libtransmission-app/display-modes.h"
-
-// Declarations of the `Converter<T>` specializations owned by
-// `libtransmission-app`. Each TU that uses `tr::serializer::to_variant`,
-// `to_value`, `Field<>`, etc. with one of these types must include this
-// header so the specialization is visible at the instantiation site.
 
 namespace tr::serializer
 {
 
+TR_DECLARE_CONVERTER(std::chrono::sys_seconds)
 TR_DECLARE_CONVERTER(tr::app::ShowMode)
 TR_DECLARE_CONVERTER(tr::app::SortMode)
 TR_DECLARE_CONVERTER(tr::app::StatsMode)
-TR_DECLARE_CONVERTER(std::chrono::sys_seconds)
 
 } // namespace tr::serializer
