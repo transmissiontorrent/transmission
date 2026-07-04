@@ -4,9 +4,9 @@
 // License text can be found in the licenses/ folder.
 
 #include <algorithm> // std::copy, std::fill_n, std::min, std::max
-#include <bit>
 #include <cstddef>
 #include <cstdint>
+#include <span>
 #include <vector> // std::vector
 
 #include "libtransmission/bitfield.h"
@@ -30,43 +30,32 @@ namespace
     return ((bit_count + 7) >> 3);
 }
 
-void setAllTrue(uint8_t* array, size_t bit_count)
+void setAllTrue(std::span<std::byte> const bytes, size_t const bit_count)
 {
-    uint8_t constexpr Val = 0xFF;
-    /* Only ever called internally with in-use bit counts. Impossible
-       for bitcount > SIZE_MAX - 8. */
-    size_t const n = getBytesNeededSafe(bit_count);
+    static auto constexpr Val = std::byte{ 0xFF };
+    // Only ever called internally with in-use bit counts. Impossible
+    // for bitcount > SIZE_MAX - 8.
+    auto const n = getBytesNeededSafe(bit_count);
 
-    if (n > 0) {
-        std::fill_n(array, n, Val);
-        /* -bit_count & 7U. Since bitcount is unsigned do ~bitcount +
-           1 to replace -bitcount as linters warn about negating
-           unsigned types. Any compiler will optimize ~x + 1 to -x in
-           the backend. */
-        uint32_t const shift = ((~bit_count) + 1) & 7U;
-        array[n - 1] = Val << shift;
-    }
-}
-
-[[nodiscard]] size_t rawCountFlags(uint8_t const* flags, size_t n) noexcept
-{
-    auto ret = size_t{};
-
-    for (auto const* const end = flags + n; flags != end; ++flags) {
-        ret += std::popcount(*flags);
+    TR_ASSERT(bytes.size() >= n);
+    if (n <= 0U || bytes.size() < n) {
+        return;
     }
 
-    return ret;
+    auto const used = bytes.first(n);
+    std::ranges::fill(used, Val);
+
+    // -bit_count & 7U. Since bitcount is unsigned do ~bitcount +
+    // 1 to replace -bitcount as linters warn about negating
+    // unsigned types. Any compiler will optimize ~x + 1 to -x in
+    // the backend.
+    uint32_t const shift = ((~bit_count) + 1) & 7U;
+    used.back() = Val << shift;
 }
 
 } // namespace
 
 // ---
-
-size_t tr_bitfield::count_flags() const noexcept
-{
-    return rawCountFlags(std::data(flags_), std::size(flags_));
-}
 
 size_t tr_bitfield::count_flags(size_t begin, size_t end) const noexcept
 {
@@ -86,22 +75,22 @@ size_t tr_bitfield::count_flags(size_t begin, size_t end) const noexcept
     TR_ASSERT(!std::empty(flags_));
 
     if (first_byte == last_byte) {
-        uint8_t val = flags_[first_byte];
+        auto val = flags_[first_byte];
 
         auto i = begin & 7U;
         val <<= i;
         i = (begin - end) & 7U;
         val >>= i;
-        ret = std::popcount(val);
+        ret = popcount(val);
     } else {
         size_t const walk_end = std::min(std::size(flags_), last_byte);
 
         /* first byte */
         size_t const first_shift = begin & 7U;
-        uint8_t val = flags_[first_byte];
+        auto val = flags_[first_byte];
         val <<= first_shift;
         /* No need to shift back val for correct popcount. */
-        ret = std::popcount(val);
+        ret = popcount(val);
 
         /* middle bytes */
 
@@ -109,12 +98,12 @@ size_t tr_bitfield::count_flags(size_t begin, size_t end) const noexcept
            popcnt instruction on many architectures. */
         size_t tmp_accum = 0;
         for (size_t i = first_byte + 1; i < walk_end;) {
-            tmp_accum += std::popcount(flags_[i]);
+            tmp_accum += popcount(flags_[i]);
             i += 2;
             if (i > walk_end) {
                 break;
             }
-            ret += std::popcount(flags_[i - 1]);
+            ret += popcount(flags_[i - 1]);
         }
         ret += tmp_accum;
 
@@ -128,7 +117,7 @@ size_t tr_bitfield::count_flags(size_t begin, size_t end) const noexcept
             val = flags_[last_byte];
             val >>= last_shift;
             /* No need to shift back val for correct popcount. */
-            ret += std::popcount(val);
+            ret += popcount(val);
         }
     }
 
@@ -156,7 +145,7 @@ bool tr_bitfield::is_valid() const
     return std::empty(flags_) || true_count_ == count_flags();
 }
 
-std::vector<uint8_t> tr_bitfield::raw() const
+std::vector<std::byte> tr_bitfield::raw() const
 {
     /* Impossible for bit_count_ to exceed SIZE_MAX - 8 */
     auto const n = getBytesNeededSafe(bit_count_);
@@ -165,10 +154,10 @@ std::vector<uint8_t> tr_bitfield::raw() const
         return flags_;
     }
 
-    auto raw = std::vector<uint8_t>(n);
+    auto raw = std::vector<std::byte>(n);
 
     if (has_all()) {
-        setAllTrue(std::data(raw), bit_count_);
+        setAllTrue(raw, bit_count_);
     }
 
     return raw;
@@ -184,7 +173,7 @@ void tr_bitfield::ensure_bits_alloced(size_t n)
     if (std::size(flags_) < bytes_needed) {
         flags_.resize(bytes_needed);
         if (has_all) {
-            setAllTrue(std::data(flags_), true_count_);
+            setAllTrue(flags_, true_count_);
         }
     }
 }
@@ -259,35 +248,35 @@ void tr_bitfield::set_has_all() noexcept
     TR_ASSERT(is_valid());
 }
 
-void tr_bitfield::set_raw(uint8_t const* raw, size_t byte_count)
+void tr_bitfield::set_raw(std::span<std::byte const> const raw)
 {
-    flags_.assign(raw, raw + byte_count);
+    flags_.assign(raw.begin(), raw.end());
 
     // ensure any excess bits at the end of the array are set to '0'.
-    if (byte_count == getBytesNeededSafe(bit_count_)) {
-        auto const excess_bit_count = (byte_count * 8) - bit_count_;
+    if (raw.size() == getBytesNeededSafe(bit_count_)) {
+        auto const excess_bit_count = (raw.size() * 8) - bit_count_;
 
         TR_ASSERT(excess_bit_count <= 7);
 
         if (excess_bit_count != 0) {
-            flags_.back() &= 0xff << excess_bit_count;
+            flags_.back() &= std::byte{ 0xff } << excess_bit_count;
         }
     }
 
     rebuild_true_count();
 }
 
-void tr_bitfield::set_from_bools(bool const* flags, size_t n)
+void tr_bitfield::set_from_bools(std::span<bool const> const flags)
 {
     size_t true_count = 0;
 
     free_array();
-    ensure_bits_alloced(n);
+    ensure_bits_alloced(flags.size());
 
-    for (size_t i = 0; i < n; ++i) {
+    for (size_t i = 0; i < flags.size(); ++i) {
         if (flags[i]) {
             ++true_count;
-            flags_[i >> 3U] |= (0x80 >> (i & 7U));
+            flags_[i >> 3U] |= (std::byte{ 0x80 } >> (i & 7U));
         }
     }
 
@@ -307,11 +296,11 @@ void tr_bitfield::set(size_t nth, bool value)
     /* Already tested that val != nth bit so just swap */
     auto& byte = flags_[nth >> 3U];
 #ifdef TR_ENABLE_ASSERTS
-    auto const old_byte_pop = std::popcount(byte);
+    auto const old_byte_pop = popcount(byte);
 #endif
-    byte ^= 0x80 >> (nth & 7U);
+    byte ^= std::byte{ 0x80 } >> (nth & 7U);
 #ifdef TR_ENABLE_ASSERTS
-    auto const new_byte_pop = std::popcount(byte);
+    auto const new_byte_pop = popcount(byte);
 #endif
 
     if (value) {
@@ -351,8 +340,8 @@ void tr_bitfield::set_span(size_t begin, size_t end, bool value)
     auto walk = begin >> 3;
     auto const last_byte = end >> 3;
 
-    unsigned char first_mask = 0xff >> (begin & 7U);
-    unsigned char last_mask = 0xff << ((~end) & 7U);
+    auto first_mask = std::byte{ 0xff } >> (begin & 7U);
+    auto last_mask = std::byte{ 0xff } << ((~end) & 7U);
     if (value) {
         if (walk == last_byte) {
             flags_[walk] |= first_mask & last_mask;
@@ -362,7 +351,7 @@ void tr_bitfield::set_span(size_t begin, size_t end, bool value)
                count(begin, end) */
             flags_[last_byte] |= last_mask;
             if (++walk < last_byte) {
-                std::fill_n(std::data(flags_) + walk, last_byte - walk, 0xff);
+                std::ranges::fill(std::span{ flags_ }.subspan(walk, last_byte - walk), std::byte{ 0xff });
             }
         }
 
@@ -378,7 +367,7 @@ void tr_bitfield::set_span(size_t begin, size_t end, bool value)
                count(begin, end) */
             flags_[last_byte] &= last_mask;
             if (++walk < last_byte) {
-                std::fill_n(std::data(flags_) + walk, last_byte - walk, 0);
+                std::ranges::fill(std::span{ flags_ }.subspan(walk, last_byte - walk), std::byte{});
             }
         }
 
@@ -439,7 +428,7 @@ bool tr_bitfield::intersects(tr_bitfield const& that) const noexcept
     }
 
     for (size_t i = 0, n = std::min(std::size(flags_), std::size(that.flags_)); i < n; ++i) {
-        if ((flags_[i] & that.flags_[i]) != 0U) {
+        if ((flags_[i] & that.flags_[i]) != std::byte{}) {
             return true;
         }
     }

@@ -400,7 +400,7 @@ void raw_to_bitfield(tr_bitfield& bitfield, std::string_view const raw)
     } else if (raw == "all"sv) {
         bitfield.set_has_all();
     } else {
-        bitfield.set_raw(reinterpret_cast<uint8_t const*>(std::data(raw)), std::size(raw));
+        bitfield.set_raw(raw);
     }
 }
 
@@ -536,7 +536,7 @@ tr_resume::fields_t load_progress(tr_variant::Map const& map, tr_torrent* tor, t
             err = "Invalid value for 'blocks'";
         }
     } else if (auto const raw = prog->value_if<std::string_view>(TR_KEY_bitfield); raw) {
-        blocks.set_raw(reinterpret_cast<uint8_t const*>(std::data(*raw)), std::size(*raw));
+        blocks.set_raw(*raw);
     } else {
         err = "Couldn't find 'blocks' or 'bitfield'";
     }

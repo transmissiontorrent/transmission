@@ -39,7 +39,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
-            ca-certificates \
             cmake \
             g++ \
             gettext \

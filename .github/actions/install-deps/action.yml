@@ -10,7 +10,7 @@ inputs:
     required: false
     default: 'false'
   enable-debugging:
-    description: 'Install debugging tools (gdb, lldb, valgrind, etc.)'
+    description: 'Install debugging tools (gdb, lldb, etc.)'
     required: false
     default: 'false'
   enable-gtk:
@@ -44,7 +44,6 @@ runs:
         if [[ "$PKG_FAMILY" == "dnf" ]]; then
           # Fedora/DNF-based installation
           dnf install -y \
-            ca-certificates \
             cmake \
             gettext \
             ninja-build \
@@ -70,11 +69,6 @@ runs:
             dnf install -y clang
           elif [[ "${{ inputs.compiler }}" == "gcc" ]]; then
             dnf install -y gcc-c++
-          fi
-
-          # Debugging tools
-          if [[ "${{ inputs.enable-debugging }}" == "true" ]]; then
-            dnf install -y gdb valgrind
           fi
 
           # Faster linker
@@ -106,7 +100,6 @@ runs:
           # Base packages
           BASE_PACKAGES=(
             appstream
-            ca-certificates
             cmake
             gettext
             libb64-dev
@@ -147,11 +140,6 @@ runs:
           # clang-tidy
           if [[ "${{ inputs.enable-clang-tidy }}" == "true" ]]; then
             BASE_PACKAGES+=(clang-tidy-22)
-          fi
-
-          # Debugging tools
-          if [[ "${{ inputs.enable-debugging }}" == "true" ]]; then
-            BASE_PACKAGES+=(gdb libc6-dbg valgrind)
           fi
 
           # Faster linker
@@ -340,8 +328,6 @@ runs:
           gdb --version 2>/dev/null | head -1 || echo "gdb: not found"
           if [[ "$OS_FAMILY" == "macos" ]]; then
             lldb --version 2>/dev/null | head -1 || echo "lldb: not found"
-          else
-            valgrind --version 2>/dev/null || echo "valgrind: not found"
           fi
           echo ""
         fi

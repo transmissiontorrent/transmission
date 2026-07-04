@@ -342,7 +342,7 @@ TEST_F(CompletionTest, createPieceBitfield)
     // and test that the new bitfield matches
     auto const pieces_raw_bitfield = completion.create_piece_bitfield();
     tr_bitfield pieces{ size_t{ block_info.piece_count() } };
-    pieces.set_raw(std::data(pieces_raw_bitfield), std::size(pieces_raw_bitfield));
+    pieces.set_raw(pieces_raw_bitfield);
     for (uint64_t i = 0; i < block_info.piece_count(); ++i) {
         EXPECT_EQ(completion.has_piece(i), pieces.test(i));
     }
