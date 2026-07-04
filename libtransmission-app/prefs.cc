@@ -21,11 +21,6 @@ namespace tr::app
 namespace
 {
 
-[[nodiscard]] constexpr bool is_prefs_key(tr_quark const key)
-{
-    return tr::serializer::has_key<SessionPrefs, AppPrefs>(key);
-}
-
 [[nodiscard]] std::string get_settings_filename(std::string_view const& config_dir)
 {
     return fmt::format("{:s}/settings.json", config_dir);
@@ -45,19 +40,11 @@ namespace
 
 void remove_transient_keys(tr::Settings& settings)
 {
-    // remove transient keys
     for (auto const key : { TR_KEY_filter_text }) {
         settings.erase(key);
     }
 }
 
-void remove_unrecognized_keys(tr::Settings& settings)
-{
-    settings.erase_if([](auto const& item) {
-        auto const& [key, value] = item;
-        return !is_prefs_key(key) && !tr::is_settings_key(key);
-    });
-}
 } // namespace
 
 SessionPrefs::SessionPrefs()
@@ -79,21 +66,19 @@ void Prefs::save(std::string_view const config_dir, std::optional<tr::Settings> 
 {
     auto const settings_filename = get_settings_filename(config_dir);
 
-    // Get live app settings
+    // save the app settings.
     auto settings = tr::serializer::save(app_prefs_);
 
-    // If it's a local session, save its settings.
-    // Note we DON'T want to pollute local session settings with a remote session's values
+    // if a local session exists, save its settings.
     if (local_session_settings) {
         settings.merge(*local_session_settings);
     }
 
-    // Ensure we have all the settings we need.
+    // ensure we have all the settings we need.
     // eg if we're connected to a remote session, `settings` doesn't have session settings yet.
     settings.merge(get_fallback_settings(settings_filename));
 
     remove_transient_keys(settings);
-    remove_unrecognized_keys(settings);
 
     tr::settings::save(settings_filename, settings);
 }

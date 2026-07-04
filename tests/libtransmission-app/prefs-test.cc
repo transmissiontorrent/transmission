@@ -409,7 +409,7 @@ TEST_F(PrefsFileTest, saveOmitsTransientFilterText)
     EXPECT_TRUE(saved.contains(TR_KEY_sort_reversed)); // ordinary app pref: persisted
 }
 
-TEST_F(PrefsFileTest, saveRemovesUnrecognizedKeys)
+TEST_F(PrefsFileTest, savePreservesUnrecognizedKeys)
 {
     auto const custom_key = tr_quark_new("custom-unknown-setting"sv);
 
@@ -423,7 +423,7 @@ TEST_F(PrefsFileTest, saveRemovesUnrecognizedKeys)
 
     auto const prefs = TestPrefs{};
     auto const saved = save_and_reload(prefs);
-    EXPECT_FALSE(saved.contains(custom_key)); // unrecognized: dropped
+    EXPECT_TRUE(saved.contains(custom_key)); // unrecognized: preserved
     EXPECT_TRUE(saved.contains(TR_KEY_download_dir)); // recognized: kept
 }
 
