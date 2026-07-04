@@ -2,10 +2,6 @@
 	path = third-party/dht
 	url = https://github.com/transmissiontorrent/dht.git
 	branch = post-0.27-transmission
-[submodule "third-party/libb64"]
-	path = third-party/libb64
-	url = https://github.com/transmissiontorrent/libb64.git
-	branch = post-2.0.0-transmission
 [submodule "third-party/libevent"]
 	path = third-party/libevent
 	url = https://github.com/transmissiontorrent/libevent.git
@@ -24,10 +20,6 @@
 [submodule "third-party/googletest"]
 	path = third-party/googletest
 	url = https://github.com/google/googletest.git
-[submodule "third-party/utfcpp"]
-	path = third-party/utfcpp
-	# synced with https://github.com/nemtrif/utfcpp.git
-	url = https://github.com/transmissiontorrent/utfcpp.git
 [submodule "third-party/libdeflate"]
 	path = third-party/libdeflate
 	# synced with https://github.com/ebiggers/libdeflate.git
@@ -64,3 +56,7 @@
 [submodule "third-party/sigslot"]
 	path = third-party/sigslot
 	url = https://github.com/transmissiontorrent/sigslot
+[submodule "third-party/simdutf"]
+	path = third-party/simdutf
+	# synced with https://github.com/simdutf/simdutf.git
+	url = https://github.com/transmissiontorrent/simdutf.git

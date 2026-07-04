@@ -231,7 +231,6 @@ target_compile_definitions(${TR_NAME}
         $<$<BOOL:${WITH_INOTIFY}>:WITH_INOTIFY>
         $<$<BOOL:${WITH_KQUEUE}>:WITH_KQUEUE>
         $<$<BOOL:${ENABLE_UTP}>:WITH_UTP>
-        $<$<BOOL:${USE_SYSTEM_B64}>:USE_SYSTEM_B64>
         $<$<BOOL:${HAVE_SO_REUSEPORT}>:HAVE_SO_REUSEPORT=1>
     PUBLIC
         $<$<STREQUAL:${CRYPTO_PKG},ccrypto>:WITH_CCRYPTO>
@@ -276,13 +275,12 @@ target_link_libraries(${TR_NAME}
         miniupnpc::miniupnpc
         dht::dht
         $<$<BOOL:${ENABLE_UTP}>:libutp::libutp>
-        libb64::libb64
         ${Intl_LIBRARIES}
         ${LIBM_LIBRARY}
         ${LIBQUOTA_LIBRARY}
         ${TR_NETWORK_LIBRARIES}
         RapidJSON
-        utf8::cpp
+        simdutf::simdutf
         wildmat
         transmission::WideInteger
         MadlerCrcany

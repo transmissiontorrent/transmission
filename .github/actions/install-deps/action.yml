@@ -54,15 +54,13 @@ runs:
           dnf install -y \
             fast_float-devel \
             fmt-devel \
-            libb64-devel \
             libcurl-devel \
             libdeflate-devel \
             libevent-devel \
             libnatpmp-devel \
             libpsl-devel \
             miniupnpc-devel \
-            openssl-devel \
-            utf8cpp-devel
+            openssl-devel
 
           # Compiler packages
           if [[ "${{ inputs.compiler }}" == "clang" ]]; then
@@ -102,7 +100,6 @@ runs:
             appstream
             cmake
             gettext
-            libb64-dev
             libcurl4-openssl-dev
             libdeflate-dev
             libevent-dev
@@ -126,7 +123,6 @@ runs:
             BASE_PACKAGES+=(
               libfast-float-dev
               libfmt-dev
-              libutfcpp-dev
             )
           fi
 
@@ -227,13 +223,11 @@ runs:
         BASE_PACKAGES+=(
           fast_float
           fmt
-          libb64
           libdeflate
           libevent
           libnatpmp
           libpsl
           miniupnpc
-          utf8cpp
         )
 
         brew install --formulae "${BASE_PACKAGES[@]}"

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 cmake_policy(SET CMP0090 NEW)
 cmake_policy(SET CMP0092 NEW)
@@ -61,9 +61,9 @@ set(PSL_MINIMUM 0.21.0)
 set(QT_MINIMUM 5.15)
 set(SIGSLOT_MINIMUM 1.2.3)
 set(SMALL_MINIMUM 0.2.2)
-# utf8cpp v4's version file is configured with `COMPATIBILITY SameMajorVersion`
+# simdutf's version file is configured with `COMPATIBILITY SameMinorVersion`
 # and does not support version range.
-# set(UTF8CPP_MINIMUM 3.1...4)
+# set(SIMDUTF_MINIMUM 5.2.0)
 
 option(ENABLE_DAEMON "Build daemon" ON)
 tr_auto_option(ENABLE_GTK "Build GTK client" AUTO)
@@ -90,11 +90,10 @@ tr_auto_option(USE_SYSTEM_FMT "Use system fmt library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_MINIUPNPC "Use system miniupnpc library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_NATPMP "Use system natpmp library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_SIGSLOT "Use system sigslot library" ${USE_SYSTEM_DEFAULT})
+tr_auto_option(USE_SYSTEM_SIMDUTF "Use system simdutf library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_SMALL "Use system small library" ${USE_SYSTEM_DEFAULT})
-tr_auto_option(USE_SYSTEM_UTF8CPP "Use system uft8cpp library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_UTP "Use system utp library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_WIDE_INTEGER "Use system WideInteger library" ${USE_SYSTEM_DEFAULT})
-tr_auto_option(USE_SYSTEM_B64 "Use system b64 library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_PSL "Use system psl library" ${USE_SYSTEM_DEFAULT})
 tr_list_option(USE_GTK_VERSION "Use specific GTK version" AUTO 3 4)
 tr_list_option(USE_QT_VERSION "Use specific Qt version" AUTO 5 6)
@@ -607,11 +606,6 @@ if(ENABLE_UTP)
             -DLIBUTP_SHARED:BOOL=OFF)
 endif()
 
-tr_add_external_auto_library(B64 libb64
-    SUBPROJECT
-    CMAKE_ARGS
-        -DLIBB64_SHARED:BOOL=OFF)
-
 tr_add_external_auto_library(FAST_FLOAT FastFloat
     SUBPROJECT
     SOURCE_DIR fast_float
@@ -654,12 +648,13 @@ target_compile_definitions(transmission::small
     INTERFACE
         SMALL_DISABLE_EXCEPTIONS=1)
 
-tr_add_external_auto_library(UTF8CPP utf8cpp
+tr_add_external_auto_library(SIMDUTF simdutf
     SUBPROJECT
-    SOURCE_DIR utfcpp)
-if (NOT TARGET utf8::cpp)
-    add_library(utf8::cpp ALIAS utf8cpp)
-endif()
+    CMAKE_ARGS
+        -DSIMDUTF_TESTS:BOOL=OFF
+        -DSIMDUTF_TOOLS:BOOL=OFF
+        -DSIMDUTF_ICONV:BOOL=OFF
+        -DSIMDUTF_CXX_STANDARD=${CMAKE_CXX_STANDARD})
 
 tr_add_external_auto_library(WIDE_INTEGER WideInteger
     SUBPROJECT

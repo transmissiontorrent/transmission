@@ -17,13 +17,11 @@
 #include <vector>
 
 extern "C" {
-#include <b64/cdecode.h>
-#include <b64/cencode.h>
-
 #include <crc32iscsi.h>
 }
 
 #include <fmt/format.h>
+#include <simdutf.h>
 
 #include "libtransmission/crypto-utils.h"
 #include "libtransmission/string-utils.h"
@@ -95,49 +93,19 @@ bool tr_ssha1_matches(std::string_view ssha1, std::string_view plaintext)
 
 // ---
 
-namespace
-{
-namespace base64_impl
-{
-
-constexpr size_t base64AllocSize(std::string_view input)
-{
-    size_t ret_length = 4 * ((std::size(input) + 2) / 3); // NOLINT misc-const-correctness
-#ifdef USE_SYSTEM_B64
-    // Additional space is needed for newlines if we're using unpatched libb64
-    ret_length += (ret_length / 72) + 1;
-#endif
-    return ret_length * 8;
-}
-
-} // namespace base64_impl
-} // namespace
-
 std::string tr_base64_encode(std::string_view input)
 {
-    using namespace base64_impl;
-
-    auto buf = std::vector<char>(base64AllocSize(input));
-    auto state = base64_encodestate{};
-    base64_init_encodestate(&state);
-    // NOLINTNEXTLINE(bugprone-narrowing-conversions): libb64 < 2.0.0 takes `int` argument instead of `size_t`
-    size_t len = base64_encode_block(std::data(input), std::size(input), std::data(buf), &state);
-    len += base64_encode_blockend(std::data(buf) + len, &state);
-    auto str = std::string{};
-    std::copy_if(std::data(buf), std::data(buf) + len, std::back_inserter(str), [](auto ch) {
-        return !tr_strv_contains("\r\n"sv, ch);
-    });
+    auto str = std::string(simdutf::base64_length_from_binary(std::size(input)), '\0');
+    simdutf::binary_to_base64(std::data(input), std::size(input), std::data(str));
     return str;
 }
 
 std::string tr_base64_decode(std::string_view input)
 {
-    auto buf = std::vector<char>(std::size(input) + 8);
-    auto state = base64_decodestate{};
-    base64_init_decodestate(&state);
-    // NOLINTNEXTLINE(bugprone-narrowing-conversions): libb64 < 2.0.0 takes `int` argument instead of `size_t`
-    size_t const len = base64_decode_block(std::data(input), std::size(input), std::data(buf), &state);
-    return std::string{ std::data(buf), len };
+    auto str = std::string(simdutf::maximal_binary_length_from_base64(std::data(input), std::size(input)), '\0');
+    auto const result = simdutf::base64_to_binary(std::data(input), std::size(input), std::data(str));
+    str.resize(result.error == simdutf::error_code::SUCCESS ? result.count : 0U);
+    return str;
 }
 
 // ---
