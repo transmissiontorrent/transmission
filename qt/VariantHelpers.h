@@ -12,7 +12,6 @@
 #include <libtransmission/converters.h>
 #include <libtransmission/variant.h>
 
-class QByteArray;
 class QString;
 
 class Speed;

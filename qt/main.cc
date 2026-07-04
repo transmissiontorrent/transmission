@@ -4,22 +4,16 @@
 // License text can be found in the licenses/ folder.
 
 #include <array>
-#include <memory>
 #include <string_view>
 #include <vector>
 
-#include <QDir>
 #include <QNetworkAccessManager>
 
 #include <fmt/format.h>
 
-#include <libtransmission/transmission.h>
-
-#include <libtransmission/serializer.h>
-#include <libtransmission/session-settings.h>
-#include <libtransmission/tr-getopt.h>
-#include <libtransmission/utils.h>
-#include <libtransmission/version.h>
+#include "libtransmission/tr-getopt.h"
+#include "libtransmission/utils.h" // tr_main
+#include "libtransmission/version.h"
 
 #include <libtransmission-app/app.h>
 
@@ -27,7 +21,6 @@
 #include "InteropHelper.h"
 #include "Prefs.h"
 #include "RpcClient.h"
-#include "VariantHelpers.h"
 
 using namespace std::string_view_literals;
 
