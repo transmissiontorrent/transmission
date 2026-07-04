@@ -30,6 +30,7 @@
 #include <execinfo.h> // [rpc-diag] backtrace()
 #include <pthread.h> // [rpc-diag] pthread_kill()
 #include <sys/syscall.h> // [rpc-diag] SYS_gettid
+#include <dlfcn.h> // [rpc-diag] dladdr() for module base + offset
 #endif
 
 #include <event2/buffer.h>
@@ -281,13 +282,13 @@ void on_complete(struct evhttp_request* /*req*/, void* arg)
 // freeze *while it is happening* -- so we can see the exact blocking call stack --
 // we run an independent watchdog thread that is deliberately NOT on the event
 // loop. It watches `g_last_beat_ns` (bumped by the loop's heartbeat). If the loop
-// goes silent past WatchdogFreezeMs the watchdog (a) prints a loud line to stderr
-// with the pid + the frozen thread's LWP/TID + a ready-to-paste gdb command, and
-// (b) signals the frozen thread so a SIGUSR1 handler dumps its own backtrace
-// in-context (the thread is parked in a blocking syscall, so the signal interrupts
-// it, we unwind, then it resumes). It re-samples every WatchdogRedumpMs so a long
-// freeze yields several stacks -- letting us tell "stuck in one syscall" from
-// "churning through a huge loop". No debugger required, but gdb is there too.
+// goes silent past WatchdogFreezeMs the watchdog repeatedly (every WatchdogRedumpMs)
+// signals the frozen thread with SIGUSR1; the handler captures a raw backtrace, and
+// the watchdog then symbolizes it via addr2line on the server and prints file:line
+// to stderr. Because it re-samples throughout the freeze, a single freeze yields a
+// *series* of stacks -- a poor-man's sampling profiler -- so we can see where the
+// wall-clock time is really going instead of trusting one lucky data point. No
+// debugger required, but a `gdb -p` command is printed as a fallback too.
 #ifndef _WIN32
 std::atomic<std::int64_t> g_last_beat_ns{ 0 }; // bumped by the event loop each heartbeat
 std::atomic<std::int64_t> g_last_dump_ns{ 0 }; // last time the watchdog dumped a stack
@@ -296,7 +297,14 @@ std::atomic<long> g_loop_tid{ -1 };
 
 auto constexpr WatchdogPollMs = 200;
 auto constexpr WatchdogFreezeMs = 1500; // > heartbeat interval, so healthy beats never trip it
-auto constexpr WatchdogRedumpMs = 3000; // re-sample the stack this often while still frozen
+auto constexpr WatchdogRedumpMs = 500; // re-sample the stack this often while still frozen (mini-profiler)
+auto constexpr MaxFrames = 96;
+
+// Filled by the SIGUSR1 handler running in the frozen thread; read by the watchdog
+// thread once g_bt_n flips >= 0. Single sample in flight at a time (the watchdog
+// waits for each capture before requesting the next), so no concurrent access.
+void* g_bt_frames[MaxFrames];
+std::atomic<int> g_bt_n{ -1 };
 
 [[nodiscard]] std::int64_t steady_now_ns() noexcept
 {
@@ -304,26 +312,106 @@ auto constexpr WatchdogRedumpMs = 3000; // re-sample the stack this often while 
 }
 
 // Runs in the *frozen* thread's context (delivered via SIGUSR1 from the watchdog).
-// backtrace_symbols_fd() writes straight to the fd without malloc, so it is safe
-// enough to call from a signal handler for this throwaway diagnostic.
-void sigusr1_dump_backtrace(int /*sig*/)
+// Only captures raw frame pointers -- no malloc, no I/O -- then publishes the count.
+// Symbolization (which forks addr2line) happens later on the watchdog thread, where
+// it is safe. If the thread was parked in a blocking syscall, SA_RESTART resumes it;
+// if it was burning CPU, we've just taken a statistical profiling sample.
+void sigusr1_capture(int /*sig*/)
 {
-    static char const banner[] = "\n=== [rpc-diag] BACKTRACE of frozen event-loop thread ===\n";
-    (void)!::write(STDERR_FILENO, banner, sizeof(banner) - 1U);
+    auto const n = ::backtrace(g_bt_frames, MaxFrames);
+    g_bt_n.store(n, std::memory_order_release);
+}
 
-    void* frames[96];
-    auto const n = ::backtrace(frames, static_cast<int>(std::size(frames)));
-    ::backtrace_symbols_fd(frames, n, STDERR_FILENO);
+// Runs on the watchdog thread (safe to fork/popen). Turns raw addresses into
+// file:line by shelling out to addr2line on the server. Frames are grouped into
+// contiguous same-module runs so each run is one addr2line invocation; the offset
+// handed to addr2line is (addr - module_base), which is what it wants for both the
+// PIE executable and shared objects.
+void symbolize_frames_to_stderr(void* const* frames, int n)
+{
+    auto i = 0;
+    while (i < n) {
+        auto info = Dl_info{};
+        if (::dladdr(frames[i], &info) == 0 || info.dli_fname == nullptr) {
+            std::fprintf(stderr, "[rpc-diag]     #%02d  %p  <no dladdr>\n", i, frames[i]);
+            ++i;
+            continue;
+        }
 
-    static char const footer[] = "=== [rpc-diag] end backtrace ===\n\n";
-    (void)!::write(STDERR_FILENO, footer, sizeof(footer) - 1U);
+        auto const* const module = info.dli_fname;
+        auto const base = reinterpret_cast<std::uintptr_t>(info.dli_fbase);
+
+        // Shared objects always report an absolute path; only the main executable
+        // can be relative (e.g. launched as ./daemon/transmission-daemon). Route
+        // that through /proc/self/exe so addr2line resolves it after any chdir.
+        auto const* const exe_path = module[0] == '/' ? module : "/proc/self/exe";
+
+        auto cmd = fmt::memory_buffer{};
+        fmt::format_to(std::back_inserter(cmd), "addr2line -f -C -i -p -e '{}'", exe_path);
+        auto const run_start = i;
+        for (; i < n; ++i) {
+            auto di = Dl_info{};
+            if (::dladdr(frames[i], &di) == 0 || di.dli_fname == nullptr || std::strcmp(di.dli_fname, module) != 0) {
+                break;
+            }
+            auto const off = reinterpret_cast<std::uintptr_t>(frames[i]) - base;
+            fmt::format_to(std::back_inserter(cmd), " 0x{:x}", off);
+        }
+        fmt::format_to(std::back_inserter(cmd), " 2>/dev/null");
+        cmd.push_back('\0');
+
+        std::fprintf(stderr, "[rpc-diag]   -- frames #%02d..#%02d in %s --\n", run_start, i - 1, module);
+        std::fflush(stderr);
+        if (auto* const pipe = ::popen(cmd.data(), "r"); pipe != nullptr) {
+            char line[2048];
+            while (std::fgets(line, sizeof(line), pipe) != nullptr) {
+                std::fprintf(stderr, "[rpc-diag]     %s", line);
+            }
+            ::pclose(pipe);
+        } else {
+            std::fprintf(stderr, "[rpc-diag]     <popen addr2line failed>\n");
+        }
+    }
+    std::fflush(stderr);
+}
+
+// Signal the frozen thread, wait for it to capture, then symbolize the sample.
+void request_and_dump_backtrace(int sample_idx)
+{
+    g_bt_n.store(-1, std::memory_order_release);
+
+    auto const handle = g_loop_pthread.load();
+    if (handle == 0UL || ::pthread_kill(static_cast<pthread_t>(handle), SIGUSR1) != 0) {
+        return;
+    }
+
+    // wait up to ~250ms for the frozen thread to service the signal & capture
+    for (auto spin = 0; spin < 250 && g_bt_n.load(std::memory_order_acquire) < 0; ++spin) {
+        std::this_thread::sleep_for(std::chrono::milliseconds{ 1 });
+    }
+
+    auto const n = g_bt_n.load(std::memory_order_acquire);
+    if (n <= 0) {
+        std::fprintf(stderr, "[rpc-diag]   (sample #%d: backtrace capture timed out)\n", sample_idx);
+        std::fflush(stderr);
+        return;
+    }
+
+    std::fprintf(stderr, "[rpc-diag] === frozen-thread backtrace sample #%d (%d frames) ===\n", sample_idx, n);
+    symbolize_frames_to_stderr(g_bt_frames, n);
+    std::fprintf(stderr, "[rpc-diag] === end sample #%d ===\n", sample_idx);
+    std::fflush(stderr);
 }
 
 // Independent monitor thread -- deliberately NOT on the event loop so it keeps
-// running while the loop is wedged.
+// running while the loop is wedged. During a freeze it takes a symbolized sample
+// every WatchdogRedumpMs, so one freeze yields a whole series of stacks (a poor
+// man's sampling profiler) rather than a single possibly-misleading data point.
 void watchdog_main()
 {
     auto const pid = static_cast<long>(::getpid());
+    auto sample_idx = 0;
+    auto in_freeze = false;
     for (;;) {
         std::this_thread::sleep_for(std::chrono::milliseconds{ WatchdogPollMs });
 
@@ -335,31 +423,39 @@ void watchdog_main()
         auto const now_ns = steady_now_ns();
         auto const stalled_ms = (now_ns - last_beat) / 1'000'000;
         if (stalled_ms < WatchdogFreezeMs) {
+            if (in_freeze) {
+                std::fprintf(stderr, "[rpc-diag] event loop RECOVERED (took %d sample(s) during freeze)\n\n", sample_idx);
+                std::fflush(stderr);
+            }
+            in_freeze = false;
             continue; // healthy
         }
 
         if ((now_ns - g_last_dump_ns.load()) / 1'000'000 < WatchdogRedumpMs) {
-            continue; // already dumped recently for this freeze
+            continue; // already sampled recently
         }
         g_last_dump_ns.store(now_ns);
+
+        if (!in_freeze) {
+            in_freeze = true;
+            sample_idx = 0;
+        }
+        ++sample_idx;
 
         // fprintf straight to stderr (not tr_logAdd) so it shows even if the log
         // path itself is stuck behind the frozen thread.
         std::fprintf(
             stderr,
-            "\n[rpc-diag] *** EVENT LOOP FROZEN *** no heartbeat for ~%lldms\n"
-            "[rpc-diag]   pid=%ld  frozen-thread-LWP=%ld\n"
-            "[rpc-diag]   manual inspect:  gdb -p %ld -batch -ex 'thread apply all bt'\n"
-            "[rpc-diag]   auto-dumping the frozen thread's backtrace below (via SIGUSR1):\n",
+            "\n[rpc-diag] *** EVENT LOOP FROZEN *** ~%lldms, pid=%ld, LWP=%ld (sample #%d)\n"
+            "[rpc-diag]   gdb fallback: gdb -p %ld -batch -ex 'thread apply all bt'\n",
             static_cast<long long>(stalled_ms),
             pid,
             g_loop_tid.load(),
+            sample_idx,
             pid);
         std::fflush(stderr);
 
-        if (auto const handle = g_loop_pthread.load(); handle != 0UL) {
-            (void)::pthread_kill(static_cast<pthread_t>(handle), SIGUSR1);
-        }
+        request_and_dump_backtrace(sample_idx);
     }
 }
 
@@ -383,7 +479,7 @@ void start_watchdog_once()
     (void)::backtrace(std::data(warm), static_cast<int>(std::size(warm)));
 
     struct sigaction sa = {};
-    sa.sa_handler = &sigusr1_dump_backtrace;
+    sa.sa_handler = &sigusr1_capture;
     ::sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART; // resume the interrupted syscall after we unwind
     (void)::sigaction(SIGUSR1, &sa, nullptr);
