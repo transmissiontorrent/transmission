@@ -5,20 +5,14 @@
 
 #pragma once
 
-#include <string_view>
-#include <utility>
-
-#include <QDir>
 #include <QObject>
 #include <QString>
 
 #include <libtransmission/quark.h>
-#include <libtransmission/variant.h>
 
 #include <libtransmission-app/prefs.h>
 
 #include "UserMetaType.h"
-#include "Utils.h"
 #include "VariantHelpers.h"
 
 class Prefs final
@@ -46,7 +40,7 @@ public:
     Prefs& operator=(Prefs const&) = delete;
     ~Prefs() override = default;
 
-    [[nodiscard]] static bool isCore(tr_quark const key)
+    [[nodiscard]] static constexpr bool isCore(tr_quark const key)
     {
         return tr::app::prefs_is_core(key);
     }
