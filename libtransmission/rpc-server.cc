@@ -306,6 +306,12 @@ auto constexpr MaxFrames = 96;
 void* g_bt_frames[MaxFrames];
 std::atomic<int> g_bt_n{ -1 };
 
+// Absolute path to *this* executable, resolved once inside the daemon process.
+// We must NOT pass "/proc/self/exe" to addr2line: popen runs it via /bin/sh, and
+// inside that child "/proc/self/exe" resolves to addr2line, not the daemon. So we
+// readlink it here (correct process) and hand addr2line the concrete path.
+char g_exe_path[4096];
+
 [[nodiscard]] std::int64_t steady_now_ns() noexcept
 {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(clock::now().time_since_epoch()).count();
@@ -342,9 +348,11 @@ void symbolize_frames_to_stderr(void* const* frames, int n)
         auto const base = reinterpret_cast<std::uintptr_t>(info.dli_fbase);
 
         // Shared objects always report an absolute path; only the main executable
-        // can be relative (e.g. launched as ./daemon/transmission-daemon). Route
-        // that through /proc/self/exe so addr2line resolves it after any chdir.
-        auto const* const exe_path = module[0] == '/' ? module : "/proc/self/exe";
+        // can be relative (e.g. launched as ./transmission-daemon). For that, use
+        // the path we readlink'd from /proc/self/exe inside the daemon process --
+        // NOT the string "/proc/self/exe", which addr2line's child would resolve
+        // to itself.
+        auto const* const exe_path = module[0] == '/' ? module : (g_exe_path[0] != '\0' ? g_exe_path : module);
 
         auto cmd = fmt::memory_buffer{};
         fmt::format_to(std::back_inserter(cmd), "addr2line -f -C -i -p -e '{}'", exe_path);
@@ -472,6 +480,14 @@ void start_watchdog_once()
     g_loop_pthread.store(static_cast<unsigned long>(::pthread_self()));
     g_loop_tid.store(static_cast<long>(::syscall(SYS_gettid)));
     g_last_beat_ns.store(steady_now_ns());
+
+    // Resolve our own binary's absolute path here, in the daemon process, so the
+    // addr2line child (which sees a different /proc/self/exe) gets the right file.
+    if (auto const len = ::readlink("/proc/self/exe", g_exe_path, sizeof(g_exe_path) - 1U); len > 0) {
+        g_exe_path[len] = '\0';
+    } else {
+        g_exe_path[0] = '\0';
+    }
 
     // Pre-load libgcc's unwinder now, on a healthy thread, so backtrace() in the
     // signal handler doesn't have to dlopen anything at freeze time.
