@@ -253,10 +253,10 @@ ReadState tr_handshake::read_handshake(tr_peerIo* peer_io)
     }
 
     // reserved bytes / flags
-    auto reserved = std::array<uint8_t, HandshakeFlagsBytes>{};
+    auto reserved = std::array<std::byte, HandshakeFlagsBytes>{};
     auto flags = tr_bitfield{ HandshakeFlagsBits };
     peer_io->read_bytes(std::data(reserved), std::size(reserved));
-    flags.set_raw(std::data(reserved), std::size(reserved));
+    flags.set_raw(reserved);
     peer_io->set_supports_dht(flags.test(DhtFlag));
     peer_io->set_supports_ltep(flags.test(LtepFlag));
     peer_io->set_supports_fext(flags.test(FextFlag));

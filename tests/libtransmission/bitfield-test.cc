@@ -72,7 +72,7 @@ TEST(Bitfield, ctorFromFlagArray)
         bool const have_none = true_count == 0;
 
         auto bf = tr_bitfield(n);
-        bf.set_from_bools(std::data(flags), std::size(flags));
+        bf.set_from_bools(flags);
 
         EXPECT_EQ(n, bf.size());
         EXPECT_EQ(have_all, bf.has_all());
@@ -87,22 +87,22 @@ TEST(Bitfield, ctorFromFlagArray)
 
 TEST(Bitfield, setRaw)
 {
-    auto constexpr TestByte = uint8_t{ 10 };
+    auto constexpr TestByte = std::byte{ 10 };
     auto constexpr TestByteTrueBits = 2;
 
-    auto raw = std::vector<uint8_t>(100, TestByte);
+    auto raw = std::vector(100, TestByte);
 
     auto bf = tr_bitfield(std::size(raw) * 8);
-    bf.set_raw(std::data(raw), std::size(raw));
+    bf.set_raw(raw);
     EXPECT_EQ(TestByteTrueBits * std::size(raw), bf.count());
 
     // The first byte of the bitfield corresponds to indices 0 - 7
     // from high bit to low bit, respectively. The next one 8-15, etc.
     // Spare bits at the end are set to zero.
-    auto test = uint8_t{};
+    auto test = std::byte{};
     for (int i = 0; i < 8; ++i) {
         if (bf.test(i)) {
-            test |= (1 << (7 - i));
+            test |= (std::byte{ 1 } << (7 - i));
         }
     }
     EXPECT_EQ(TestByte, test);
@@ -113,18 +113,18 @@ TEST(Bitfield, setRaw)
     bf.set_has_all();
     raw = bf.raw();
     EXPECT_EQ(std::size(bf) / 8, std::size(raw));
-    EXPECT_EQ(std::numeric_limits<unsigned char>::max(), raw[0]);
+    EXPECT_EQ(std::byte{ 0xFF }, raw[0]);
 
     // check that the spare bits t the end are zero
     bf = tr_bitfield{ 1 };
-    uint8_t const by = std::numeric_limits<uint8_t>::max();
-    bf.set_raw(&by, 1);
+    static constexpr auto By = std::byte{ 0xFF };
+    bf.set_raw({ &By, 1U });
     EXPECT_TRUE(bf.has_all());
     EXPECT_FALSE(bf.has_none());
     EXPECT_EQ(1U, bf.count());
     raw = bf.raw();
     EXPECT_EQ(1U, std::size(raw));
-    EXPECT_EQ(1 << 7, raw[0]);
+    EXPECT_EQ(std::byte{ 1 } << 7, raw[0]);
 }
 
 TEST(Bitfield, bitfields)

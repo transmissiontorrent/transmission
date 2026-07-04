@@ -9,9 +9,13 @@
 #error only libtransmission should #include this header.
 #endif
 
+#include <bit>
 #include <cstddef> // size_t
 #include <cstdint> // uint8_t
+#include <span>
 #include <vector> // std::vector
+
+#include "libtransmission/tr-macros.h"
 
 /**
  * @brief Implementation of the BitTorrent spec's Bitfield array of bits.
@@ -53,13 +57,20 @@ public:
     {
         set_span(begin, end, false);
     }
-    void set_from_bools(bool const* flags, size_t n);
+    void set_from_bools(std::span<bool const> flags);
 
     // "raw" here is in BEP0003 format: "The first byte of the bitfield
     // corresponds to indices 0 - 7 from high bit to low bit, respectively.
     // The next one 8-15, etc. Spare bits at the end are set to zero."
-    void set_raw(uint8_t const* raw, size_t byte_count);
-    [[nodiscard]] std::vector<uint8_t> raw() const;
+    void set_raw(std::span<std::byte const> raw);
+    [[nodiscard]] std::vector<std::byte> raw() const;
+
+    template<typename R>
+        requires(!requires(R const& range) { std::span<std::byte const>{ range }; })
+    void set_raw(R const& raw)
+    {
+        set_raw(std::as_bytes(std::span<typename R::value_type const>{ raw }));
+    }
 
     [[nodiscard]] constexpr bool has_all() const noexcept
     {
@@ -113,7 +124,14 @@ public:
     [[nodiscard]] bool intersects(tr_bitfield const& that) const noexcept;
 
 private:
-    [[nodiscard]] size_t count_flags() const noexcept;
+    [[nodiscard]] TR_CONSTEXPR_VEC size_t count_flags() const noexcept
+    {
+        auto ret = size_t{};
+        for (auto const flag : flags_) {
+            ret += popcount(flag);
+        }
+        return ret;
+    }
     [[nodiscard]] size_t count_flags(size_t begin, size_t end) const noexcept;
 
     [[nodiscard]] constexpr bool test_flag(size_t n) const
@@ -122,7 +140,7 @@ private:
             return false;
         }
 
-        return (flags_[n >> 3U] << (n & 7U) & 0x80) != 0;
+        return (flags_[n >> 3U] << (n & 7U) & std::byte{ 0x80 }) != std::byte{};
     }
 
     void ensure_bits_alloced(size_t n);
@@ -131,7 +149,7 @@ private:
     void free_array() noexcept
     {
         // move-assign to ensure the reserve memory is cleared
-        flags_ = std::vector<uint8_t>{};
+        flags_ = std::vector<std::byte>{};
     }
 
     void increment_true_count(size_t inc) noexcept;
@@ -142,7 +160,12 @@ private:
         set_true_count(count_flags());
     }
 
-    std::vector<uint8_t> flags_;
+    [[nodiscard]] static constexpr int popcount(std::byte const value) noexcept
+    {
+        return std::popcount(std::to_integer<uint8_t>(value));
+    }
+
+    std::vector<std::byte> flags_;
 
     size_t bit_count_ = 0;
     size_t true_count_ = 0;
