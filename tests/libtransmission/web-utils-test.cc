@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef> // size_t
+#include <optional>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -286,4 +287,60 @@ TEST_F(WebUtilsTest, urlPercentEncode)
         tr_urlPercentEncode(std::back_inserter(buf), decoded, escape_reserved);
         EXPECT_EQ(encoded, buf);
     }
+}
+
+TEST_F(WebUtilsTest, httpParseHeaderLine)
+{
+    // a simple "Name: value" pair
+    auto parsed = tr_httpParseHeaderLine("Content-Type: text/plain"sv);
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("Content-Type"sv, parsed->first);
+    EXPECT_EQ("text/plain"sv, parsed->second);
+
+    // leading spaces and tabs in the value are trimmed
+    parsed = tr_httpParseHeaderLine("X-Foo: \t  bar"sv);
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("X-Foo"sv, parsed->first);
+    EXPECT_EQ("bar"sv, parsed->second);
+
+    // trailing spaces and tabs in the value are trimmed (RFC 7230 OWS)
+    parsed = tr_httpParseHeaderLine("X-Foo: bar \t "sv);
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("X-Foo"sv, parsed->first);
+    EXPECT_EQ("bar"sv, parsed->second);
+
+    // both leading and trailing whitespace are trimmed, around CR / LF
+    parsed = tr_httpParseHeaderLine("X-Foo: \t bar \t\r\n"sv);
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("X-Foo"sv, parsed->first);
+    EXPECT_EQ("bar"sv, parsed->second);
+
+    // a trailing CR / LF is ignored
+    parsed = tr_httpParseHeaderLine("X-Foo: bar\r\n"sv);
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("X-Foo"sv, parsed->first);
+    EXPECT_EQ("bar"sv, parsed->second);
+
+    // colons in the value are preserved (only the first colon splits)
+    parsed = tr_httpParseHeaderLine("Date: Mon, 01 Jan 2024 00:00:00 GMT"sv);
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("Date"sv, parsed->first);
+    EXPECT_EQ("Mon, 01 Jan 2024 00:00:00 GMT"sv, parsed->second);
+
+    // a name with an empty value (line ends right after the colon)
+    parsed = tr_httpParseHeaderLine("X-Empty:"sv);
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("X-Empty"sv, parsed->first);
+    EXPECT_EQ(""sv, parsed->second);
+
+    // a value consisting only of whitespace is empty
+    parsed = tr_httpParseHeaderLine("X-Blank:   \r\n"sv);
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ("X-Blank"sv, parsed->first);
+    EXPECT_EQ(""sv, parsed->second);
+
+    // lines without a colon (the status line, the blank separator) are skipped
+    EXPECT_FALSE(tr_httpParseHeaderLine("HTTP/1.1 200 OK"sv));
+    EXPECT_FALSE(tr_httpParseHeaderLine(""sv));
+    EXPECT_FALSE(tr_httpParseHeaderLine("\r\n"sv));
 }
