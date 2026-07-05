@@ -33,7 +33,7 @@ public:
         void* user_data = nullptr; // from FetchOptions::done_func_user_data
 
         // Case-insensitive lookup of a response header value.
-        [[nodiscard]] std::optional<std::string_view> header(std::string_view const name) const;
+        [[nodiscard]] std::optional<std::string_view> header(std::string_view name) const;
     };
 
     // Callback to invoke when fetch() is done
