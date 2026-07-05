@@ -29,3 +29,7 @@ endif()
 if(TARGET transmission-show)
     add_dependencies(all-tests transmission-show)
 endif()
+
+if(TARGET transmission-remote-test)
+    add_dependencies(all-tests transmission-remote-test)
+endif()

@@ -23,6 +23,7 @@
 #include <fmt/format.h>
 
 #include <libtransmission/net.h> // sockaddr_storage, ntohs()
+#include <libtransmission/utils.h> // tr_lib_init()
 
 #include <gtest/gtest.h>
 
@@ -166,6 +167,8 @@ CommandResult run(std::string const& command)
 
 TEST(RemoteLoopback, performsSessionHandshakeAndSucceeds)
 {
+    tr_lib_init(); // start up Winsock on Windows before the mock server binds
+
     auto server = MockRpcServer{};
 
     auto const command = fmt::format(R"("{:s}" 127.0.0.1:{:d} -l 2>&1)", TR_REMOTE_EXE, server.port());
