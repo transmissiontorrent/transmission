@@ -13,15 +13,15 @@
 #include <cstdlib>
 #include <cstring> /* strcmp */
 #include <ctime>
+#include <future>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <set>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-
-#include <curl/curl.h>
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>
@@ -43,6 +43,7 @@
 #include <libtransmission/values.h>
 #include <libtransmission/variant.h>
 #include <libtransmission/version.h>
+#include <libtransmission/web.h>
 
 using namespace std::literals;
 
@@ -67,6 +68,18 @@ char constexpr Usage[] = "transmission-remote " LONG_VERSION_STRING
                          "\n"
                          "See the man page for detailed explanations and many examples.";
 
+class RemoteWebMediator final : public tr_web::Mediator
+{
+public:
+    [[nodiscard]] std::optional<std::string_view> userAgent() const override
+    {
+        return std::string_view{ user_agent_ };
+    }
+
+private:
+    std::string const user_agent_ = fmt::format("{:s}/{:s}", MyName, LONG_VERSION_STRING);
+};
+
 struct RemoteConfig {
     std::string auth;
     std::string filter;
@@ -80,6 +93,11 @@ struct RemoteConfig {
     bool use_ssl = false;
 
     api_compat::Style network_style = api_compat::Style::Tr4;
+
+    // Shared HTTP client, created lazily on the first request. web_mediator is
+    // declared before web so that web (which references it) is destroyed first.
+    RemoteWebMediator web_mediator;
+    std::unique_ptr<tr_web> web;
 };
 
 // --- Display Utilities
@@ -789,27 +807,8 @@ auto constexpr ListKeys = std::to_array<tr_quark>({
 });
 static_assert(ListKeys[std::size(ListKeys) - 1] != tr_quark{});
 
-[[nodiscard]] size_t write_func(void* ptr, size_t size, size_t nmemb, void* vbuf)
-{
-    auto const n_bytes = size * nmemb;
-    static_cast<std::string*>(vbuf)->append(static_cast<char const*>(ptr), n_bytes);
-    return n_bytes;
-}
-
 namespace header_utils
 {
-// `${name}: {$value}` --> std::pair<name, value>
-[[nodiscard]] std::optional<std::pair<std::string_view, std::string_view>> parse_header(std::string_view const line)
-{
-    static auto constexpr Delimiter = ": "sv;
-    if (auto const pos = line.find(Delimiter); pos != std::string_view::npos) {
-        auto const name = tr_strv_strip(line.substr(0, pos));
-        auto const value = tr_strv_strip(line.substr(pos + std::size(Delimiter)));
-        return std::make_pair(name, value);
-    }
-    return {};
-}
-
 void warn_if_unsupported_rpc_version(std::string_view const semver)
 {
     static auto constexpr ExpectedMajor = TrRpcVersionSemverMajor;
@@ -824,31 +823,18 @@ void warn_if_unsupported_rpc_version(std::string_view const semver)
 }
 } // namespace header_utils
 
-// look for a session id in the header
-// in case the server gives back a 409
-[[nodiscard]] size_t parse_response_header(void* ptr, size_t size, size_t nmemb, void* vconfig)
+// Pull the session id (needed to retry a 409) and the RPC-version header out
+// of a response, mirroring what the old curl header callback used to do.
+void update_config_from_response(tr_web::FetchResponse const& response, RemoteConfig& config)
 {
-    using namespace header_utils;
-    static auto const session_id_header = tr_strlower(TrRpcSessionIdHeader);
-    static auto const rpc_version_header = tr_strlower(TrRpcVersionHeader);
-
-    auto& config = *static_cast<RemoteConfig*>(vconfig);
-
-    auto const line = std::string_view{ static_cast<char const*>(ptr), size * nmemb };
-
-    if (auto const parsed = parse_header(line)) {
-        auto const [key, val] = *parsed;
-        auto const key_lower = tr_strlower(key);
-
-        if (key_lower == session_id_header) {
-            config.session_id = val;
-        } else if (key_lower == rpc_version_header) {
-            config.network_style = api_compat::Style::Tr5;
-            warn_if_unsupported_rpc_version(val);
-        }
+    if (auto const id = response.header(TrRpcSessionIdHeader); id) {
+        config.session_id = std::string{ *id };
     }
 
-    return std::size(line);
+    if (auto const version = response.header(TrRpcVersionHeader); version) {
+        config.network_style = api_compat::Style::Tr5;
+        header_utils::warn_if_unsupported_rpc_version(*version);
+    }
 }
 
 [[nodiscard]] std::string get_status_string(tr_variant::Map const& t)
@@ -2094,66 +2080,6 @@ int process_response(char const* rpcurl, std::string_view const response, Remote
 
 namespace flush_utils
 {
-CURL* tr_curl_easy_init(std::string* writebuf, RemoteConfig& config)
-{
-    CURL* curl = curl_easy_init();
-    (void)curl_easy_setopt(curl, CURLOPT_USERAGENT, fmt::format("{:s}/{:s}", MyName, LONG_VERSION_STRING).c_str());
-    (void)curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_func);
-    (void)curl_easy_setopt(curl, CURLOPT_WRITEDATA, writebuf);
-    (void)curl_easy_setopt(curl, CURLOPT_HEADERDATA, &config);
-    (void)curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, parse_response_header);
-    (void)curl_easy_setopt(curl, CURLOPT_POST, 1);
-    (void)curl_easy_setopt(curl, CURLOPT_NETRC, CURL_NETRC_OPTIONAL);
-    (void)curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-    (void)curl_easy_setopt(curl, CURLOPT_VERBOSE, config.debug);
-    (void)curl_easy_setopt(
-        curl,
-        CURLOPT_ENCODING,
-        ""); /* "" tells curl to fill in the blanks with what it was compiled to support */
-
-    if (auto const& str = config.unix_socket_path; !std::empty(str)) {
-        (void)curl_easy_setopt(curl, CURLOPT_UNIX_SOCKET_PATH, str.c_str());
-    }
-
-    if (auto const& str = config.netrc; !std::empty(str)) {
-        (void)curl_easy_setopt(curl, CURLOPT_NETRC_FILE, str.c_str());
-    }
-
-    if (auto const& str = config.auth; !std::empty(str)) {
-        (void)curl_easy_setopt(curl, CURLOPT_USERPWD, str.c_str());
-    }
-
-    if (config.use_ssl) {
-        // do not verify subject/hostname
-        (void)curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
-
-        // since most certs will be self-signed, do not verify against CA
-        (void)curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-    }
-
-    if (auto const& str = config.session_id; !std::empty(str)) {
-        auto const h = fmt::format("{:s}: {:s}", TrRpcSessionIdHeader, str);
-        auto* const custom_headers = curl_slist_append(nullptr, h.c_str());
-
-        (void)curl_easy_setopt(curl, CURLOPT_HTTPHEADER, custom_headers);
-        (void)curl_easy_setopt(curl, CURLOPT_PRIVATE, custom_headers);
-    }
-
-    return curl;
-}
-
-void tr_curl_easy_cleanup(CURL* curl)
-{
-    struct curl_slist* custom_headers = nullptr;
-    curl_easy_getinfo(curl, CURLINFO_PRIVATE, &custom_headers);
-
-    curl_easy_cleanup(curl);
-
-    if (custom_headers != nullptr) {
-        curl_slist_free_all(custom_headers);
-    }
-}
-
 [[nodiscard]] long get_timeout_secs(std::string_view req)
 {
     if (tr_strv_contains(req, R"("method":"blocklist-update")") || tr_strv_contains(req, R"("method":"blocklist_update")")) {
@@ -2161,6 +2087,63 @@ void tr_curl_easy_cleanup(CURL* curl)
     }
 
     return 60L; /* default value */
+}
+
+// Lazily create the shared tr_web used for every request in this run.
+[[nodiscard]] tr_web& web_for(RemoteConfig& config)
+{
+    if (!config.web) {
+        config.web = tr_web::create(config.web_mediator);
+    }
+
+    return *config.web;
+}
+
+// Issue one RPC request and block until tr_web hands back the response.
+[[nodiscard]] tr_web::FetchResponse blocking_fetch(RemoteConfig& config, std::string const& url, std::string const& payload)
+{
+    auto promise = std::make_shared<std::promise<tr_web::FetchResponse>>();
+    auto future = promise->get_future();
+
+    auto options = tr_web::FetchOptions{
+        url,
+        [promise](tr_web::FetchResponse const& response) { promise->set_value(response); },
+        nullptr,
+        std::chrono::seconds{ get_timeout_secs(payload) },
+    };
+
+    options.body = payload;
+
+    // match the old curl setup: negotiate whatever auth scheme the server
+    // offers and always allow an (optional) .netrc lookup
+    options.auth_scheme = tr_web::FetchOptions::AuthScheme::Any;
+    options.netrc_file = config.netrc;
+    options.verbose = config.debug;
+
+    if (config.use_ssl) {
+        // most RPC servers sit behind a self-signed cert
+        options.ssl_verify = false;
+    }
+
+    if (!std::empty(config.unix_socket_path)) {
+        options.unix_socket_path = config.unix_socket_path;
+    }
+
+    if (!std::empty(config.session_id)) {
+        options.headers.insert_or_assign(std::string{ TrRpcSessionIdHeader }, config.session_id);
+    }
+
+    if (auto const& auth = config.auth; !std::empty(auth)) {
+        if (auto const colon = auth.find(':'); colon != std::string::npos) {
+            options.username = auth.substr(0, colon);
+            options.password = auth.substr(colon + 1U);
+        } else {
+            options.username = auth;
+        }
+    }
+
+    web_for(config).fetch(std::move(options));
+    return future.get();
 }
 } // namespace flush_utils
 
@@ -2173,54 +2156,43 @@ int flush(char const* rpcurl, tr_variant* const var, RemoteConfig& config)
     auto const scheme = config.use_ssl ? "https"sv : "http"sv;
     auto const rpcurl_http = fmt::format("{:s}://{:s}", scheme, rpcurl);
 
-    auto buf = std::string{};
-    auto* curl = tr_curl_easy_init(&buf, config);
-    (void)curl_easy_setopt(curl, CURLOPT_URL, rpcurl_http.c_str());
-    (void)curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload.c_str());
-    (void)curl_easy_setopt(curl, CURLOPT_TIMEOUT, get_timeout_secs(payload));
-
     if (config.debug) {
         fmt::print(stderr, "posting:\n--------\n{:s}\n--------\n", payload);
     }
 
+    auto const response = blocking_fetch(config, rpcurl_http, payload);
+
+    // pull the session id / rpc version out of the response headers
+    update_config_from_response(response, config);
+
     auto status = EXIT_SUCCESS;
-    if (auto const res = curl_easy_perform(curl); res != CURLE_OK) {
-        fmt::print(stderr, "Unable to send request to '{}': {}\n", rpcurl_http, curl_easy_strerror(res));
-        status |= EXIT_FAILURE;
-    } else {
-        long response;
-        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response);
+    switch (response.status) {
+    case 200:
+        status |= process_response(rpcurl, response.body, config);
+        break;
 
-        switch (response) {
-        case 200:
-            status |= process_response(rpcurl, buf, config);
-            break;
-
-        case 204:
-            if (!config.json) {
-                fmt::print("{:s} acknowledged notification\n", rpcurl);
-            }
-            break;
-
-        case 409:
-            // Session id failed. Our curl header func has already
-            // pulled the new session id from this response's headers.
-            // Build a new CURL* and try again
-            tr_curl_easy_cleanup(curl);
-            curl = nullptr;
-            status |= flush(rpcurl, var, config);
-            break;
-
-        default:
-            fmt::print(stderr, "Unexpected response: {:s}\n", buf);
-            status |= EXIT_FAILURE;
-            break;
+    case 204:
+        if (!config.json) {
+            fmt::print("{:s} acknowledged notification\n", rpcurl);
         }
-    }
+        break;
 
-    /* cleanup */
-    if (curl != nullptr) {
-        tr_curl_easy_cleanup(curl);
+    case 409:
+        // Session id failed. update_config_from_response() has already pulled
+        // the new session id from this response's headers, so try again.
+        status |= flush(rpcurl, var, config);
+        break;
+
+    case 0:
+        // no HTTP response: connection failure or timeout
+        fmt::print(stderr, "Unable to send request to '{}'\n", rpcurl_http);
+        status |= EXIT_FAILURE;
+        break;
+
+    default:
+        fmt::print(stderr, "Unexpected response: {:s}\n", response.body);
+        status |= EXIT_FAILURE;
+        break;
     }
 
     var->clear();

@@ -8,7 +8,6 @@ foreach(P create edit remote show)
     target_link_libraries(${TR_NAME}-${P}
         PRIVATE
             ${TR_NAME}
-            CURL::libcurl
             transmission::fmt-header-only
             libevent::core)
 
