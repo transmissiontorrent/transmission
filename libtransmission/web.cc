@@ -60,6 +60,7 @@
 #endif
 #include "libtransmission/env.h"
 #include "libtransmission/log.h"
+#include "libtransmission/string-utils.h"
 #include "libtransmission/tr-assert.h"
 #include "libtransmission/utils.h"
 #include "libtransmission/web.h"
@@ -285,6 +286,10 @@ public:
         ~Task()
         {
             easy_dispose(easy_);
+
+            if (req_header_slist_ != nullptr) {
+                curl_slist_free_all(req_header_slist_);
+            }
         }
 
         [[nodiscard]] constexpr auto* easy() const
@@ -310,6 +315,57 @@ public:
         [[nodiscard]] constexpr auto const& cookies() const
         {
             return options_.cookies;
+        }
+
+        [[nodiscard]] constexpr auto const& body() const
+        {
+            return options_.body;
+        }
+
+        [[nodiscard]] constexpr auto const& username() const
+        {
+            return options_.username;
+        }
+
+        [[nodiscard]] constexpr auto const& password() const
+        {
+            return options_.password;
+        }
+
+        [[nodiscard]] constexpr auto authScheme() const
+        {
+            return options_.auth_scheme;
+        }
+
+        [[nodiscard]] constexpr auto const& netrcFile() const
+        {
+            return options_.netrc_file;
+        }
+
+        [[nodiscard]] constexpr auto const& unixSocketPath() const
+        {
+            return options_.unix_socket_path;
+        }
+
+        [[nodiscard]] constexpr auto const& sslVerify() const
+        {
+            return options_.ssl_verify;
+        }
+
+        [[nodiscard]] constexpr auto const& verbose() const
+        {
+            return options_.verbose;
+        }
+
+        // Build the curl_slist of request headers (owned by this Task) and
+        // return it, or nullptr if there are none to send.
+        [[nodiscard]] curl_slist* make_request_headers()
+        {
+            for (auto const& [name, value] : options_.headers) {
+                req_header_slist_ = curl_slist_append(req_header_slist_, fmt::format("{:s}: {:s}", name, value).c_str());
+            }
+
+            return req_header_slist_;
         }
 
         [[nodiscard]] constexpr auto const& sndbuf() const
@@ -366,6 +422,14 @@ public:
             }
         }
 
+        void add_response_header(std::string_view line)
+        {
+            if (auto const parsed = tr_httpParseHeaderLine(line); parsed) {
+                // store the name lowercased for case-insensitive lookup
+                response.headers.insert_or_assign(tr_strlower(parsed->first), std::string{ parsed->second });
+            }
+        }
+
         void done()
         {
             if (!options_.done_func) {
@@ -404,6 +468,8 @@ public:
         tr_web::FetchOptions options_;
 
         CURL* easy_;
+
+        curl_slist* req_header_slist_ = nullptr;
     };
 
     [[nodiscard]] static unsigned int get_curl_version() noexcept
@@ -536,6 +602,16 @@ public:
         return bytes_used;
     }
 
+    static size_t on_header_received(char* const data, size_t const size, size_t const nmemb, void* const vtask)
+    {
+        size_t const bytes = size * nmemb;
+        auto* const task = static_cast<Task*>(vtask);
+        TR_ASSERT(std::this_thread::get_id() == task->impl.curl_thread->get_id());
+
+        task->add_response_header(std::string_view{ data, bytes });
+        return bytes;
+    }
+
     static int onSocketCreated(void* vtask, curl_socket_t fd, curlsocktype /*purpose*/)
     {
         auto const* const task = static_cast<Task const*>(vtask);
@@ -572,7 +648,9 @@ public:
         (void)curl_easy_setopt(e, CURLOPT_SOCKOPTFUNCTION, onSocketCreated);
         (void)curl_easy_setopt(e, CURLOPT_SOCKOPTDATA, &task);
 
-        if (!curl_ssl_verify) {
+        // per-request override falls back to the env-var-driven default
+        auto const ssl_verify = task.sslVerify().value_or(curl_ssl_verify);
+        if (!ssl_verify) {
 #if LIBCURL_VERSION_NUM >= 0x073400 /* 7.52.0 */
             (void)curl_easy_setopt(e, CURLOPT_SSL_VERIFYHOST, 0L);
             (void)curl_easy_setopt(e, CURLOPT_SSL_VERIFYPEER, 0L);
@@ -604,7 +682,10 @@ public:
 
         (void)curl_easy_setopt(e, CURLOPT_TIMEOUT, static_cast<long>(task.timeoutSecs().count()));
         (void)curl_easy_setopt(e, CURLOPT_URL, task.url().c_str());
-        (void)curl_easy_setopt(e, CURLOPT_VERBOSE, curl_verbose ? 1L : 0L);
+        if (auto const& socket_path = task.unixSocketPath(); socket_path) {
+            (void)curl_easy_setopt(e, CURLOPT_UNIX_SOCKET_PATH, socket_path->c_str());
+        }
+        (void)curl_easy_setopt(e, CURLOPT_VERBOSE, task.verbose().value_or(curl_verbose) ? 1L : 0L);
         (void)curl_easy_setopt(e, CURLOPT_WRITEDATA, &task);
         (void)curl_easy_setopt(e, CURLOPT_WRITEFUNCTION, &tr_web::Impl::onDataReceived);
 
@@ -619,6 +700,42 @@ public:
         if (auto const& file = cookie_file; !std::empty(file)) {
             (void)curl_easy_setopt(e, CURLOPT_COOKIEFILE, file.c_str());
         }
+
+        if (auto const& body = task.body()) {
+            // send the request as an HTTP POST with this body.
+            // set CURLOPT_POSTFIELDSIZE before CURLOPT_COPYPOSTFIELDS so that
+            // curl copies the body binary-safely rather than via strlen().
+            (void)curl_easy_setopt(e, CURLOPT_POSTFIELDSIZE, static_cast<long>(std::size(*body)));
+            (void)curl_easy_setopt(e, CURLOPT_COPYPOSTFIELDS, std::data(*body));
+        }
+
+        if (auto* const headers = task.make_request_headers()) {
+            (void)curl_easy_setopt(e, CURLOPT_HTTPHEADER, headers);
+        }
+
+        if (auto const& username = task.username()) {
+            (void)curl_easy_setopt(e, CURLOPT_USERNAME, username->c_str());
+
+            // curl defaults the password to blank, so only set it when we have one
+            if (auto const& password = task.password()) {
+                (void)curl_easy_setopt(e, CURLOPT_PASSWORD, password->c_str());
+            }
+        }
+
+        if (task.authScheme() == FetchOptions::AuthScheme::Any) {
+            // negotiate whatever scheme the server offers rather than Basic-only
+            (void)curl_easy_setopt(e, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+        }
+
+        if (auto const& netrc = task.netrcFile()) {
+            (void)curl_easy_setopt(e, CURLOPT_NETRC, CURL_NETRC_OPTIONAL);
+            if (!std::empty(*netrc)) {
+                (void)curl_easy_setopt(e, CURLOPT_NETRC_FILE, netrc->c_str());
+            }
+        }
+
+        (void)curl_easy_setopt(e, CURLOPT_HEADERFUNCTION, &tr_web::Impl::on_header_received);
+        (void)curl_easy_setopt(e, CURLOPT_HEADERDATA, &task);
 
         if (auto const& proxy_url = mediator.proxyUrl(); proxy_url) {
             (void)curl_easy_setopt(e, CURLOPT_PROXY, proxy_url->c_str());
@@ -823,6 +940,15 @@ public:
 
     std::map<CURL*, uint64_t /*tr_time_msec()*/> paused_easy_handles;
 };
+
+std::optional<std::string_view> tr_web::FetchResponse::header(std::string_view const name) const
+{
+    if (auto const iter = headers.find(tr_strlower(name)); iter != std::end(headers)) {
+        return iter->second;
+    }
+
+    return std::nullopt;
+}
 
 tr_web::tr_web(Mediator& mediator)
     : impl_{ std::make_unique<Impl>(mediator) }

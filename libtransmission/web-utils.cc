@@ -453,3 +453,30 @@ std::string tr_urlPercentDecode(std::string_view in)
 
     return out;
 }
+
+std::optional<std::pair<std::string_view, std::string_view>> tr_httpParseHeaderLine(std::string_view line)
+{
+    // ignore any trailing CR / LF
+    while (!std::empty(line) && (line.back() == '\r' || line.back() == '\n')) {
+        line.remove_suffix(1U);
+    }
+
+    // a missing colon means this isn't a header field, e.g. the HTTP
+    // status line or the blank line separating the headers from the body
+    auto const colon = line.find(':');
+    if (colon == std::string_view::npos) {
+        return std::nullopt;
+    }
+
+    // trim leading and trailing optional whitespace (spaces and tabs) from
+    // the value, per RFC 7230: header-field = field-name ":" OWS field-value OWS
+    auto value = line.substr(colon + 1U);
+    if (auto const start = value.find_first_not_of(" \t"); start != std::string_view::npos) {
+        auto const end = value.find_last_not_of(" \t"); // != npos since start was found
+        value = value.substr(start, end - start + 1U);
+    } else {
+        value = {};
+    }
+
+    return std::make_pair(line.substr(0U, colon), value);
+}
