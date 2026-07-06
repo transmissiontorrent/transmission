@@ -67,11 +67,6 @@ public:
         return session_ != nullptr || url_is_loopback_;
     }
 
-    [[nodiscard]] std::string const& url() const noexcept
-    {
-        return url_;
-    }
-
     // Issue a request. `on_done` runs on the UI thread when it completes.
     void exec(tr_quark method, tr_variant::Map args, ResponseFunc on_done);
     void exec(tr_quark method, tr_variant* args, ResponseFunc on_done);
