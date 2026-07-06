@@ -146,72 +146,40 @@ private:
         };
     }
 
-    // request step, takes previous response and a continuation
+    // Adapts any of the four step shapes to a uniform QueuedFunction.
+    // Precedence (most specific first): (prev, done) | (done) | (prev) | ().
     template<typename Func>
-        requires std::invocable<Func, RpcResponse const&, Continue>
     static QueuedFunction normalize_func(Func&& func)
     {
-        auto copyable_func = make_copyable(std::forward<Func>(func));
-        return [func = std::move(copyable_func)](RpcResponse const& prev, Continue done) mutable {
-            std::invoke(func, prev, std::move(done));
+        using F = std::remove_cvref_t<Func>;
+        return [func = make_copyable(std::forward<Func>(func))](RpcResponse const& prev, Continue done) mutable {
+            if constexpr (std::invocable<F, RpcResponse const&, Continue>) {
+                std::invoke(func, prev, std::move(done));
+            } else if constexpr (std::invocable<F, Continue>) {
+                std::invoke(func, std::move(done));
+            } else if constexpr (std::invocable<F, RpcResponse const&>) {
+                std::invoke(func, prev);
+                done(make_ok_response());
+            } else {
+                static_assert(std::invocable<F>, "step must take (prev, done), (done), (prev), or ()");
+                std::invoke(func);
+                done(make_ok_response());
+            }
         };
     }
 
-    // first request step, takes only a continuation (ignores previous response)
+    // Adapts an error handler that takes either the failing response or nothing.
     template<typename Func>
-        requires std::invocable<Func, Continue> && (!std::invocable<Func, RpcResponse const&, Continue>)
-    static QueuedFunction normalize_func(Func&& func)
-    {
-        auto copyable_func = make_copyable(std::forward<Func>(func));
-        return [func = std::move(copyable_func)](RpcResponse const& /*prev*/, Continue done) mutable {
-            std::invoke(func, std::move(done));
-        };
-    }
-
-    // auxiliary step, takes the previous response and returns nothing
-    template<typename Func>
-        requires std::invocable<Func, RpcResponse const&> && (!std::invocable<Func, Continue>) &&
-        (!std::invocable<Func, RpcResponse const&, Continue>)
-    static QueuedFunction normalize_func(Func&& func)
-    {
-        auto copyable_func = make_copyable(std::forward<Func>(func));
-        return [func = std::move(copyable_func)](RpcResponse const& prev, Continue done) mutable {
-            std::invoke(func, prev);
-            done(make_ok_response());
-        };
-    }
-
-    // auxiliary step, takes nothing and returns nothing
-    template<typename Func>
-        requires std::invocable<Func> && (!std::invocable<Func, RpcResponse const&>) && (!std::invocable<Func, Continue>)
-    static QueuedFunction normalize_func(Func&& func)
-    {
-        auto copyable_func = make_copyable(std::forward<Func>(func));
-        return [func = std::move(copyable_func)](RpcResponse const& /*prev*/, Continue done) mutable {
-            std::invoke(func);
-            done(make_ok_response());
-        };
-    }
-
-    // error handler taking the failing response
-    template<typename Func>
-        requires std::invocable<Func, RpcResponse const&>
     static ErrorHandlerFunction normalize_error_handler(Func&& func)
     {
-        auto copyable_func = make_copyable(std::forward<Func>(func));
-        return [func = std::move(copyable_func)](RpcResponse const& r) mutable {
-            std::invoke(func, r);
-        };
-    }
-
-    // error handler taking nothing
-    template<typename Func>
-        requires std::invocable<Func> && (!std::invocable<Func, RpcResponse const&>)
-    static ErrorHandlerFunction normalize_error_handler(Func&& func)
-    {
-        auto copyable_func = make_copyable(std::forward<Func>(func));
-        return [func = std::move(copyable_func)](RpcResponse const& /*r*/) mutable {
-            std::invoke(func);
+        using F = std::remove_cvref_t<Func>;
+        return [func = make_copyable(std::forward<Func>(func))](RpcResponse const& r) mutable {
+            if constexpr (std::invocable<F, RpcResponse const&>) {
+                std::invoke(func, r);
+            } else {
+                static_assert(std::invocable<F>, "error handler must take (RpcResponse const&) or ()");
+                std::invoke(func);
+            }
         };
     }
 
