@@ -103,6 +103,8 @@ tr_auto_option(WITH_KQUEUE "Enable kqueue support (on systems that support it)" 
 tr_auto_option(WITH_APPINDICATOR "Use appindicator for system tray icon in GTK client (GTK+ 3 only)" AUTO)
 tr_auto_option(WITH_SYSTEMD "Add support for systemd startup notification (on systems that support it)" AUTO)
 
+mark_as_advanced(USE_SYSTEM_DEFAULT)
+
 set(TR_NAME ${PROJECT_NAME})
 
 # major.minor.patch[-[beta.N.]dev]+commit_hash
