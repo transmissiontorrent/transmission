@@ -19,11 +19,11 @@ namespace
 {
 
 // Marshaler that tells tr::app::RpcClient how to hop work to the Qt event loop.
-[[nodiscard]] tr::app::RpcClient::UiThreadFunc makeUiMarshaler()
+[[nodiscard]] tr::app::RpcClient::UiThreadFunc makeUiMarshaler(QObject* context)
 {
-    return [](std::function<void()> fn) {
+    return [context](std::function<void()> fn) {
         if (qApp != nullptr) {
-            QTimer::singleShot(0, qApp, std::move(fn));
+            QTimer::singleShot(0, context, std::move(fn));
             return;
         }
 
@@ -35,7 +35,7 @@ namespace
 
 RpcClient::RpcClient(QObject* parent)
     : QObject{ parent }
-    , impl_{ makeUiMarshaler() }
+    , impl_{ makeUiMarshaler(this) }
 {
     connections_[0] = impl_.network_response.connect_scoped([this](long const status, std::string_view const message) {
         auto const code = status == 200 ? QNetworkReply::NoError : QNetworkReply::UnknownNetworkError;
