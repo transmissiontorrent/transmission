@@ -338,7 +338,6 @@ auto constexpr SessionKeys = std::to_array<ApiKey>({
     { .current = TR_KEY_peers2_6, .legacy = TR_KEY_peers2_6_kebab_APICOMPAT },
     { .current = TR_KEY_pex_enabled, .legacy = TR_KEY_pex_enabled_kebab_APICOMPAT },
     { .current = TR_KEY_port_forwarding_enabled, .legacy = TR_KEY_port_forwarding_enabled_kebab_APICOMPAT },
-    { .current = TR_KEY_prompt_before_exit, .legacy = TR_KEY_prompt_before_exit_kebab_APICOMPAT },
     { .current = TR_KEY_queue_stalled_enabled, .legacy = TR_KEY_queue_stalled_enabled_kebab_APICOMPAT },
     { .current = TR_KEY_queue_stalled_minutes, .legacy = TR_KEY_queue_stalled_minutes_kebab_APICOMPAT },
     { .current = TR_KEY_seed_ratio_limit, .legacy = TR_KEY_ratio_limit_kebab_APICOMPAT },

@@ -158,7 +158,6 @@ private:
     ShowMode show_mode_ = DefaultShowMode;
     SortMode sort_mode_ = DefaultSortMode;
     StatsMode statusbar_stats_ = DefaultStatsMode;
-    bool askquit_ = true;
     bool blocklist_updates_enabled_ = true;
     bool compact_view_ = false;
     bool complete_sound_enabled_ = true;
@@ -249,7 +248,6 @@ public:
         Field<&Prefs::alt_speed_limit_time_enabled_>{ TR_KEY_alt_speed_time_enabled },
         Field<&Prefs::alt_speed_limit_time_end_>{ TR_KEY_alt_speed_time_end },
         Field<&Prefs::alt_speed_limit_up_>{ TR_KEY_alt_speed_up },
-        Field<&Prefs::askquit_>{ TR_KEY_prompt_before_exit },
         Field<&Prefs::blocklist_date_>{ TR_KEY_blocklist_date },
         Field<&Prefs::blocklist_enabled_>{ TR_KEY_blocklist_enabled },
         Field<&Prefs::blocklist_updates_enabled_>{ TR_KEY_blocklist_updates_enabled },
