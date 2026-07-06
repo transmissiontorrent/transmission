@@ -1454,8 +1454,8 @@ jobs:
               `[ '${{ needs.what-to-make.outputs.make-web }}' = 'true' ] && echo npm` \
               pkgconf \
               `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-svg qt6-tools` \
-              simdutf \
-              rapidjson
+              rapidjson \
+              simdutf
           run: |
             set -ex
             mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
@@ -1629,8 +1629,8 @@ jobs:
               ninja \
               `[ '${{ needs.what-to-make.outputs.make-web }}' = 'true' ] && echo node` \
               `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-qtsvg qt6-qttools` \
-              simdutf \
-              rapidjson
+              rapidjson \
+              simdutf
           run: |
             set -ex
             mkdir src && gtar xf transmission*.tar.* -C src --strip-components 1
