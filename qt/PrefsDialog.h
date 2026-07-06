@@ -90,7 +90,7 @@ private:
     Ui::PrefsDialog ui_ = {};
 
     bool const is_server_;
-    bool is_local_ = {};
+    bool is_local_fs_ = {};
     std::array<PortTestStatus, Session::NUM_PORT_TEST_IP_PROTOCOL> port_test_status_ = {};
 
     std::multimap<tr_quark, std::function<void()>> updaters_;

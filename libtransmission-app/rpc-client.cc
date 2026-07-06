@@ -63,11 +63,6 @@ void RpcClient::start(std::string url, std::optional<std::string> username, std:
     url_ = std::move(url);
     username_ = std::move(username);
     password_ = std::move(password);
-
-    url_is_loopback_ = false;
-    if (auto const parsed = tr_urlParse(url_); parsed) {
-        url_is_loopback_ = parsed->host == "localhost" || parsed->host == "127.0.0.1" || parsed->host == "::1";
-    }
 }
 
 void RpcClient::stop()
@@ -77,7 +72,6 @@ void RpcClient::stop()
     url_.clear();
     username_.reset();
     password_.reset();
-    url_is_loopback_ = false;
     network_style_ = api_compat::default_style();
 }
 

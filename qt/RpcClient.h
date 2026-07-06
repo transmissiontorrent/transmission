@@ -43,11 +43,6 @@ public:
         return url_;
     }
 
-    [[nodiscard]] auto isLocal() const noexcept
-    {
-        return impl_.is_local();
-    }
-
     void stop();
     void start(tr_session* session);
     void start(QUrl const& url);

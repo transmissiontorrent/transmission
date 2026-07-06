@@ -274,6 +274,8 @@ void Session::stop()
         tr_sessionClose(session_);
         session_ = nullptr;
     }
+
+    updateType();
 }
 
 void Session::restart()
@@ -308,6 +310,7 @@ void Session::start()
         auto config_dir = config_dir_.toStdString();
         auto const settings = tr_sessionLoadSettings(config_dir);
         session_ = tr_sessionInit(config_dir, true, settings);
+        updateType();
 
         rpc_.start(session_);
 
@@ -750,12 +753,7 @@ void Session::updateInfo(tr_variant* args_dict)
         session_version_ = *str;
     }
 
-    if (auto const str = dictFind<QString>(args_dict, TR_KEY_session_id)) {
-        session_id_ = *str;
-        is_definitely_local_session_ = tr_session_id::is_local(session_id_.toUtf8().constData());
-    } else {
-        session_id_.clear();
-    }
+    updateType(dictFind<std::string>(args_dict, TR_KEY_session_id));
 
     connect(&prefs_, qOverload<tr_quark>(&Prefs::changed), this, &Session::updatePref);
 
@@ -927,4 +925,29 @@ void Session::launchWebInterface() const
     }
 
     QDesktopServices::openUrl(url);
+}
+
+/// ---
+
+namespace
+{
+
+std::optional<Session::Type> computeType(tr_session const* const session, std::optional<std::string> const& session_id)
+{
+    if (session != nullptr) {
+        return Session::Type::InProcess;
+    }
+
+    if (session_id) {
+        return tr_session_id::is_local(*session_id) ? Session::Type::Local : Session::Type::Remote;
+    }
+
+    return std::nullopt;
+}
+
+} // namespace
+
+void Session::updateType(std::optional<std::string> session_id)
+{
+    type_ = computeType(session_, session_id);
 }

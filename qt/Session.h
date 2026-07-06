@@ -10,6 +10,7 @@
 #include <cstdint> // int64_t
 #include <map>
 #include <optional>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <vector>
@@ -39,6 +40,12 @@ class Session : public QObject
     Q_OBJECT
 
 public:
+    enum class Type {
+        InProcess, // tr_session exists in the same process
+        Local, // tr_session exists in a daemon running on this box
+        Remote, // tr_session exists in a daemon running somewhere else
+    };
+
     Session(QString config_dir, Prefs& prefs, RpcClient& rpc);
     Session(Session&&) = delete;
     Session(Session const&) = delete;
@@ -83,16 +90,21 @@ public:
 
     [[nodiscard]] bool portTestPending(PortTestIpProtocol ip_protocol) const noexcept;
 
-    /** returns true if the transmission session is being run inside this client */
-    [[nodiscard]] constexpr auto isServer() const noexcept
+    [[nodiscard]] constexpr std::optional<Type> type() const noexcept
     {
-        return session_ != nullptr;
+        return type_;
     }
 
-    /** returns true if isServer() is true or if the remote address is the localhost */
-    [[nodiscard]] auto isLocal() const noexcept
+    // returns true iff the session is in-process
+    [[nodiscard]] constexpr bool isServer() const noexcept
     {
-        return !session_id_.isEmpty() ? is_definitely_local_session_ : rpc_.isLocal();
+        return type() == Type::InProcess;
+    }
+
+    // returns true iff the session is in-process or known to be on this system
+    [[nodiscard]] constexpr bool isLocalFilesystem() const noexcept
+    {
+        return type().value_or(Type::Remote) != Type::Remote;
     }
 
     void exec(tr_quark method, tr_variant* args, RpcClient::ResponseFunc on_done = {});
@@ -193,6 +205,8 @@ private:
     void updateStats(tr_variant* args_dict);
     void updateInfo(tr_variant* args_dict);
 
+    void updateType(std::optional<std::string> session_id = {});
+
     Tag torrentSetImpl(tr_variant::Map params);
     void sessionSet(tr_quark key, tr_variant val);
     void pumpRequests();
@@ -211,8 +225,7 @@ private:
     tr_session_stats stats_ = EmptyStats;
     tr_session_stats cumulative_stats_ = EmptyStats;
     QString session_version_;
-    QString session_id_;
-    bool is_definitely_local_session_ = true;
+    std::optional<Type> type_;
     RpcClient& rpc_;
     Tag next_tag_ = {};
 

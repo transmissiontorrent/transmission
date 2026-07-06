@@ -60,12 +60,8 @@ public:
     // Use the remote server at `url` (scheme://host:port/path).
     void start(std::string url, std::optional<std::string> username = {}, std::optional<std::string> password = {});
 
+    // Resets our internal url/session bookkeeping. does not stop a tr_session.
     void stop();
-
-    [[nodiscard]] bool is_local() const noexcept
-    {
-        return session_ != nullptr || url_is_loopback_;
-    }
 
     // Issue a request. `on_done` runs on the UI thread when it completes.
     void exec(tr_quark method, tr_variant::Map args, ResponseFunc on_done);
@@ -91,7 +87,6 @@ private:
     std::string url_;
     std::optional<std::string> username_;
     std::optional<std::string> password_;
-    bool url_is_loopback_ = false;
     bool const verbose_;
 
     UiThreadFunc run_on_ui_thread_;

@@ -532,12 +532,12 @@ void PrefsDialog::initDownloadingTab()
 
 void PrefsDialog::updateDownloadingWidgetsLocality()
 {
-    ui_.watchDirStack->setCurrentWidget(is_local_ ? static_cast<QWidget*>(ui_.watchDirButton) : ui_.watchDirEdit);
-    ui_.downloadDirStack->setCurrentWidget(is_local_ ? static_cast<QWidget*>(ui_.downloadDirButton) : ui_.downloadDirEdit);
+    ui_.watchDirStack->setCurrentWidget(is_local_fs_ ? static_cast<QWidget*>(ui_.watchDirButton) : ui_.watchDirEdit);
+    ui_.downloadDirStack->setCurrentWidget(is_local_fs_ ? static_cast<QWidget*>(ui_.downloadDirButton) : ui_.downloadDirEdit);
     ui_.incompleteDirStack->setCurrentWidget(
-        is_local_ ? static_cast<QWidget*>(ui_.incompleteDirButton) : ui_.incompleteDirEdit);
+        is_local_fs_ ? static_cast<QWidget*>(ui_.incompleteDirButton) : ui_.incompleteDirEdit);
     ui_.doneDownloadingScriptStack->setCurrentWidget(
-        is_local_ ? static_cast<QWidget*>(ui_.doneDownloadingScriptButton) : ui_.doneDownloadingScriptEdit);
+        is_local_fs_ ? static_cast<QWidget*>(ui_.doneDownloadingScriptButton) : ui_.doneDownloadingScriptEdit);
 
     ui_.watchDirStack->setFixedHeight(ui_.watchDirStack->currentWidget()->sizeHint().height());
     ui_.downloadDirStack->setFixedHeight(ui_.downloadDirStack->currentWidget()->sizeHint().height());
@@ -550,7 +550,7 @@ void PrefsDialog::updateDownloadingWidgetsLocality()
 void PrefsDialog::updateSeedingWidgetsLocality()
 {
     ui_.doneSeedingScriptStack->setCurrentWidget(
-        is_local_ ? static_cast<QWidget*>(ui_.doneSeedingScriptButton) : ui_.doneSeedingScriptEdit);
+        is_local_fs_ ? static_cast<QWidget*>(ui_.doneSeedingScriptButton) : ui_.doneSeedingScriptEdit);
     ui_.doneSeedingScriptStack->setFixedHeight(ui_.doneSeedingScriptStack->currentWidget()->sizeHint().height());
 }
 
@@ -561,7 +561,7 @@ PrefsDialog::PrefsDialog(Session& session, Prefs& prefs, QWidget* parent)
     , session_{ session }
     , prefs_{ prefs }
     , is_server_{ session.isServer() }
-    , is_local_{ session_.isLocal() }
+    , is_local_fs_{ session_.isLocalFilesystem() }
 {
     ui_.setupUi(this);
 
@@ -603,8 +603,8 @@ PrefsDialog::PrefsDialog(Session& session, Prefs& prefs, QWidget* parent)
 
 void PrefsDialog::sessionUpdated()
 {
-    if (bool const is_local = session_.isLocal(); is_local_ != is_local) {
-        is_local_ = is_local;
+    if (bool const is_local_fs = session_.isLocalFilesystem(); is_local_fs_ != is_local_fs) {
+        is_local_fs_ = is_local_fs;
         updateDownloadingWidgetsLocality();
         updateSeedingWidgetsLocality();
     }
