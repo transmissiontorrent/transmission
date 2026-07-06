@@ -80,13 +80,10 @@ void Session::portTest(Session::PortTestIpProtocol const ip_protocol)
         emit portTested(dictFind<bool>(r.args.get(), TR_KEY_port_is_open), ip_protocol);
     };
 
-    auto q = tr::app::RpcQueue::make();
-
-    q->add([this, &args](RpcClient::ResponseFunc done) { exec(TR_KEY_port_test, &args, std::move(done)); }, response_func);
-
-    q->add(response_func);
-
-    q->run();
+    tr::app::RpcQueue::create()
+        .add([this, &args](RpcClient::ResponseFunc done) { exec(TR_KEY_port_test, &args, std::move(done)); }, response_func)
+        .add(response_func)
+        .run();
 }
 
 bool Session::portTestPending(Session::PortTestIpProtocol const ip_protocol) const noexcept
@@ -102,26 +99,23 @@ void Session::copyMagnetLinkToClipboard(int torrent_id)
     fields.emplace_back(tr_variant::unmanaged_string(TR_KEY_magnet_link));
     params.insert_or_assign(TR_KEY_fields, std::move(fields));
 
-    auto q = tr::app::RpcQueue::make();
-
-    q->add([this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
-        exec(TR_KEY_torrent_get, std::move(params), std::move(done));
-    });
-
-    q->add([](RpcResponse const& r) {
-        tr_variant* torrents = nullptr;
-        if (!tr_variantDictFindList(r.args.get(), TR_KEY_torrents, &torrents)) {
-            return;
-        }
-
-        if (tr_variant* const child = tr_variantListChild(torrents, 0)) {
-            if (auto const link = dictFind<QString>(child, TR_KEY_magnet_link)) {
-                QApplication::clipboard()->setText(*link);
+    tr::app::RpcQueue::create()
+        .add([this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
+            exec(TR_KEY_torrent_get, std::move(params), std::move(done));
+        })
+        .add([](RpcResponse const& r) {
+            tr_variant* torrents = nullptr;
+            if (!tr_variantDictFindList(r.args.get(), TR_KEY_torrents, &torrents)) {
+                return;
             }
-        }
-    });
 
-    q->run();
+            if (tr_variant* const child = tr_variantListChild(torrents, 0)) {
+                if (auto const link = dictFind<QString>(child, TR_KEY_magnet_link)) {
+                    QApplication::clipboard()->setText(*link);
+                }
+            }
+        })
+        .run();
 }
 
 void Session::updatePref(tr_quark key)
@@ -339,13 +333,13 @@ tr_variant Session::getTorrentIdsVariant(torrent_ids_t const& torrent_ids)
 Session::Tag Session::torrentSetImpl(tr_variant::Map params)
 {
     auto const tag = next_tag_++;
-    auto const q = tr::app::RpcQueue::make();
 
-    q->add([this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
-        rpc_.exec(TR_KEY_torrent_set, std::move(params), std::move(done));
-    });
-    q->finally([this, tag]() { emit sessionCalled(tag); });
-    q->run();
+    tr::app::RpcQueue::create()
+        .add([this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
+            rpc_.exec(TR_KEY_torrent_set, std::move(params), std::move(done));
+        })
+        .finally([this, tag]() { emit sessionCalled(tag); })
+        .run();
 
     return tag;
 }
@@ -363,31 +357,27 @@ void Session::torrentRenamePath(torrent_ids_t const& torrent_ids, QString const&
         return;
     }
 
-    auto q = tr::app::RpcQueue::make();
-    q->add(
-        [this, params = makeParams(TR_KEY_ids, torrent_ids, TR_KEY_path, oldpath, TR_KEY_name, newname)](
-            RpcClient::ResponseFunc done) mutable { exec(TR_KEY_torrent_rename_path, std::move(params), std::move(done)); },
-        [](RpcResponse const& r) {
-            auto const path = dictFind<QString>(r.args.get(), TR_KEY_path).value_or(QStringLiteral("(unknown)"));
-            auto const name = dictFind<QString>(r.args.get(), TR_KEY_name).value_or(QStringLiteral("(unknown)"));
-
-            auto* d = new QMessageBox{
-                QMessageBox::Information,
-                tr("Error Renaming Path"),
-                tr(R"(<p><b>Unable to rename "%1" as "%2": %3.</b></p><p>Please correct the errors and try again.</p>)")
-                    .arg(path)
-                    .arg(name)
-                    .arg(Utils::qstringFromUtf8(r.errmsg)),
-                QMessageBox::Close,
-                QApplication::activeWindow()
-            };
-            QObject::connect(d, &QMessageBox::rejected, d, &QMessageBox::deleteLater);
-            d->show();
-        });
-
-    q->add([this, torrent_ids](RpcResponse const& /*r*/) { refreshTorrents(torrent_ids, TorrentProperties::Rename); });
-
-    q->run();
+    tr::app::RpcQueue::create()
+        .add(
+            [this, params = makeParams(TR_KEY_ids, torrent_ids, TR_KEY_path, oldpath, TR_KEY_name, newname)](
+                RpcClient::ResponseFunc done) mutable { exec(TR_KEY_torrent_rename_path, std::move(params), std::move(done)); },
+            [](RpcResponse const& r) {
+                auto const title = tr("Error Renaming Path");
+                auto const text =
+                    tr(R"(<p><b>Unable to rename "%1" as "%2": %3.</b></p><p>Please correct the errors and try again.</p>)")
+                        .arg(dictFind<QString>(r.args.get(), TR_KEY_path).value_or(QStringLiteral("(unknown)")))
+                        .arg(dictFind<QString>(r.args.get(), TR_KEY_name).value_or(QStringLiteral("(unknown)")))
+                        .arg(Utils::qstringFromUtf8(r.errmsg));
+                auto* d = new QMessageBox{ QMessageBox::Information,
+                                           title,
+                                           text,
+                                           QMessageBox::Close,
+                                           QApplication::activeWindow() };
+                QObject::connect(d, &QMessageBox::rejected, d, &QMessageBox::deleteLater);
+                d->show();
+            })
+        .add([this, torrent_ids](RpcResponse const& /*r*/) { refreshTorrents(torrent_ids, TorrentProperties::Rename); })
+        .run();
 }
 
 namespace
@@ -550,8 +540,10 @@ using TorrentProperties = Session::TorrentProperties;
 
 void Session::refreshTorrents(torrent_ids_t const& torrent_ids, TorrentProperties const props)
 {
-    auto fields = tr_variant::Vector{};
+    bool const all_torrents = std::empty(torrent_ids);
     auto const keys = getKeys(props);
+
+    auto fields = tr_variant::Vector{};
     fields.reserve(std::size(keys));
     std::ranges::transform(keys, std::back_inserter(fields), [](auto key) { return tr_variant::unmanaged_string(key); });
 
@@ -560,26 +552,21 @@ void Session::refreshTorrents(torrent_ids_t const& torrent_ids, TorrentPropertie
     map.try_emplace(TR_KEY_fields, std::move(fields));
     addParamPair(map, TR_KEY_ids, torrent_ids);
 
-    auto q = tr::app::RpcQueue::make();
-
     auto args = tr_variant{ std::move(map) };
-    q->add([this, &args](RpcClient::ResponseFunc done) { exec(TR_KEY_torrent_get, &args, std::move(done)); });
+    tr::app::RpcQueue::create()
+        .add([this, &args](RpcClient::ResponseFunc done) { exec(TR_KEY_torrent_get, &args, std::move(done)); })
+        .add([this, all_torrents](RpcResponse const& r) {
+            tr_variant* torrents = nullptr;
 
-    bool const all_torrents = std::empty(torrent_ids);
+            if (tr_variantDictFindList(r.args.get(), TR_KEY_torrents, &torrents)) {
+                emit torrentsUpdated(torrents, all_torrents);
+            }
 
-    q->add([this, all_torrents](RpcResponse const& r) {
-        tr_variant* torrents = nullptr;
-
-        if (tr_variantDictFindList(r.args.get(), TR_KEY_torrents, &torrents)) {
-            emit torrentsUpdated(torrents, all_torrents);
-        }
-
-        if (tr_variantDictFindList(r.args.get(), TR_KEY_removed, &torrents)) {
-            emit torrentsRemoved(torrents);
-        }
-    });
-
-    q->run();
+            if (tr_variantDictFindList(r.args.get(), TR_KEY_removed, &torrents)) {
+                emit torrentsRemoved(torrents);
+            }
+        })
+        .run();
 }
 
 void Session::refreshDetailInfo(torrent_ids_t const& ids)
@@ -594,15 +581,12 @@ void Session::refreshExtraStats(torrent_ids_t const& ids)
 
 void Session::sendTorrentRequest(tr_quark const method, torrent_ids_t const& torrent_ids)
 {
-    auto q = tr::app::RpcQueue::make();
-
-    q->add([this, method, params = makeParams(TR_KEY_ids, torrent_ids)](RpcClient::ResponseFunc done) mutable {
-        exec(method, std::move(params), std::move(done));
-    });
-
-    q->add([this, torrent_ids]() { refreshTorrents(torrent_ids, TorrentProperties::MainStats); });
-
-    q->run();
+    tr::app::RpcQueue::create()
+        .add([this, method, params = makeParams(TR_KEY_ids, torrent_ids)](RpcClient::ResponseFunc done) mutable {
+            exec(method, std::move(params), std::move(done));
+        })
+        .add([this, torrent_ids]() { refreshTorrents(torrent_ids, TorrentProperties::MainStats); })
+        .run();
 }
 
 void Session::pauseTorrents(torrent_ids_t const& ids)
@@ -660,39 +644,30 @@ void Session::initTorrents(torrent_ids_t const& ids)
 
 void Session::refreshSessionStats()
 {
-    auto q = tr::app::RpcQueue::make();
-
-    q->add([this](RpcClient::ResponseFunc done) { exec(TR_KEY_session_stats, nullptr, std::move(done)); });
-
-    q->add([this](RpcResponse const& r) { updateStats(r.args.get()); });
-
-    q->run();
+    tr::app::RpcQueue::create()
+        .add([this](RpcClient::ResponseFunc done) { exec(TR_KEY_session_stats, nullptr, std::move(done)); })
+        .add([this](RpcResponse const& r) { updateStats(r.args.get()); })
+        .run();
 }
 
 void Session::refreshSessionInfo()
 {
-    auto q = tr::app::RpcQueue::make();
-
-    q->add([this](RpcClient::ResponseFunc done) { exec(TR_KEY_session_get, nullptr, std::move(done)); });
-
-    q->add([this](RpcResponse const& r) { updateInfo(r.args.get()); });
-
-    q->run();
+    tr::app::RpcQueue::create()
+        .add([this](RpcClient::ResponseFunc done) { exec(TR_KEY_session_get, nullptr, std::move(done)); })
+        .add([this](RpcResponse const& r) { updateInfo(r.args.get()); })
+        .run();
 }
 
 void Session::updateBlocklist()
 {
-    auto q = tr::app::RpcQueue::make();
-
-    q->add([this](RpcClient::ResponseFunc done) { exec(TR_KEY_blocklist_update, nullptr, std::move(done)); });
-
-    q->add([this](RpcResponse const& r) {
-        if (auto const size = dictFind<int>(r.args.get(), TR_KEY_blocklist_size); size) {
-            setBlocklistSize(*size);
-        }
-    });
-
-    q->run();
+    tr::app::RpcQueue::create()
+        .add([this](RpcClient::ResponseFunc done) { exec(TR_KEY_blocklist_update, nullptr, std::move(done)); })
+        .add([this](RpcResponse const& r) {
+            if (auto const size = dictFind<int>(r.args.get(), TR_KEY_blocklist_size)) {
+                setBlocklistSize(*size);
+            }
+        })
+        .run();
 }
 
 /***
@@ -815,42 +790,41 @@ void Session::addTorrent(AddData const& add_me, tr_variant::Map args_dict)
         break;
     }
 
-    auto q = tr::app::RpcQueue::make();
+    tr::app::RpcQueue::create()
+        .add(
+            [this, args_dict = std::move(args_dict)](RpcClient::ResponseFunc done) mutable {
+                exec(TR_KEY_torrent_add, std::move(args_dict), std::move(done));
+            },
+            [add_me](RpcResponse const& r) {
+                auto const title = tr("Error Adding Torrent");
+                auto const text = QStringLiteral("<p><b>%1</b></p><p>%2</p>")
+                                      .arg(Utils::qstringFromUtf8(r.errmsg))
+                                      .arg(add_me.readableName());
+                auto* d = new QMessageBox{ QMessageBox::Warning,
+                                           title,
+                                           text,
+                                           QMessageBox::Close,
+                                           QApplication::activeWindow() };
+                QObject::connect(d, &QMessageBox::rejected, d, &QMessageBox::deleteLater);
+                d->show();
+            })
+        .add([this, add_me](RpcResponse const& r) {
+            if (auto const* const args = r.args->get_if<tr_variant::Map>()) {
+                if (args->contains(TR_KEY_torrent_added)) {
+                    add_me.disposeSourceFile();
+                } else if (auto const* const dup = args->find_if<tr_variant::Map>(TR_KEY_torrent_duplicate)) {
+                    add_me.disposeSourceFile();
 
-    q->add(
-        [this, args_dict = std::move(args_dict)](RpcClient::ResponseFunc done) mutable {
-            exec(TR_KEY_torrent_add, std::move(args_dict), std::move(done));
-        },
-        [add_me](RpcResponse const& r) {
-            auto* d = new QMessageBox{
-                QMessageBox::Warning,
-                tr("Error Adding Torrent"),
-                QStringLiteral("<p><b>%1</b></p><p>%2</p>").arg(Utils::qstringFromUtf8(r.errmsg)).arg(add_me.readableName()),
-                QMessageBox::Close,
-                QApplication::activeWindow()
-            };
-            QObject::connect(d, &QMessageBox::rejected, d, &QMessageBox::deleteLater);
-            d->show();
-        });
-
-    q->add([this, add_me](RpcResponse const& r) {
-        if (auto const* const args = r.args->get_if<tr_variant::Map>(); args != nullptr) {
-            if (args->contains(TR_KEY_torrent_added)) {
-                add_me.disposeSourceFile();
-            } else if (auto const* const dup = args->find_if<tr_variant::Map>(TR_KEY_torrent_duplicate); dup != nullptr) {
-                add_me.disposeSourceFile();
-
-                if (auto const iter = dup->find(TR_KEY_hash_string); iter != dup->end()) {
-                    if (auto const hash = iter->second.value_if<std::string_view>()) {
-                        duplicates_.try_emplace(add_me.readableShortName(), Utils::qstringFromUtf8(*hash));
-                        duplicates_timer_.start(1000);
+                    if (auto const iter = dup->find(TR_KEY_hash_string); iter != dup->end()) {
+                        if (auto const hash = iter->second.value_if<std::string_view>()) {
+                            duplicates_.try_emplace(add_me.readableShortName(), Utils::qstringFromUtf8(*hash));
+                            duplicates_timer_.start(1000);
+                        }
                     }
                 }
             }
-        }
-    });
-
-    q->run();
+        })
+        .run();
 }
 
 void Session::onDuplicatesTimer()

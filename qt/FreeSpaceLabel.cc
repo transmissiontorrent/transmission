@@ -70,31 +70,28 @@ void FreeSpaceLabel::onTimer()
     auto params = tr_variant::Map{ 1U };
     params.insert_or_assign(TR_KEY_path, tr::serializer::to_variant(path_));
 
-    auto q = tr::app::RpcQueue::make();
+    tr::app::RpcQueue::create()
+        .add([this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
+            session_->exec(TR_KEY_free_space, std::move(params), std::move(done));
+        })
+        .add([self = QPointer<FreeSpaceLabel>{ this }](RpcResponse const& r) {
+            // the label may have been destroyed while the request was in flight
+            if (self == nullptr) {
+                return;
+            }
 
-    q->add([this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
-        session_->exec(TR_KEY_free_space, std::move(params), std::move(done));
-    });
+            // update the label
+            if (auto const bytes = dictFind<int64_t>(r.args.get(), TR_KEY_size_bytes); bytes && *bytes > 1) {
+                self->setText(tr("%1 free").arg(Formatter::storage_to_string(*bytes)));
+            } else {
+                self->setText(QString{});
+            }
 
-    q->add([self = QPointer<FreeSpaceLabel>{ this }](RpcResponse const& r) {
-        // the label may have been destroyed while the request was in flight
-        if (self == nullptr) {
-            return;
-        }
+            // update the tooltip
+            auto const path = dictFind<QString>(r.args.get(), TR_KEY_path);
+            self->setToolTip(QDir::toNativeSeparators(path.value_or(QString{})));
 
-        // update the label
-        if (auto const bytes = dictFind<int64_t>(r.args.get(), TR_KEY_size_bytes); bytes && *bytes > 1) {
-            self->setText(tr("%1 free").arg(Formatter::storage_to_string(*bytes)));
-        } else {
-            self->setText(QString{});
-        }
-
-        // update the tooltip
-        auto const path = dictFind<QString>(r.args.get(), TR_KEY_path);
-        self->setToolTip(QDir::toNativeSeparators(path.value_or(QString{})));
-
-        self->timer_.start();
-    });
-
-    q->run();
+            self->timer_.start();
+        })
+        .run();
 }

@@ -25,56 +25,50 @@ namespace tr::app
 //   * auxiliary, with response:     [](RpcResponse const& r){ use(r); }
 //   * auxiliary, no argument:       []{ ... }
 //
-// Typical use: make() -> add() -> (optional) finally() -> run().
-// You don't need to keep a handle to the queue after calling run().
-class RpcQueue : public std::enable_shared_from_this<RpcQueue>
+// Usage: create().add(step)[.add(step)][.finally(step)].run()
+class RpcQueue
 {
 public:
-    [[nodiscard]] static std::shared_ptr<RpcQueue> make()
-    {
-        return std::make_shared<RpcQueue>(PrivateTag{});
-    }
-
-    // enable_shared_from_this requires a public-ish ctor for make_shared;
-    // the PrivateTag keeps callers on make() so instances are always shared.
-    struct PrivateTag {
-        explicit PrivateTag() = default;
-    };
-
-    explicit RpcQueue(PrivateTag /*unused*/)
-    {
-    }
-
     RpcQueue(RpcQueue&&) = delete;
     RpcQueue(RpcQueue const&) = delete;
     RpcQueue& operator=(RpcQueue&&) = delete;
     RpcQueue& operator=(RpcQueue const&) = delete;
 
+    [[nodiscard]] static RpcQueue& create()
+    {
+        auto self = std::shared_ptr<RpcQueue>{ new RpcQueue() };
+        self->keepalive_ = self;
+        return *self;
+    }
+
     template<typename Func>
-    void add(Func&& func)
+    [[nodiscard]] RpcQueue& add(Func&& func)
     {
         queue_.emplace(normalize_func(std::forward<Func>(func)), ErrorHandlerFunction{});
+        return *this;
     }
 
     template<typename Func, typename ErrorHandler>
-    void add(Func&& func, ErrorHandler&& error_handler)
+    [[nodiscard]] RpcQueue& add(Func&& func, ErrorHandler&& error_handler)
     {
         queue_.emplace(
             normalize_func(std::forward<Func>(func)),
             normalize_error_handler(std::forward<ErrorHandler>(error_handler)));
+        return *this;
     }
 
     // `func` runs once when the chain ends, whether or not the chain succeeded
     template<typename Func>
-    void finally(Func&& func)
+    [[nodiscard]] RpcQueue& finally(Func&& func)
     {
         finally_ = make_copyable(std::forward<Func>(func));
+        return *this;
     }
 
-    // The first step is run synchronously (so it may capture locals by reference).
+    // The first step (*only* the first) runs synchronously on the caller stack,
+    // so the first step can safely refer to caller locals by reference.
     void run()
     {
-        self_ = shared_from_this();
         run_next(RpcResponse{});
     }
 
@@ -87,6 +81,8 @@ private:
 
     // Internally stored error handler: takes the failing response, returns nothing.
     using ErrorHandlerFunction = std::function<void(RpcResponse const&)>;
+
+    RpcQueue() = default;
 
     [[nodiscard]] static RpcResponse make_ok_response()
     {
@@ -102,7 +98,7 @@ private:
 
         next_error_handler_ = std::move(error_handler);
 
-        auto self = self_; // keep alive across the (possibly async) step
+        auto self = keepalive_; // keep alive across the (possibly async) step
         func(prev, [self](RpcResponse result) { self->step_finished(std::move(result)); });
     }
 
@@ -133,7 +129,7 @@ private:
         if (finally_) {
             finally_();
         }
-        self_.reset();
+        keepalive_.reset();
     }
 
     template<typename Func>
@@ -183,7 +179,7 @@ private:
         };
     }
 
-    std::shared_ptr<RpcQueue> self_;
+    std::shared_ptr<RpcQueue> keepalive_;
     std::queue<std::pair<QueuedFunction, ErrorHandlerFunction>> queue_;
     ErrorHandlerFunction next_error_handler_;
     std::function<void()> finally_;

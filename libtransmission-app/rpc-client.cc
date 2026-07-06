@@ -19,8 +19,6 @@
 #include <libtransmission/version.h> // SHORT_VERSION_STRING
 #include <libtransmission/web-utils.h> // tr_urlParse
 
-namespace api_compat = tr::api_compat;
-
 namespace tr::app
 {
 namespace
