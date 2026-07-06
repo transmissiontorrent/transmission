@@ -40,7 +40,7 @@ class Session : public QObject
     Q_OBJECT
 
 public:
-    enum class Type {
+    enum class Type : uint8_t {
         InProcess, // tr_session exists in the same process
         Local, // tr_session exists in a daemon running on this box
         Remote, // tr_session exists in a daemon running somewhere else
