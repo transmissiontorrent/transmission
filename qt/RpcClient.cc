@@ -37,7 +37,7 @@ RpcClient::RpcClient(QObject* parent)
     : QObject{ parent }
     , impl_{ makeUiMarshaler() }
 {
-    connections_[0] = impl_.network_response.connect_scoped([this](long const status, std::string const& message) {
+    connections_[0] = impl_.network_response.connect_scoped([this](long const status, std::string_view const message) {
         auto const code = status == 200 ? QNetworkReply::NoError : QNetworkReply::UnknownNetworkError;
         emit networkResponse(code, Utils::qstringFromUtf8(message));
     });

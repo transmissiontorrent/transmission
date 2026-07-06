@@ -197,7 +197,7 @@ void RpcClient::send_remote_request(std::string body, ResponseFunc on_done)
                     } else if (parsed) {
                         result = parse_response_data(*parsed);
                         result.http_status = status;
-                        network_response(status, std::string{});
+                        network_response(status, std::string_view{});
                     } else {
                         result.errmsg = fmt::format("unexpected response (HTTP {:d})", status);
                         network_response(status, result.errmsg);
