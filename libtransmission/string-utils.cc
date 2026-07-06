@@ -70,7 +70,7 @@ std::string tr_strv_to_utf8_string(std::string_view sv)
 
 #endif
 
-std::string tr_strv_replace_invalid(std::string_view sv, uint32_t replacement)
+std::string tr_strv_replace_invalid(std::string_view sv, char32_t replacement)
 {
     // stripping characters after first \0
     if (auto const first_null = sv.find('\0'); first_null != std::string_view::npos) {
@@ -78,9 +78,8 @@ std::string tr_strv_replace_invalid(std::string_view sv, uint32_t replacement)
     }
 
     // pre-encode the replacement code point as UTF-8
-    auto const replacement_cp = static_cast<char32_t>(replacement);
     auto replacement_buf = std::array<char, 4>{};
-    auto const replacement_len = simdutf::convert_utf32_to_utf8(&replacement_cp, 1, std::data(replacement_buf));
+    auto const replacement_len = simdutf::convert_utf32_to_utf8(&replacement, 1, std::data(replacement_buf));
     auto const replacement_utf8 = std::string_view{ std::data(replacement_buf), replacement_len };
 
     auto out = std::string{};
