@@ -6,7 +6,6 @@
 #include "libtransmission-app/rpc-client.h"
 
 #include <cstdint> // int64_t
-#include <cstdlib> // getenv
 #include <string>
 #include <string_view>
 #include <utility>
@@ -14,6 +13,7 @@
 #include <fmt/format.h>
 
 #include <libtransmission/constants.h> // TrRpcSessionIdHeader, TrRpcVersionHeader
+#include <libtransmission/env.h> // tr_env_key_exists
 #include <libtransmission/rpcimpl.h> // JsonRpc::Version, tr_rpc_request_exec
 #include <libtransmission/variant.h>
 #include <libtransmission/version.h> // SHORT_VERSION_STRING
@@ -46,7 +46,7 @@ namespace
 } // namespace
 
 RpcClient::RpcClient(UiThreadFunc run_on_ui_thread)
-    : verbose_{ ::getenv("TR_RPC_VERBOSE") != nullptr }
+    : verbose_{ tr_env_key_exists("TR_RPC_VERBOSE") }
     , run_on_ui_thread_{ std::move(run_on_ui_thread) }
 {
 }
