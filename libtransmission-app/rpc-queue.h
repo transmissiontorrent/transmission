@@ -17,10 +17,7 @@
 namespace tr::app
 {
 
-// Toolkit-neutral async request chain. It is the callback-based successor to
-// Qt's QFuture-driven RpcQueue: each step runs after the previous one finishes,
-// with the previous RpcResponse handed to it. Because RpcClient already delivers
-// every response on the UI thread, no future/watcher machinery is needed here.
+// Executes RPC steps in order.
 //
 // A step is one of:
 //   * request, with prior response: [](RpcResponse const&, RpcClient::ResponseFunc done){ rpc.exec(..., done); }
@@ -28,9 +25,8 @@ namespace tr::app
 //   * auxiliary, with response:     [](RpcResponse const& r){ use(r); }
 //   * auxiliary, no argument:       []{ ... }
 //
-// Create with make(), add() steps, then run(). The queue keeps itself alive
-// (via a self-reference) until the chain drains, so the caller may drop its
-// handle immediately after run().
+// Typical use: make() -> add() -> (optional) finally() -> run().
+// You don't need to keep a handle to the queue after calling run().
 class RpcQueue : public std::enable_shared_from_this<RpcQueue>
 {
 public:
@@ -39,8 +35,8 @@ public:
         return std::make_shared<RpcQueue>(PrivateTag{});
     }
 
-    // enable_shared_from_this requires a public-ish ctor for make_shared; the
-    // PrivateTag keeps callers on make() so instances are always shared.
+    // enable_shared_from_this requires a public-ish ctor for make_shared;
+    // the PrivateTag keeps callers on make() so instances are always shared.
     struct PrivateTag {
         explicit PrivateTag() = default;
     };
@@ -54,11 +50,6 @@ public:
     RpcQueue& operator=(RpcQueue&&) = delete;
     RpcQueue& operator=(RpcQueue const&) = delete;
 
-    constexpr void set_tolerate_errors(bool tolerate_errors = true) noexcept
-    {
-        tolerate_errors_ = tolerate_errors;
-    }
-
     template<typename Func>
     void add(Func&& func)
     {
@@ -71,6 +62,13 @@ public:
         queue_.emplace(
             normalize_func(std::forward<Func>(func)),
             normalize_error_handler(std::forward<ErrorHandler>(error_handler)));
+    }
+
+    // `func` runs once when the chain ends, whether or not the chain succeeded
+    template<typename Func>
+    void finally(Func&& func)
+    {
+        finally_ = make_copyable(std::forward<Func>(func));
     }
 
     // The first step is run synchronously (so it may capture locals by reference).
@@ -121,8 +119,8 @@ private:
             next_error_handler_(result);
         }
 
-        // run the next step if there is one and we may proceed.
-        if ((result.success || tolerate_errors_) && !std::empty(queue_)) {
+        // run the next step if there is one and we succeeded.
+        if (result.success && !std::empty(queue_)) {
             run_next(result);
             return;
         }
@@ -132,8 +130,9 @@ private:
 
     void finish()
     {
-        // Release our self-reference. Any in-flight continuation still holds a
-        // copy, so `this` stays alive until that continuation is destroyed.
+        if (finally_) {
+            finally_();
+        }
         self_.reset();
     }
 
@@ -216,10 +215,10 @@ private:
         };
     }
 
-    bool tolerate_errors_ = false;
     std::shared_ptr<RpcQueue> self_;
     std::queue<std::pair<QueuedFunction, ErrorHandlerFunction>> queue_;
     ErrorHandlerFunction next_error_handler_;
+    std::function<void()> finally_;
 };
 
 } // namespace tr::app

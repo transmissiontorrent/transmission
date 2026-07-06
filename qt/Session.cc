@@ -344,8 +344,7 @@ Session::Tag Session::torrentSetImpl(tr_variant::Map params)
     q->add([this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
         rpc_.exec(TR_KEY_torrent_set, std::move(params), std::move(done));
     });
-    q->add([this, tag]() { emit sessionCalled(tag); });
-    q->set_tolerate_errors();
+    q->finally([this, tag]() { emit sessionCalled(tag); });
     q->run();
 
     return tag;
