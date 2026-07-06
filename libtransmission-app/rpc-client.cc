@@ -155,6 +155,10 @@ void RpcClient::send_remote_request(std::string body, ResponseFunc on_done)
 
             auto const is_tr5 = response.header(TrRpcVersionHeader).has_value();
 
+            // captured for a human-readable message when the transport failed
+            auto const did_timeout = response.did_timeout;
+            auto const did_connect = response.did_connect;
+
             auto parsed = std::shared_ptr<tr_variant>{};
             if (status == 200) {
                 if (auto var = tr_variant_serde::json().parse(response.body); var) {
@@ -163,48 +167,61 @@ void RpcClient::send_remote_request(std::string body, ResponseFunc on_done)
                 }
             }
 
-            run_on_ui_thread_(
-                [this, body = std::move(body), on_done = std::move(on_done), new_session_id, is_tr5, status, parsed]() mutable {
-                    if (new_session_id) {
-                        session_id_ = *new_session_id;
-                    }
+            run_on_ui_thread_([this,
+                               body = std::move(body),
+                               on_done = std::move(on_done),
+                               new_session_id,
+                               is_tr5,
+                               did_timeout,
+                               did_connect,
+                               status,
+                               parsed]() mutable {
+                if (new_session_id) {
+                    session_id_ = *new_session_id;
+                }
 
-                    if (is_tr5) {
-                        network_style_ = api_compat::Style::Tr5;
-                    }
+                if (is_tr5) {
+                    network_style_ = api_compat::Style::Tr5;
+                }
 
-                    if (status == 409 && new_session_id) {
-                        // session id expired; we've captured the new one, so resend.
-                        send_remote_request(std::move(body), std::move(on_done));
-                        return;
-                    }
+                if (status == 409 && new_session_id) {
+                    // session id expired; we've captured the new one, so resend.
+                    send_remote_request(std::move(body), std::move(on_done));
+                    return;
+                }
 
-                    data_read_progress();
+                data_read_progress();
 
-                    if (status == 401) {
-                        auth_required();
-                    }
+                if (status == 401) {
+                    auth_required();
+                }
 
-                    auto result = RpcResponse{};
-                    result.http_status = status;
+                auto result = RpcResponse{};
+                result.http_status = status;
 
-                    if (status == 0) {
-                        result.network_error = true;
-                        result.errmsg = "network error";
-                        network_response(status, result.errmsg);
-                    } else if (parsed) {
-                        result = parse_response_data(*parsed);
-                        result.http_status = status;
-                        network_response(status, std::string_view{});
+                if (status == 0) {
+                    result.network_error = true;
+                    if (did_timeout) {
+                        result.errmsg = "connection timed out";
+                    } else if (!did_connect) {
+                        result.errmsg = "couldn't connect to the server";
                     } else {
-                        result.errmsg = fmt::format("unexpected response (HTTP {:d})", status);
-                        network_response(status, result.errmsg);
+                        result.errmsg = "the connection was lost";
                     }
+                    network_response(status, result.errmsg);
+                } else if (parsed) {
+                    result = parse_response_data(*parsed);
+                    result.http_status = status;
+                    network_response(status, std::string_view{});
+                } else {
+                    result.errmsg = fmt::format("unexpected response (HTTP {:d})", status);
+                    network_response(status, result.errmsg);
+                }
 
-                    if (on_done) {
-                        on_done(std::move(result));
-                    }
-                });
+                if (on_done) {
+                    on_done(std::move(result));
+                }
+            });
         },
         nullptr,
     };
