@@ -60,6 +60,7 @@ runs:
             libnatpmp-devel \
             libpsl-devel \
             miniupnpc-devel \
+            simdutf-devel \
             openssl-devel
 
           # Compiler packages
@@ -228,6 +229,7 @@ runs:
           libnatpmp
           libpsl
           miniupnpc
+          simdutf
         )
 
         brew install --formulae "${BASE_PACKAGES[@]}"

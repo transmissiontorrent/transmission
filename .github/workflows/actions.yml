@@ -171,7 +171,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Ubuntu` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Ubuntu` \
+            -DUSE_SYSTEM_SIMDUTF=OFF `# TODO: YES in 26.04` \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
@@ -227,7 +227,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Homebrew` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Homebrew` \
+            -DUSE_SYSTEM_SIMDUTF=ON \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Homebrew` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Homebrew` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Homebrew`
@@ -421,7 +421,7 @@ jobs:
             -DUSE_SYSTEM_FMT=${{ matrix.toolkit == 'gtk4' && 'OFF' || 'ON' }} `# TODO: remove this line when fmt>10 or clang>20` \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Ubuntu` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Ubuntu` \
+            -DUSE_SYSTEM_SIMDUTF=OFF `# TODO: YES in 26.04` \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
@@ -629,7 +629,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Homebrew` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Homebrew` \
+            -DUSE_SYSTEM_SIMDUTF=ON \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Homebrew` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Homebrew` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Homebrew`
@@ -687,6 +687,7 @@ jobs:
             ninja \
             npm \
             pkgconfig \
+            simdutf-dev \
             xz
       - name: Get Dependencies (GTK)
         if: ${{ needs.what-to-make.outputs.make-gtk == 'true' }}
@@ -720,7 +721,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Alpine` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Alpine` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Alpine` \
+            -DUSE_SYSTEM_SIMDUTF=ON \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Alpine` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Alpine` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Alpine`
@@ -1027,7 +1028,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF \
             -DUSE_SYSTEM_SIGSLOT=OFF \
-            -DUSE_SYSTEM_SIMDUTF=OFF \
+            -DUSE_SYSTEM_SIMDUTF=OFF `# TODO: YES in sid` \
             -DUSE_SYSTEM_SMALL=OFF \
             -DUSE_SYSTEM_UTP=OFF \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF
@@ -1119,7 +1120,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Fedora` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Fedora` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Fedora` \
+            -DUSE_SYSTEM_SIMDUTF=ON \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Fedora` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Fedora` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Fedora`
@@ -1198,7 +1199,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Ubuntu` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Ubuntu` \
+            -DUSE_SYSTEM_SIMDUTF=OFF `# TODO: YES in 26.04` \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
@@ -1316,7 +1317,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Ubuntu` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Ubuntu` \
+            -DUSE_SYSTEM_SIMDUTF=OFF `# TODO: YES in 26.04` \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
@@ -1388,7 +1389,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Ubuntu` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Ubuntu` \
+            -DUSE_SYSTEM_SIMDUTF=OFF `# TODO: YES in 26.04` \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
@@ -1457,6 +1458,7 @@ jobs:
               `[ '${{ needs.what-to-make.outputs.make-web }}' = 'true' ] && echo npm` \
               pkgconf \
               `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-svg qt6-tools` \
+              simdutf \
               rapidjson
           run: |
             set -ex
@@ -1478,7 +1480,7 @@ jobs:
               -DRUN_CLANG_TIDY=OFF \
               -DUSE_SYSTEM_DEFAULT=ON \
               -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in FreeBSD` \
-              -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in FreeBSD` \
+              -DUSE_SYSTEM_SIMDUTF=ON \
               -DUSE_SYSTEM_SMALL=OFF `# Not packaged in FreeBSD` \
               -DUSE_SYSTEM_UTP=OFF `# Not packaged in FreeBSD` \
               -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in FreeBSD` \
@@ -1565,7 +1567,7 @@ jobs:
             -DUSE_SYSTEM_DEFAULT=ON \
             -DUSE_SYSTEM_DHT=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Ubuntu` \
-            -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in Ubuntu` \
+            -DUSE_SYSTEM_SIMDUTF=OFF `# TODO: YES in 26.04` \
             -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu` \
@@ -1632,6 +1634,7 @@ jobs:
               ninja \
               `[ '${{ needs.what-to-make.outputs.make-web }}' = 'true' ] && echo node` \
               `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-qtsvg qt6-qttools` \
+              simdutf \
               rapidjson
           run: |
             set -ex
@@ -1654,7 +1657,7 @@ jobs:
               -DUSE_SYSTEM_DEFAULT=ON \
               -DUSE_SYSTEM_DHT=OFF `# Not packaged in OpenBSD` \
               -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in OpenBSD` \
-              -DUSE_SYSTEM_SIMDUTF=OFF `# Not packaged in OpenBSD` \
+              -DUSE_SYSTEM_SIMDUTF=ON \
               -DUSE_SYSTEM_SMALL=OFF `# Not packaged in OpenBSD` \
               -DUSE_SYSTEM_UTP=OFF `# Not packaged in OpenBSD` \
               -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in OpenBSD`
