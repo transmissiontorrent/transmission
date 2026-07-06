@@ -65,8 +65,6 @@ public:
         return *this;
     }
 
-    // The first step (*only* the first) runs synchronously on the caller stack,
-    // so the first step can safely refer to caller locals by reference.
     void run()
     {
         run_next(RpcResponse{});

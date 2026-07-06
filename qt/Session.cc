@@ -68,8 +68,8 @@ void Session::portTest(Session::PortTestIpProtocol const ip_protocol)
     }
     port_test_pending_[ip_protocol] = true;
 
-    auto args = tr_variant::make_map(1U);
-    tr_variantDictAddStrView(&args, TR_KEY_ip_protocol, IpStr[ip_protocol]);
+    auto args = tr_variant::Map{ 1U };
+    args.insert_or_assign(TR_KEY_ip_protocol, tr_variant::unmanaged_string(IpStr[ip_protocol]));
 
     auto const response_func = [this, ip_protocol](RpcResponse const& r) {
         port_test_pending_[ip_protocol] = false;
@@ -81,7 +81,11 @@ void Session::portTest(Session::PortTestIpProtocol const ip_protocol)
     };
 
     tr::app::RpcQueue::create()
-        .add([this, &args](RpcClient::ResponseFunc done) { exec(TR_KEY_port_test, &args, std::move(done)); }, response_func)
+        .add(
+            [this, args = std::move(args)](RpcClient::ResponseFunc done) mutable {
+                exec(TR_KEY_port_test, std::move(args), std::move(done));
+            },
+            response_func)
         .add(response_func)
         .run();
 }
@@ -552,9 +556,10 @@ void Session::refreshTorrents(torrent_ids_t const& torrent_ids, TorrentPropertie
     map.try_emplace(TR_KEY_fields, std::move(fields));
     addParamPair(map, TR_KEY_ids, torrent_ids);
 
-    auto args = tr_variant{ std::move(map) };
     tr::app::RpcQueue::create()
-        .add([this, &args](RpcClient::ResponseFunc done) { exec(TR_KEY_torrent_get, &args, std::move(done)); })
+        .add([this, map = std::move(map)](RpcClient::ResponseFunc done) mutable {
+            exec(TR_KEY_torrent_get, std::move(map), std::move(done));
+        })
         .add([this, all_torrents](RpcResponse const& r) {
             tr_variant* torrents = nullptr;
 
