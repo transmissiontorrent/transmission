@@ -142,7 +142,6 @@ private:
     StringType dir_watch_ = Traits::from_utf8(tr::platform::get_download_dir());
     StringType filter_text_;
     StringType filter_trackers_;
-    StringType main_window_layout_order_ = Traits::from_utf8("menu,toolbar,filter,list,statusbar");
     StringType open_dialog_folder_ = Traits::from_utf8(tr::platform::get_home_dir());
     StringType session_remote_host_ = Traits::from_utf8("localhost");
     StringType session_remote_password_;
@@ -282,7 +281,6 @@ public:
         Field<&Prefs::lpd_enabled_>{ TR_KEY_lpd_enabled },
         Field<&Prefs::main_window_height_>{ TR_KEY_main_window_height },
         Field<&Prefs::main_window_is_maximized_>{ TR_KEY_main_window_is_maximized },
-        Field<&Prefs::main_window_layout_order_>{ TR_KEY_main_window_layout_order },
         Field<&Prefs::main_window_width_>{ TR_KEY_main_window_width },
         Field<&Prefs::main_window_x_>{ TR_KEY_main_window_x },
         Field<&Prefs::main_window_y_>{ TR_KEY_main_window_y },

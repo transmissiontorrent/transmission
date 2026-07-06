@@ -313,13 +313,11 @@ auto constexpr MyStatic = std::array<std::string_view, TR_N_KEYS>{
     "magnet_link"sv, // rpc
     "main-window-height"sv, // gtk app, qt app
     "main-window-is-maximized"sv, // gtk app
-    "main-window-layout-order"sv, // qt app
     "main-window-width"sv, // gtk app, qt app
     "main-window-x"sv, // gtk app, qt app
     "main-window-y"sv, // gtk app, qt app
     "main_window_height"sv, // gtk app, qt app
     "main_window_is_maximized"sv, // gtk app
-    "main_window_layout_order"sv, // qt app
     "main_window_width"sv, // gtk app, qt app
     "main_window_x"sv, // gtk app, qt app
     "main_window_y"sv, // gtk app, qt app

@@ -321,7 +321,6 @@ auto constexpr SessionKeys = std::to_array<ApiKey>({
     { .current = TR_KEY_lpd_enabled, .legacy = TR_KEY_lpd_enabled_kebab_APICOMPAT },
     { .current = TR_KEY_main_window_height, .legacy = TR_KEY_main_window_height_kebab_APICOMPAT },
     { .current = TR_KEY_main_window_is_maximized, .legacy = TR_KEY_main_window_is_maximized_kebab_APICOMPAT },
-    { .current = TR_KEY_main_window_layout_order, .legacy = TR_KEY_main_window_layout_order_kebab_APICOMPAT },
     { .current = TR_KEY_main_window_width, .legacy = TR_KEY_main_window_width_kebab_APICOMPAT },
     { .current = TR_KEY_main_window_x, .legacy = TR_KEY_main_window_x_kebab_APICOMPAT },
     { .current = TR_KEY_main_window_y, .legacy = TR_KEY_main_window_y_kebab_APICOMPAT },
