@@ -636,6 +636,14 @@ tr_add_external_auto_library(SIGSLOT PalSigslot
     SUBPROJECT
     SOURCE_DIR sigslot)
 
+tr_add_external_auto_library(SIMDUTF simdutf
+    SUBPROJECT
+    CMAKE_ARGS
+        -DSIMDUTF_TESTS:BOOL=OFF
+        -DSIMDUTF_TOOLS:BOOL=OFF
+        -DSIMDUTF_ICONV:BOOL=OFF
+        -DSIMDUTF_CXX_STANDARD=${CMAKE_CXX_STANDARD})
+
 tr_add_external_auto_library(SMALL small
     SUBPROJECT
     CMAKE_ARGS
@@ -647,14 +655,6 @@ target_link_libraries(transmission::small
 target_compile_definitions(transmission::small
     INTERFACE
         SMALL_DISABLE_EXCEPTIONS=1)
-
-tr_add_external_auto_library(SIMDUTF simdutf
-    SUBPROJECT
-    CMAKE_ARGS
-        -DSIMDUTF_TESTS:BOOL=OFF
-        -DSIMDUTF_TOOLS:BOOL=OFF
-        -DSIMDUTF_ICONV:BOOL=OFF
-        -DSIMDUTF_CXX_STANDARD=${CMAKE_CXX_STANDARD})
 
 tr_add_external_auto_library(WIDE_INTEGER WideInteger
     SUBPROJECT
