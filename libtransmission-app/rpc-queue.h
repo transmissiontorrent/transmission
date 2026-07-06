@@ -34,8 +34,6 @@ namespace tr::app
 class RpcQueue : public std::enable_shared_from_this<RpcQueue>
 {
 public:
-    using Continue = RpcClient::ResponseFunc; // std::function<void(RpcResponse)>
-
     [[nodiscard]] static std::shared_ptr<RpcQueue> make()
     {
         return std::make_shared<RpcQueue>(PrivateTag{});
@@ -83,6 +81,8 @@ public:
     }
 
 private:
+    using Continue = RpcClient::ResponseFunc; // std::function<void(RpcResponse)>
+
     // Internally queued step: takes the previous response and a continuation
     // that must be invoked (once) with this step's result.
     using QueuedFunction = std::function<void(RpcResponse const&, Continue)>;
