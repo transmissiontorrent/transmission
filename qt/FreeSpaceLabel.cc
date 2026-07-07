@@ -71,9 +71,21 @@ void FreeSpaceLabel::onTimer()
     params.insert_or_assign(TR_KEY_path, tr::serializer::to_variant(path_));
 
     tr::app::RpcQueue::create()
-        .add([this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
-            session_->exec(TR_KEY_free_space, std::move(params), std::move(done));
-        })
+        .add(
+            [this, params = std::move(params)](RpcClient::ResponseFunc done) mutable {
+                session_->exec(TR_KEY_free_space, std::move(params), std::move(done));
+            },
+            [self = QPointer<FreeSpaceLabel>{ this }]() {
+                // the request failed, so clear the stale "Calculating…" placeholder
+                // and retry on the next timer tick.
+                if (self == nullptr) {
+                    return;
+                }
+
+                self->setText(QString{});
+                self->setToolTip(QString{});
+                self->timer_.start();
+            })
         .add([self = QPointer<FreeSpaceLabel>{ this }](RpcResponse const& r) {
             // the label may have been destroyed while the request was in flight
             if (self == nullptr) {
