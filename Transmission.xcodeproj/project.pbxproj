@@ -341,11 +341,9 @@
 		C16089F71F092A1E00CEFC36 /* utp_packedsockaddr.h in Headers */ = {isa = PBXBuildFile; fileRef = C16089EC1F092A1E00CEFC36 /* utp_packedsockaddr.h */; };
 		C16089F81F092A1E00CEFC36 /* utp_templates.h in Headers */ = {isa = PBXBuildFile; fileRef = C16089ED1F092A1E00CEFC36 /* utp_templates.h */; };
 		C16089F91F092A1E00CEFC36 /* utp_types.h in Headers */ = {isa = PBXBuildFile; fileRef = C16089EE1F092A1E00CEFC36 /* utp_types.h */; };
-		C1639A741A55F4E000E42033 /* libb64.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C1639A6F1A55F4D600E42033 /* libb64.a */; };
-		C1639A781A55F56600E42033 /* cdecode.c in Sources */ = {isa = PBXBuildFile; fileRef = C1639A761A55F56600E42033 /* cdecode.c */; };
-		C1639A791A55F56600E42033 /* cencode.c in Sources */ = {isa = PBXBuildFile; fileRef = C1639A771A55F56600E42033 /* cencode.c */; };
-		C1639A7C1A55F57200E42033 /* cdecode.h in Headers */ = {isa = PBXBuildFile; fileRef = C1639A7A1A55F57200E42033 /* cdecode.h */; };
-		C1639A7D1A55F57200E42033 /* cencode.h in Headers */ = {isa = PBXBuildFile; fileRef = C1639A7B1A55F57200E42033 /* cencode.h */; };
+		51D0F7010000000000000003 /* simdutf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 51D0F7010000000000000001 /* simdutf.cpp */; };
+		51D0F7010000000000000006 /* simdutf.h in Headers */ = {isa = PBXBuildFile; fileRef = 51D0F7010000000000000002 /* simdutf.h */; };
+		51D0F701000000000000000F /* libsimdutf.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 51D0F7010000000000000005 /* libsimdutf.a */; };
 		C17740D5273A002C00E455D2 /* web-utils.cc in Sources */ = {isa = PBXBuildFile; fileRef = C17740D3273A002C00E455D2 /* web-utils.cc */; };
 		C17740D6273A002C00E455D2 /* web-utils.h in Headers */ = {isa = PBXBuildFile; fileRef = C17740D4273A002C00E455D2 /* web-utils.h */; };
 		C1846BA2294F7A6800A98F30 /* wildmat.c in Sources */ = {isa = PBXBuildFile; fileRef = C1846B88294F781800A98F30 /* wildmat.c */; };
@@ -487,6 +485,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		51D0F7010000000000000010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 51D0F7010000000000000007;
+			remoteInfo = simdutf;
+		};
 		4D1838E509DEC1170047D688 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
@@ -563,13 +568,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4D18389609DEC0030047D688;
 			remoteInfo = libtransmission;
-		};
-		C165AB8C1A55FAA900D37711 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = C1639A6E1A55F4D600E42033;
-			remoteInfo = b64;
 		};
 		C1846BA6294F7B1400A98F30 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1198,11 +1196,9 @@
 		C16089EC1F092A1E00CEFC36 /* utp_packedsockaddr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utp_packedsockaddr.h; sourceTree = "<group>"; };
 		C16089ED1F092A1E00CEFC36 /* utp_templates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utp_templates.h; sourceTree = "<group>"; };
 		C16089EE1F092A1E00CEFC36 /* utp_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utp_types.h; path = include/libutp/utp_types.h; sourceTree = "<group>"; };
-		C1639A6F1A55F4D600E42033 /* libb64.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libb64.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		C1639A761A55F56600E42033 /* cdecode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = cdecode.c; path = src/cdecode.c; sourceTree = "<group>"; };
-		C1639A771A55F56600E42033 /* cencode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = cencode.c; path = src/cencode.c; sourceTree = "<group>"; };
-		C1639A7A1A55F57200E42033 /* cdecode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = cdecode.h; path = include/b64/cdecode.h; sourceTree = "<group>"; };
-		C1639A7B1A55F57200E42033 /* cencode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = cencode.h; path = include/b64/cencode.h; sourceTree = "<group>"; };
+		51D0F7010000000000000001 /* simdutf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = simdutf.cpp; path = src/simdutf.cpp; sourceTree = "<group>"; };
+		51D0F7010000000000000005 /* libsimdutf.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libsimdutf.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		51D0F7010000000000000002 /* simdutf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = simdutf.h; path = include/simdutf.h; sourceTree = "<group>"; };
 		C17740D3273A002C00E455D2 /* web-utils.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "web-utils.cc"; sourceTree = "<group>"; };
 		C17740D4273A002C00E455D2 /* web-utils.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; path = "web-utils.h"; sourceTree = "<group>"; };
 		C1846B87294F781800A98F30 /* wildmat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = wildmat.h; sourceTree = "<group>"; };
@@ -1482,6 +1478,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		51D0F701000000000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3C7A118B0D0B2EB800B5701F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1565,11 +1568,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				51D0F701000000000000000F /* libsimdutf.a in Frameworks */,
 				ED91F3962CBDAAED008388AA /* libmadler-crcany.a in Frameworks */,
 				C1846BA9294F7B5A00A98F30 /* libwildmat.a in Frameworks */,
 				C3D9062F27B7F7E200EF2386 /* libpsl.a in Frameworks */,
 				C3CEBBFC2794A12200683BE0 /* libdeflate.a in Frameworks */,
-				C1639A741A55F4E000E42033 /* libb64.a in Frameworks */,
 				A22CFCCB0FC24FDA0009BD3E /* libdht.a in Frameworks */,
 				A267927C130DFF2700CB7464 /* libutp.a in Frameworks */,
 				BE75C38A0C72A1ED00DBEFE0 /* libevent.a in Frameworks */,
@@ -1599,13 +1602,6 @@
 				5586996C2570759F00F77A43 /* libcurl.tbd in Frameworks */,
 				C88771B42803EE88005C7523 /* libiconv.tbd in Frameworks */,
 				A25E03D90E4015100086C225 /* Cocoa.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		C1639A6C1A55F4D600E42033 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1815,7 +1811,7 @@
 				3C7A118D0D0B2EB800B5701F /* libnatpmp.a */,
 				A22CFCBA0FC24F710009BD3E /* libdht.a */,
 				A2E38544130DFEE3001F501B /* libutp.a */,
-				C1639A6F1A55F4D600E42033 /* libb64.a */,
+				51D0F7010000000000000005 /* libsimdutf.a */,
 				C3CEBBA927949CA000683BE0 /* libdeflate.a */,
 				C3D9062127B7E3C900EF2386 /* libpsl.a */,
 				C1846B9E294F7A3400A98F30 /* libwildmat.a */,
@@ -1843,7 +1839,7 @@
 				BE1183410CE15DF00002D0F3 /* libminiupnp */,
 				3C7A11880D0B2E6700B5701F /* libnatpmp */,
 				C3D9061627B7E12F00EF2386 /* libpsl */,
-				C1639A751A55F52800E42033 /* b64 */,
+				51D0F7010000000000000004 /* simdutf */,
 				C1846B82294F777000A98F30 /* wildmat */,
 				ED91F2682CBDA72C008388AA /* madler-crcany */,
 				4DDBB71509E16B3F00284745 /* Libraries */,
@@ -2294,16 +2290,14 @@
 			path = utils;
 			sourceTree = "<group>";
 		};
-		C1639A751A55F52800E42033 /* b64 */ = {
+		51D0F7010000000000000004 /* simdutf */ = {
 			isa = PBXGroup;
 			children = (
-				C1639A761A55F56600E42033 /* cdecode.c */,
-				C1639A7A1A55F57200E42033 /* cdecode.h */,
-				C1639A771A55F56600E42033 /* cencode.c */,
-				C1639A7B1A55F57200E42033 /* cencode.h */,
+				51D0F7010000000000000001 /* simdutf.cpp */,
+				51D0F7010000000000000002 /* simdutf.h */,
 			);
-			name = b64;
-			path = "third-party/libb64";
+			name = simdutf;
+			path = "third-party/simdutf";
 			sourceTree = "<group>";
 		};
 		C1846B82294F777000A98F30 /* wildmat */ = {
@@ -2531,6 +2525,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		51D0F7010000000000000009 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				51D0F7010000000000000006 /* simdutf.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3C7A11890D0B2EB800B5701F /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -2682,15 +2684,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C1639A6D1A55F4D600E42033 /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C1639A7D1A55F57200E42033 /* cencode.h in Headers */,
-				C1639A7C1A55F57200E42033 /* cdecode.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		C1846B97294F7A3400A98F30 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -2752,6 +2745,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		51D0F7010000000000000007 /* simdutf */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 51D0F701000000000000000B /* Build configuration list for PBXNativeTarget "simdutf" */;
+			buildPhases = (
+				51D0F7010000000000000009 /* Headers */,
+				51D0F7010000000000000008 /* Sources */,
+				51D0F701000000000000000A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = simdutf;
+			productName = simdutf;
+			productReference = 51D0F7010000000000000005 /* libsimdutf.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		3C7A118C0D0B2EB800B5701F /* natpmp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3C7A119B0D0B2EE300B5701F /* Build configuration list for PBXNativeTarget "natpmp" */;
@@ -2782,6 +2792,7 @@
 			);
 			dependencies = (
 				ED91F3952CBDA9BD008388AA /* PBXTargetDependency */,
+				51D0F7010000000000000011 /* PBXTargetDependency */,
 				C1846BA7294F7B1400A98F30 /* PBXTargetDependency */,
 				C33E46A22794B3CC0090F2AA /* PBXTargetDependency */,
 				A226FDB10D0CDF6E005A7F71 /* PBXTargetDependency */,
@@ -2789,7 +2800,6 @@
 				BE75C34F0C729ED300DBEFE0 /* PBXTargetDependency */,
 				A22CFCC70FC24F990009BD3E /* PBXTargetDependency */,
 				A2E384E4130DFB51001F501B /* PBXTargetDependency */,
-				C165AB8D1A55FAA900D37711 /* PBXTargetDependency */,
 				C3D9062E27B7F7CE00EF2386 /* PBXTargetDependency */,
 			);
 			name = libtransmission;
@@ -2962,23 +2972,6 @@
 			productReference = BEFC1CF90C07822400B0BB3C /* transmission-remote */;
 			productType = "com.apple.product-type.tool";
 		};
-		C1639A6E1A55F4D600E42033 /* b64 */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = C1639A731A55F4D600E42033 /* Build configuration list for PBXNativeTarget "b64" */;
-			buildPhases = (
-				C1639A6D1A55F4D600E42033 /* Headers */,
-				C1639A6B1A55F4D600E42033 /* Sources */,
-				C1639A6C1A55F4D600E42033 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = b64;
-			productName = b64;
-			productReference = C1639A6F1A55F4D600E42033 /* libb64.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 		C1846B96294F7A3400A98F30 /* wildmat */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C1846B9A294F7A3400A98F30 /* Build configuration list for PBXNativeTarget "wildmat" */;
@@ -3136,9 +3129,6 @@
 							};
 						};
 					};
-					C1639A6E1A55F4D600E42033 = {
-						CreatedOnToolsVersion = 6.1.1;
-					};
 					C3D9062027B7E3C900EF2386 = {
 						CreatedOnToolsVersion = 13.0;
 					};
@@ -3146,6 +3136,9 @@
 						CreatedOnToolsVersion = 16.1;
 					};
 					ED91F00B2CBDA5D3008388AA = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					51D0F7010000000000000007 = {
 						CreatedOnToolsVersion = 16.0;
 					};
 				};
@@ -3196,11 +3189,11 @@
 				BE75C3480C729E9500DBEFE0 /* event */,
 				BE1183470CE160960002D0F3 /* miniupnp */,
 				3C7A118C0D0B2EB800B5701F /* natpmp */,
-				C1639A6E1A55F4D600E42033 /* b64 */,
 				C3CEBB9F27949CA000683BE0 /* deflate */,
 				C3D9062027B7E3C900EF2386 /* psl */,
 				C1846B96294F7A3400A98F30 /* wildmat */,
 				ED91F00B2CBDA5D3008388AA /* madler-crcany */,
+				51D0F7010000000000000007 /* simdutf */,
 			);
 		};
 /* End PBXProject section */
@@ -3376,6 +3369,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		51D0F7010000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				51D0F7010000000000000003 /* simdutf.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3C7A118A0D0B2EB800B5701F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3666,15 +3667,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		C1639A6B1A55F4D600E42033 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C1639A781A55F56600E42033 /* cdecode.c in Sources */,
-				C1639A791A55F56600E42033 /* cencode.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		C1846B98294F7A3400A98F30 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3754,6 +3746,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		51D0F7010000000000000011 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 51D0F7010000000000000007 /* simdutf */;
+			targetProxy = 51D0F7010000000000000010 /* PBXContainerItemProxy */;
+		};
 		4D1838E609DEC1170047D688 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4D18389609DEC0030047D688 /* libtransmission */;
@@ -3808,11 +3805,6 @@
 			isa = PBXTargetDependency;
 			target = 4D18389609DEC0030047D688 /* libtransmission */;
 			targetProxy = BEFC1CEC0C07822400B0BB3C /* PBXContainerItemProxy */;
-		};
-		C165AB8D1A55FAA900D37711 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = C1639A6E1A55F4D600E42033 /* b64 */;
-			targetProxy = C165AB8C1A55FAA900D37711 /* PBXContainerItemProxy */;
 		};
 		C1846BA7294F7B1400A98F30 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -4251,6 +4243,60 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		51D0F701000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"third-party/simdutf/src",
+					"third-party/simdutf/include",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "-w";
+			};
+			name = Debug;
+		};
+		51D0F701000000000000000D /* Release - Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"third-party/simdutf/src",
+					"third-party/simdutf/include",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "-w";
+			};
+			name = "Release - Debug";
+		};
+		51D0F701000000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
+				GENERATE_MASTER_OBJECT_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"third-party/simdutf/src",
+					"third-party/simdutf/include",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "-w";
+			};
+			name = Release;
+		};
 		0053D3D30C86774200545606 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4275,11 +4321,10 @@
 					"third-party/dht",
 					"third-party/fast_float/include",
 					"third-party/wide-integer",
-					"third-party/libb64/include",
+					"third-party/simdutf/include",
 					"third-party/libdeflate",
 					"third-party/libpsl/include",
 					"third-party/libutp/include",
-					"third-party/utfcpp/source",
 					"third-party/rapidjson/include",
 					"third-party/wildmat",
 				);
@@ -4302,14 +4347,13 @@
 					"third-party/sigslot/include",
 					"third-party/small/include",
 					"third-party/rapidjson/include",
-					"third-party/libb64/include",
+					"third-party/simdutf/include",
 					"third-party/libdeflate",
 					"third-party/libevent/include",
 					"third-party/libnatpmp/*.h",
 					"third-party/libpsl/include",
 					"third-party/libutp/include",
 					"third-party/miniupnp/miniupnpc/include",
-					"third-party/utfcpp/source",
 					"third-party/wide-integer",
 					"third-party/wildmat",
 					"third-party/madler-crcany",
@@ -4527,11 +4571,10 @@
 					"third-party/dht",
 					"third-party/fast_float/include",
 					"third-party/wide-integer",
-					"third-party/libb64/include",
+					"third-party/simdutf/include",
 					"third-party/libdeflate",
 					"third-party/libpsl/include",
 					"third-party/libutp/include",
-					"third-party/utfcpp/source",
 					"third-party/rapidjson/include",
 					"third-party/wildmat",
 				);
@@ -4554,14 +4597,13 @@
 					"third-party/sigslot/include",
 					"third-party/small/include",
 					"third-party/rapidjson/include",
-					"third-party/libb64/include",
+					"third-party/simdutf/include",
 					"third-party/libdeflate",
 					"third-party/libevent/include",
 					"third-party/libnatpmp/*.h",
 					"third-party/libpsl/include",
 					"third-party/libutp/include",
 					"third-party/miniupnp/miniupnpc/include",
-					"third-party/utfcpp/source",
 					"third-party/wide-integer",
 					"third-party/wildmat",
 					"third-party/madler-crcany",
@@ -4859,11 +4901,10 @@
 					"third-party/dht",
 					"third-party/fast_float/include",
 					"third-party/wide-integer",
-					"third-party/libb64/include",
+					"third-party/simdutf/include",
 					"third-party/libdeflate",
 					"third-party/libpsl/include",
 					"third-party/libutp/include",
-					"third-party/utfcpp/source",
 					"third-party/rapidjson/include",
 					"third-party/wildmat",
 				);
@@ -4886,14 +4927,13 @@
 					"third-party/sigslot/include",
 					"third-party/small/include",
 					"third-party/rapidjson/include",
-					"third-party/libb64/include",
+					"third-party/simdutf/include",
 					"third-party/libdeflate",
 					"third-party/libevent/include",
 					"third-party/libnatpmp/*.h",
 					"third-party/libpsl/include",
 					"third-party/libutp/include",
 					"third-party/miniupnp/miniupnpc/include",
-					"third-party/utfcpp/source",
 					"third-party/wide-integer",
 					"third-party/wildmat",
 					"third-party/madler-crcany",
@@ -5159,33 +5199,6 @@
 					"third-party/small/include",
 					"third-party/libevent/include",
 				);
-			};
-			name = Release;
-		};
-		C1639A701A55F4D600E42033 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
-				GENERATE_MASTER_OBJECT_FILE = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		C1639A711A55F4D600E42033 /* Release - Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
-				GENERATE_MASTER_OBJECT_FILE = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = "Release - Debug";
-		};
-		C1639A721A55F4D600E42033 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				GCC_WARN_64_TO_32_BIT_CONVERSION = NO;
-				GENERATE_MASTER_OBJECT_FILE = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -5591,6 +5604,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		51D0F701000000000000000B /* Build configuration list for PBXNativeTarget "simdutf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				51D0F701000000000000000C /* Debug */,
+				51D0F701000000000000000D /* Release - Debug */,
+				51D0F701000000000000000E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		3C7A119B0D0B2EE300B5701F /* Build configuration list for PBXNativeTarget "natpmp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -5707,16 +5730,6 @@
 				0053D3D80C86774200545606 /* Debug */,
 				A250CFF00CDA19680068B4B6 /* Release - Debug */,
 				BEFC1CF80C07822400B0BB3C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		C1639A731A55F4D600E42033 /* Build configuration list for PBXNativeTarget "b64" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				C1639A701A55F4D600E42033 /* Debug */,
-				C1639A711A55F4D600E42033 /* Release - Debug */,
-				C1639A721A55F4D600E42033 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

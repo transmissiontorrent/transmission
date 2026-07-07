@@ -3,6 +3,7 @@
 // or any future license endorsed by Mnemosaic LLC.
 // License text can be found in the licenses/ folder.
 
+#include <array>
 #include <cctype>
 #include <cstdint>
 #include <cstring>
@@ -17,7 +18,7 @@
 
 #include <fmt/format.h>
 
-#include <utf8.h>
+#include <simdutf.h>
 
 #include <wildmat.h>
 
@@ -69,15 +70,31 @@ std::string tr_strv_to_utf8_string(std::string_view sv)
 
 #endif
 
-std::string tr_strv_replace_invalid(std::string_view sv, uint32_t replacement)
+std::string tr_strv_replace_invalid(std::string_view sv, char32_t replacement)
 {
     // stripping characters after first \0
-    if (auto first_null = sv.find('\0'); first_null != std::string::npos) {
+    if (auto const first_null = sv.find('\0'); first_null != std::string_view::npos) {
         sv = { std::data(sv), first_null };
     }
+
+    // pre-encode the replacement code point as UTF-8
+    auto replacement_buf = std::array<char, 4>{};
+    auto const replacement_len = simdutf::convert_utf32_to_utf8(&replacement, 1, std::data(replacement_buf));
+    auto const replacement_utf8 = std::string_view{ std::data(replacement_buf), replacement_len };
+
     auto out = std::string{};
     out.reserve(std::size(sv));
-    utf8::unchecked::replace_invalid(std::data(sv), std::data(sv) + std::size(sv), std::back_inserter(out), replacement);
+    while (!std::empty(sv)) {
+        auto const result = simdutf::validate_utf8_with_errors(std::data(sv), std::size(sv));
+        if (result.error == simdutf::error_code::SUCCESS) {
+            out += sv;
+            break;
+        }
+        // keep the valid prefix, replace the single offending byte, then resync
+        out += sv.substr(0, result.count);
+        out += replacement_utf8;
+        sv.remove_prefix(result.count + 1U);
+    }
     return out;
 }
 
@@ -151,5 +168,6 @@ std::string tr_win32_format_message(uint32_t code)
 
 std::string_view::size_type tr_strv_find_invalid_utf8(std::string_view const sv)
 {
-    return utf8::find_invalid(sv);
+    auto const result = simdutf::validate_utf8_with_errors(std::data(sv), std::size(sv));
+    return result.error == simdutf::error_code::SUCCESS ? std::string_view::npos : result.count;
 }

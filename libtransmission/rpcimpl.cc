@@ -1367,7 +1367,7 @@ void onPortTested(tr_web::FetchResponse const& web_response)
 {
     using namespace JsonRpc;
 
-    auto const& [status, body, primary_ip, did_connect, did_timeout, user_data] = web_response;
+    auto const& [status, headers, body, primary_ip, did_connect, did_timeout, user_data] = web_response;
     auto* data = static_cast<tr_rpc_idle_data*>(user_data);
 
     if (auto const addr = tr_address::from_string(primary_ip);
@@ -1432,7 +1432,7 @@ void onBlocklistFetched(tr_web::FetchResponse const& web_response)
 {
     using namespace JsonRpc;
 
-    auto const& [status, body, primary_ip, did_connect, did_timeout, user_data] = web_response;
+    auto const& [status, headers, body, primary_ip, did_connect, did_timeout, user_data] = web_response;
     auto* data = static_cast<struct tr_rpc_idle_data*>(user_data);
     auto* const session = data->session;
 
@@ -1569,7 +1569,7 @@ struct add_torrent_idle_data {
 
 void onMetadataFetched(tr_web::FetchResponse const& web_response)
 {
-    auto const& [status, body, primary_ip, did_connect, did_timeout, user_data] = web_response;
+    auto const& [status, headers, body, primary_ip, did_connect, did_timeout, user_data] = web_response;
     auto* data = static_cast<struct add_torrent_idle_data*>(user_data);
 
     tr_logAddTrace(

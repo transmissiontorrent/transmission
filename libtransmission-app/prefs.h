@@ -43,7 +43,6 @@ struct AppPrefs {
     std::string dir_watch_ = tr::platform::get_download_dir();
     std::string filter_text_;
     std::string filter_trackers_;
-    std::string main_window_layout_order_ = "menu,toolbar,filter,list,statusbar";
     std::string open_dialog_folder_ = tr::platform::get_home_dir();
     std::string session_remote_host_ = "localhost";
     std::string session_remote_password_;
@@ -60,7 +59,6 @@ struct AppPrefs {
     ShowMode show_mode_ = DefaultShowMode;
     SortMode sort_mode_ = DefaultSortMode;
     StatsMode statusbar_stats_ = DefaultStatsMode;
-    bool askquit_ = true;
     bool blocklist_updates_enabled_ = true;
     bool compact_view_ = false;
     bool complete_sound_enabled_ = true;
@@ -84,7 +82,6 @@ struct AppPrefs {
     bool toolbar_ = true;
 
     static constexpr auto Fields = std::make_tuple(
-        Field<&AppPrefs::askquit_>{ TR_KEY_prompt_before_exit },
         Field<&AppPrefs::blocklist_date_>{ TR_KEY_blocklist_date },
         Field<&AppPrefs::blocklist_updates_enabled_>{ TR_KEY_blocklist_updates_enabled },
         Field<&AppPrefs::compact_view_>{ TR_KEY_compact_view },
@@ -101,7 +98,6 @@ struct AppPrefs {
         Field<&AppPrefs::inhibit_hibernation_>{ TR_KEY_inhibit_desktop_hibernation },
         Field<&AppPrefs::main_window_height_>{ TR_KEY_main_window_height },
         Field<&AppPrefs::main_window_is_maximized_>{ TR_KEY_main_window_is_maximized },
-        Field<&AppPrefs::main_window_layout_order_>{ TR_KEY_main_window_layout_order },
         Field<&AppPrefs::main_window_width_>{ TR_KEY_main_window_width },
         Field<&AppPrefs::main_window_x_>{ TR_KEY_main_window_x },
         Field<&AppPrefs::main_window_y_>{ TR_KEY_main_window_y },

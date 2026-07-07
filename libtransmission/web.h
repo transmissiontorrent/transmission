@@ -10,6 +10,7 @@
 #include <cstdint> // uint64_t
 #include <ctime> // time_t
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -23,11 +24,16 @@ public:
     // when a fetch() finishes.
     struct FetchResponse {
         long status = 0; // http server response, e.g. 200
+        std::map<std::string, std::string> headers; // keys are lowercased
         std::string body;
         std::string primary_ip;
         bool did_connect = false;
         bool did_timeout = false;
-        void* user_data = nullptr;
+
+        void* user_data = nullptr; // from FetchOptions::done_func_user_data
+
+        // Case-insensitive lookup of a response header value.
+        [[nodiscard]] std::optional<std::string_view> header(std::string_view name) const;
     };
 
     // Callback to invoke when fetch() is done
@@ -40,6 +46,11 @@ public:
             ANY,
             V4,
             V6,
+        };
+
+        enum class AuthScheme : uint8_t {
+            Basic, // send credentials preemptively (curl's default)
+            Any, // let curl negotiate any scheme the server offers
         };
 
         FetchOptions(
@@ -65,6 +76,32 @@ public:
         // option concatenated like this: "name1=content1; name2=content2;"
         std::optional<std::string> cookies;
 
+        // If set, the request is sent as an HTTP POST with this request body.
+        // If unset, the request is a GET.
+        std::optional<std::string> body;
+
+        // Extra HTTP request headers to send, keyed by header name,
+        // e.g. headers["Content-Type"] = "application/json".
+        std::map<std::string, std::string> headers;
+
+        // HTTP Basic authentication credentials.
+        // If username is set, it and the password are sent to the server.
+        std::optional<std::string> username;
+        std::optional<std::string> password;
+
+        // Authentication scheme to use when credentials are set.
+        // Basic sends them preemptively; Any lets curl negotiate the server's
+        // scheme (Basic, Digest, NTLM, Negotiate) in a challenge round-trip.
+        AuthScheme auth_scheme = AuthScheme::Basic;
+
+        // If set, credentials are also looked up in a .netrc file (using curl's
+        // CURL_NETRC_OPTIONAL mode). An empty string uses curl's default file
+        // (~/.netrc); a non-empty string names the file to read instead.
+        std::optional<std::string> netrc_file;
+
+        // If set, connect through this Unix domain socket instead of over TCP.
+        std::optional<std::string> unix_socket_path;
+
         // If set, bytes [range->first...range->second] are requested.
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
         std::optional<std::pair<uint64_t, uint64_t>> range;
@@ -80,6 +117,15 @@ public:
 
         // Maximum time to wait before timeout
         std::chrono::seconds timeout_secs = DefaultTimeoutSecs;
+
+        // If set, overrides the default TLS certificate verification (which is
+        // otherwise controlled by the TR_CURL_SSL_NO_VERIFY env var).
+        // Set to false to accept self-signed certs, e.g. a local RPC server's.
+        std::optional<bool> ssl_verify;
+
+        // If set, overrides the default curl verbose logging (which is
+        // otherwise controlled by the TR_CURL_VERBOSE env var).
+        std::optional<bool> verbose;
 
         // Called periodically by the web internals when data is received.
         // Used by webseeds to report to tr_bandwidth for data xfer stats

@@ -65,5 +65,5 @@ private:
     Session& session_;
     Ui::OptionsDialog ui_ = {};
     std::optional<tr_torrent_metainfo> metainfo_;
-    bool is_local_ = {};
+    bool is_local_fs_ = {};
 };

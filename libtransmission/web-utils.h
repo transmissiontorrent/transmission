@@ -86,3 +86,10 @@ constexpr void tr_urlPercentEncode(BackInsertIter out, tr_sha1_digest_t const& d
 [[nodiscard]] char const* tr_webGetResponseStr(long response_code);
 
 [[nodiscard]] std::string tr_urlPercentDecode(std::string_view /*url*/);
+
+// Split one HTTP header line ("Name: value") into its name and its value.
+// Leading and trailing optional whitespace (spaces and tabs) is trimmed from
+// the value per RFC 7230, and any trailing CR / LF is ignored.
+// Returns nullopt when the line has no ':' -- e.g. the HTTP status line
+// or the blank line that separates the headers from the body.
+[[nodiscard]] std::optional<std::pair<std::string_view, std::string_view>> tr_httpParseHeaderLine(std::string_view line);

@@ -33,7 +33,7 @@ OptionsDialog::OptionsDialog(Session& session, Prefs const& prefs, AddData addme
     : BaseDialog{ parent }
     , add_{ std::move(addme) }
     , session_{ session }
-    , is_local_{ session_.isLocal() }
+    , is_local_fs_{ session_.isLocalFilesystem() }
 {
     ui_.setupUi(this);
 
@@ -73,7 +73,7 @@ OptionsDialog::OptionsDialog(Session& session, Prefs const& prefs, AddData addme
     ui_.destinationButton->setPath(download_dir);
     ui_.destinationEdit->setText(download_dir);
 
-    if (is_local_) {
+    if (is_local_fs_) {
         local_destination_.setPath(download_dir);
     }
 
@@ -179,17 +179,17 @@ void OptionsDialog::reload()
 
 void OptionsDialog::updateWidgetsLocality()
 {
-    ui_.destinationStack->setCurrentWidget(is_local_ ? static_cast<QWidget*>(ui_.destinationButton) : ui_.destinationEdit);
+    ui_.destinationStack->setCurrentWidget(is_local_fs_ ? static_cast<QWidget*>(ui_.destinationButton) : ui_.destinationEdit);
     ui_.destinationStack->setFixedHeight(ui_.destinationStack->currentWidget()->sizeHint().height());
     ui_.destinationLabel->setBuddy(ui_.destinationStack->currentWidget());
 }
 
 void OptionsDialog::onSessionUpdated()
 {
-    bool const is_local = session_.isLocal();
+    bool const is_local_fs = session_.isLocalFilesystem();
 
-    if (is_local_ != is_local) {
-        is_local_ = is_local;
+    if (is_local_fs_ != is_local_fs) {
+        is_local_fs_ = is_local_fs;
         updateWidgetsLocality();
     }
 }

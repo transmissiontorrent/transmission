@@ -112,7 +112,6 @@ TEST_F(PrefsTest, defaultConstructorUsesDefaults)
     EXPECT_EQ(prefs.get<StatsMode>(TR_KEY_statusbar_stats), tr::app::DefaultStatsMode);
     expect_sys_seconds_eq(prefs.get<std::chrono::sys_seconds>(TR_KEY_blocklist_date), std::chrono::sys_seconds{});
     EXPECT_TRUE(prefs.get<bool>(TR_KEY_show_statusbar));
-    EXPECT_TRUE(prefs.get<bool>(TR_KEY_prompt_before_exit));
     EXPECT_FALSE(prefs.get<bool>(TR_KEY_sort_reversed));
     EXPECT_EQ(prefs.get<int>(TR_KEY_main_window_height), 500);
     EXPECT_EQ(prefs.get<int>(TR_KEY_main_window_width), 600);

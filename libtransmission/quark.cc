@@ -313,13 +313,11 @@ auto constexpr MyStatic = std::array<std::string_view, TR_N_KEYS>{
     "magnet_link"sv, // rpc
     "main-window-height"sv, // gtk app, qt app
     "main-window-is-maximized"sv, // gtk app
-    "main-window-layout-order"sv, // qt app
     "main-window-width"sv, // gtk app, qt app
     "main-window-x"sv, // gtk app, qt app
     "main-window-y"sv, // gtk app, qt app
     "main_window_height"sv, // gtk app, qt app
     "main_window_is_maximized"sv, // gtk app
-    "main_window_layout_order"sv, // qt app
     "main_window_width"sv, // gtk app, qt app
     "main_window_x"sv, // gtk app, qt app
     "main_window_y"sv, // gtk app, qt app
@@ -429,8 +427,6 @@ auto constexpr MyStatic = std::array<std::string_view, TR_N_KEYS>{
     "priority_normal"sv, // rpc
     "private"sv, // .torrent
     "progress"sv, // .resume, rpc
-    "prompt-before-exit"sv, // qt app
-    "prompt_before_exit"sv, // qt app
     "proxy_url"sv, // tr_session::Settings
     "queue-move-bottom"sv, // rpc
     "queue-move-down"sv, // rpc

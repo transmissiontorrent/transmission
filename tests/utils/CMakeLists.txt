@@ -17,3 +17,30 @@ AddShowTest(transmission-show-thor Thor_and_the_Amazon_Women.avi)
 AddShowTest(transmission-show-ubuntu ubuntu-20.04.3-desktop-amd64.iso)
 AddShowTest(transmission-show-ubuntu-hybrid hybrid-single-ubuntu-20.04.3-desktop-amd64.iso)
 AddShowTest(transmission-show-bitcomet-path.utf8 bitcomet.utf-8.special)
+
+if(TARGET transmission-remote)
+    include(GoogleTest)
+
+    add_executable(transmission-remote-test remote-test.cc)
+
+    set_property(
+        TARGET transmission-remote-test
+        PROPERTY FOLDER "tests")
+
+    target_compile_definitions(transmission-remote-test
+        PRIVATE
+            __TRANSMISSION__
+            TR_REMOTE_EXE="$<TARGET_FILE:transmission-remote>")
+
+    target_link_libraries(transmission-remote-test
+        PRIVATE
+            ${TR_NAME}
+            GTest::gtest_main
+            transmission::fmt-header-only
+            libevent::core
+            libevent::extra)
+
+    add_dependencies(transmission-remote-test transmission-remote)
+
+    tr_setup_gtest_target(transmission-remote-test "UR.")
+endif()
