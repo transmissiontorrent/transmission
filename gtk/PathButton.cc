@@ -96,6 +96,13 @@ void tr_popover_unparent([[maybe_unused]] Gtk::Popover& popover)
 #endif
 }
 
+void tr_popover_unparent_on_destroy([[maybe_unused]] Gtk::Widget& parent, [[maybe_unused]] Gtk::Popover& popover)
+{
+#if GTKMM_CHECK_VERSION(4, 0, 0)
+    parent.signal_destroy().connect([&popover]() { tr_popover_unparent(popover); });
+#endif
+}
+
 void tr_image_set_from_icon_name(Gtk::Image& image, Glib::ustring const& icon_name)
 {
 #if GTKMM_CHECK_VERSION(4, 0, 0)
@@ -194,7 +201,7 @@ PathButton::Impl::Impl(PathButton& widget)
 
     // gtkmm4 parents the popover to the button; unparent it while the button is
     // being disposed (::destroy), before it is finalized. On gtkmm3 this is a no-op.
-    widget_.signal_destroy().connect([this]() { tr_popover_unparent(popover_); });
+    tr_popover_unparent_on_destroy(widget_, popover_);
 
     widget_.signal_clicked().connect(sigc::mem_fun(*this, &Impl::on_clicked));
 
