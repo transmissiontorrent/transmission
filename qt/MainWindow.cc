@@ -484,7 +484,7 @@ void MainWindow::openProperties()
 
 void MainWindow::setLocation()
 {
-    auto* d = new RelocateDialog{ session_, model_, getSelectedTorrents(), this };
+    auto* d = new RelocateDialog{ session_, prefs_, model_, getSelectedTorrents(), this };
     d->setAttribute(Qt::WA_DeleteOnClose, true);
     d->show();
 }

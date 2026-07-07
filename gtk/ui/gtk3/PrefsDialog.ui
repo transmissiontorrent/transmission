@@ -485,7 +485,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFileChooserButton" id="watch_dir_chooser">
+                          <object class="gtkmm__CustomObject_10PathButton" id="watch_dir_chooser">
                             <property name="visible">True</property>
                             <property name="sensitive" bind-source="watch_dir_check" bind-property="active" bind-flags="sync-create">False</property>
                             <property name="can-focus">False</property>
@@ -499,7 +499,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFileChooserButton" id="download_dir_chooser">
+                          <object class="gtkmm__CustomObject_10PathButton" id="download_dir_chooser">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="action">select-folder</property>
@@ -693,7 +693,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFileChooserButton" id="incomplete_dir_chooser">
+                          <object class="gtkmm__CustomObject_10PathButton" id="incomplete_dir_chooser">
                             <property name="visible">True</property>
                             <property name="sensitive" bind-source="incomplete_dir_check" bind-property="active" bind-flags="sync-create">False</property>
                             <property name="can-focus">False</property>
@@ -707,7 +707,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFileChooserButton" id="download_done_script_chooser">
+                          <object class="gtkmm__CustomObject_10PathButton" id="download_done_script_chooser">
                             <property name="visible">True</property>
                             <property name="sensitive" bind-source="download_done_script_check" bind-property="active" bind-flags="sync-create">False</property>
                             <property name="can-focus">False</property>
@@ -841,7 +841,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkFileChooserButton" id="seeding_done_script_chooser">
+                          <object class="gtkmm__CustomObject_10PathButton" id="seeding_done_script_chooser">
                             <property name="visible">True</property>
                             <property name="sensitive" bind-source="seeding_done_script_check" bind-property="active" bind-flags="sync-create">False</property>
                             <property name="can-focus">False</property>

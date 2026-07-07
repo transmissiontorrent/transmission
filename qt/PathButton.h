@@ -5,7 +5,10 @@
 
 #pragma once
 
+#include <QStringList>
 #include <QToolButton>
+
+class QMenu;
 
 class PathButton : public QToolButton
 {
@@ -26,6 +29,7 @@ public:
     void setNameFilter(QString const& name_filter);
 
     void setPath(QString const& path);
+    void setRecentPaths(QStringList const& paths);
 
     [[nodiscard]] constexpr auto const& path() const noexcept
     {
@@ -48,12 +52,15 @@ private slots:
 
 private:
     void updateAppearance();
+    void rebuildMenu();
 
     [[nodiscard]] bool isDirMode() const;
     [[nodiscard]] QString effectiveTitle() const;
 
+    QStringList recent_paths_;
     QString name_filter_;
     QString path_;
     QString title_;
+    QMenu* menu_ = nullptr;
     Mode mode_ = DirectoryMode;
 };

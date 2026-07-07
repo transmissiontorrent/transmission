@@ -73,7 +73,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkFileChooserButton" id="source_button">
+              <object class="gtkmm__CustomObject_10PathButton" id="source_button">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
@@ -99,7 +99,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkFileChooserButton" id="destination_button">
+              <object class="gtkmm__CustomObject_10PathButton" id="destination_button">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="hexpand">True</property>

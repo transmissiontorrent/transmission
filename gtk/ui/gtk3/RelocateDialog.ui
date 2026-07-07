@@ -94,7 +94,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFileChooserButton" id="new_location_button">
+                      <object class="gtkmm__CustomObject_10PathButton" id="new_location_button">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>

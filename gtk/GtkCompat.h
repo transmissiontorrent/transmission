@@ -69,6 +69,7 @@
 #define TR_GTK_MESSAGE_TYPE(Code) IF_GTKMM4(Gtk::MessageType::Code, Gtk::MESSAGE_##Code)
 #define TR_GTK_ORIENTATION(Code) IF_GTKMM4(Gtk::Orientation::Code, Gtk::ORIENTATION_##Code)
 #define TR_GTK_POLICY_TYPE(Code) IF_GTKMM4(Gtk::PolicyType::Code, Gtk::POLICY_##Code)
+#define TR_GTK_POSITION_TYPE(Code) IF_GTKMM4(Gtk::PositionType::Code, Gtk::POS_##Code)
 #define TR_GTK_RESPONSE_TYPE(Code) IF_GTKMM4(Gtk::ResponseType::Code, Gtk::RESPONSE_##Code)
 #define TR_GTK_SELECTION_MODE(Code) IF_GTKMM4(Gtk::SelectionMode::Code, Gtk::SELECTION_##Code)
 #define TR_GTK_SORT_TYPE(Code) IF_GTKMM4(Gtk::SortType::Code, Gtk::SORT_##Code)
