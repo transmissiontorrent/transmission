@@ -106,7 +106,9 @@ private:
             evhttp_send_reply(req, 409, "Conflict", out);
         } else {
             evhttp_add_header(out_headers, "Content-Type", "application/json");
-            static auto constexpr Body = std::string_view{ R"({"result":{}})" };
+            // A valid, empty legacy success reply. The client normalizes incoming
+            // data to Tr5, so `result:"success"` is what marks it as a success.
+            static auto constexpr Body = std::string_view{ R"({"result":"success","arguments":{}})" };
             evbuffer_add(out, std::data(Body), std::size(Body));
             evhttp_send_reply(req, 200, "OK", out);
         }

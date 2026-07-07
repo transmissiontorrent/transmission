@@ -14,6 +14,7 @@
 #include <QDir>
 #include <QElapsedTimer>
 #include <QRegularExpression>
+#include <QSignalSpy>
 #include <QTest>
 
 #include <libtransmission/transmission.h>
@@ -111,7 +112,9 @@ private slots:
         auto session = Session{ sandbox_dir, prefs, rpc };
         session.restart();
 
-        // action: set TR_KEY_download_dir to a new value
+        // action: changing download-dir fires two RPCs -- a "session-set" to push
+        // the value, and a "session_get" (refreshSessionInfo) to re-read freespace.
+        auto session_get_done = QSignalSpy{ &session, &Session::sessionUpdated };
         prefs.set(TR_KEY_download_dir, downloads_dir);
 
         // verify that session_set::download_dir was POSTed
@@ -123,6 +126,10 @@ private slots:
             });
         };
         QVERIFY(waitUntil(has_session_set));
+
+        // drain the session_get round-trip so its RpcQueue finishes instead of
+        // being left in flight (and leaked) when the test tears down.
+        QVERIFY(waitUntil([&session_get_done]() { return !session_get_done.isEmpty(); }));
     }
 };
 } // namespace
