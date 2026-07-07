@@ -901,7 +901,6 @@ private:
                 auto* const tor = s->tor;
                 auto const loc = tor->piece_loc(event.pieceIndex, event.offset);
                 s->cancel_all_requests_for_block(loc.block, peer);
-                peer->blocks_sent_to_client.add(tr_time(), 1);
                 peer->blame.set(loc.piece);
                 s->got_block(tor, loc.block); // put this line before calling tr_torrent callback
                 tor->on_block_received(loc.block);
@@ -1596,11 +1595,6 @@ namespace peer_stat_helpers
     stats.is_downloading_from = peer->is_active(tr_direction::PeerToClient);
     stats.is_uploading_to = peer->is_active(tr_direction::ClientToPeer);
     stats.is_seed = peer->is_seed();
-
-    stats.blocks_to_peer = peer->blocks_sent_to_peer.count(now, CancelHistorySec);
-    stats.blocks_to_client = peer->blocks_sent_to_client.count(now, CancelHistorySec);
-    stats.cancels_to_peer = peer->cancels_sent_to_peer.count(now, CancelHistorySec);
-    stats.cancels_to_client = peer->cancels_sent_to_client.count(now, CancelHistorySec);
 
     stats.bytes_to_peer = peer->bytes_sent_to_peer.count(now, CancelHistorySec);
     stats.bytes_to_client = peer->bytes_sent_to_client.count(now, CancelHistorySec);
