@@ -41,7 +41,7 @@ RelocateDialog::RelocateDialog(Session& session, TorrentModel const& model, torr
         if (path.isEmpty()) {
             path = tor->getPath();
         } else if (path != tor->getPath()) {
-            if (session_.isLocal()) {
+            if (session_.isLocalFilesystem()) {
                 path = QDir::homePath();
             } else {
                 path = QDir::rootPath();
@@ -51,7 +51,7 @@ RelocateDialog::RelocateDialog(Session& session, TorrentModel const& model, torr
         }
     }
 
-    if (session_.isLocal()) {
+    if (session_.isLocalFilesystem()) {
         ui_.newLocationStack->setCurrentWidget(ui_.newLocationButton);
         ui_.newLocationButton->setMode(PathButton::DirectoryMode);
         ui_.newLocationButton->setTitle(tr("Select Location"));
