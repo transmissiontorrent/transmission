@@ -148,6 +148,8 @@ struct SessionPrefs {
     std::string rpc_whitelist_;
     std::string script_torrent_done_filename_;
     std::string script_torrent_done_seeding_filename_;
+    std::vector<std::string> recent_download_paths_;
+    std::vector<std::string> recent_relocate_paths_;
     double ratio_ = {};
     size_t alt_speed_limit_down_ = {};
     size_t alt_speed_limit_time_begin_ = {};
@@ -230,6 +232,8 @@ struct SessionPrefs {
         Field<&SessionPrefs::queue_stalled_minutes_>{ TR_KEY_queue_stalled_minutes },
         Field<&SessionPrefs::ratio_>{ TR_KEY_seed_ratio_limit },
         Field<&SessionPrefs::ratio_enabled_>{ TR_KEY_seed_ratio_limited },
+        Field<&SessionPrefs::recent_download_paths_>{ TR_KEY_recent_download_paths },
+        Field<&SessionPrefs::recent_relocate_paths_>{ TR_KEY_recent_relocate_paths },
         Field<&SessionPrefs::rename_partial_files_>{ TR_KEY_rename_partial_files },
         Field<&SessionPrefs::rpc_auth_required_>{ TR_KEY_rpc_authentication_required },
         Field<&SessionPrefs::rpc_enabled_>{ TR_KEY_rpc_enabled },
