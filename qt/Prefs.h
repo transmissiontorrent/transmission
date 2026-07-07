@@ -5,44 +5,19 @@
 
 #pragma once
 
-#include <string_view>
-#include <utility>
-
-#include <QDir>
 #include <QObject>
 #include <QString>
 
-#include <sigslot/signal.hpp>
-
 #include <libtransmission/quark.h>
-#include <libtransmission/variant.h>
 
 #include <libtransmission-app/prefs.h>
 
 #include "UserMetaType.h"
-#include "Utils.h"
 #include "VariantHelpers.h"
 
-namespace tr::app
-{
-template<>
-struct PrefsStringTraits<QString> {
-    [[nodiscard]] static QString from_utf8(std::string_view const str)
-    {
-        return Utils::qstringFromUtf8(str);
-    }
-
-    [[nodiscard]] static QString home_dir()
-    {
-        return QDir::home().absolutePath();
-    }
-};
-} // namespace tr::app
-
-// Toolkit-neutral preferences live in tr::app::Prefs<QString>. This thin
-// QObject adapter owns one and bridges its sigslot `changed` signal to a Qt
-// signal, so the rest of the Qt code can `connect()` as before.
-class Prefs final : public QObject
+class Prefs final
+    : public QObject
+    , public tr::app::Prefs
 {
     Q_OBJECT
 
@@ -50,12 +25,12 @@ public:
     Prefs() = default;
 
     explicit Prefs(tr::Settings const& settings)
-        : impl_{ settings }
+        : tr::app::Prefs{ settings }
     {
     }
 
-    explicit Prefs(QString const& dir)
-        : impl_{ dir.toStdString() }
+    explicit Prefs(QString const& config_dir)
+        : tr::app::Prefs{ config_dir.toStdString() }
     {
     }
 
@@ -65,49 +40,17 @@ public:
     Prefs& operator=(Prefs const&) = delete;
     ~Prefs() override = default;
 
-    [[nodiscard]] static bool isCore(tr_quark const key)
+    [[nodiscard]] static constexpr bool isCore(tr_quark const key)
     {
         return tr::app::prefs_is_core(key);
-    }
-
-    [[nodiscard]] std::pair<tr_quark, tr_variant> keyval(tr_quark const key) const
-    {
-        return impl_.keyval(key);
-    }
-
-    void set(tr_quark const key, tr_variant const& var)
-    {
-        impl_.set(key, var);
-    }
-
-    template<typename T>
-    void set(tr_quark const key, T const& val)
-    {
-        impl_.set(key, val);
-    }
-
-    void set(tr_quark /*key*/, char const* /*value*/) = delete;
-
-    template<typename T>
-    [[nodiscard]] T get(tr_quark const key) const
-    {
-        return impl_.get<T>(key);
-    }
-
-    [[nodiscard]] tr::Settings current_settings() const
-    {
-        return impl_.current_settings();
-    }
-
-    void save(QString const& filename) const
-    {
-        impl_.save(filename.toStdString());
     }
 
 signals:
     void changed(tr_quark key);
 
-private:
-    tr::app::Prefs<QString> impl_;
-    sigslot::scoped_connection changed_conn_{ impl_.observe_changed([this](tr_quark const key) { emit changed(key); }) };
+protected:
+    void on_changed(tr_quark const key) override
+    {
+        emit changed(key);
+    }
 };

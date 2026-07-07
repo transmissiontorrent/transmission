@@ -168,18 +168,12 @@ void Session::updatePref(tr_quark key)
         case TR_KEY_speed_limit_up:
         case TR_KEY_speed_limit_up_enabled:
         case TR_KEY_utp_enabled:
-            {
-                auto [pref_key, pref_val] = prefs_.keyval(key);
-                sessionSet(pref_key, std::move(pref_val));
-            }
+            sessionSet(key, prefs_.get<tr_variant>(key));
             break;
 
         case TR_KEY_download_dir:
-            {
-                auto [pref_key, pref_val] = prefs_.keyval(key);
-                sessionSet(pref_key, std::move(pref_val));
-            }
-            /* this will change the 'freespace' argument, so refresh */
+            // this will change the 'freespace' argument, so refresh
+            sessionSet(key, prefs_.get<tr_variant>(key));
             refreshSessionInfo();
             break;
 
@@ -925,6 +919,17 @@ void Session::launchWebInterface() const
     }
 
     QDesktopServices::openUrl(url);
+}
+
+// ---
+
+std::optional<tr::Settings> Session::local_settings() const
+{
+    if (session_) {
+        return tr_sessionGetSettings(session_);
+    }
+
+    return {};
 }
 
 /// ---

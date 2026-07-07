@@ -524,6 +524,60 @@ TEST_F(SerializerTest, serializableSetByKey)
     EXPECT_EQ(endpoint.port, tr_port::from_host(1234));
 }
 
+TEST_F(SerializerTest, boolToIntCoercionWarnsButSucceeds)
+{
+    // A boolean feeding an integer field is not a benc/json-expected
+    // conversion. It still succeeds (legacy data must keep loading), but emits
+    // a developer-facing stderr warning so the mismatch can be noticed.
+    auto simple = Simple{ .blocks = 5, .enabled = false };
+
+    testing::internal::CaptureStderr();
+    EXPECT_TRUE(set(TR_KEY_blocks, true, simple)); // bool -> int: 5 -> 1
+    auto const warning = testing::internal::GetCapturedStderr();
+    EXPECT_EQ(1, simple.blocks);
+    EXPECT_FALSE(warning.empty());
+
+    // bool -> bool is expected: value applies with no warning.
+    testing::internal::CaptureStderr();
+    EXPECT_TRUE(set(TR_KEY_dht_enabled, true, simple));
+    EXPECT_TRUE(testing::internal::GetCapturedStderr().empty());
+    EXPECT_TRUE(simple.enabled);
+
+    // ...and likewise at the scalar `to_value` boundary.
+    testing::internal::CaptureStderr();
+    auto const as_int = to_value<int>(to_variant(true));
+    EXPECT_FALSE(testing::internal::GetCapturedStderr().empty());
+    ASSERT_TRUE(as_int.has_value());
+    EXPECT_EQ(1, *as_int);
+}
+
+TEST_F(SerializerTest, bencRoundTripPreservesBoolAndDouble)
+{
+    // benc has no boolean or floating-point token: bools serialize as i1e/i0e
+    // and doubles as strings, then recover on read (integer->bool,
+    // string->double). These are *expected* coercions, so the round trip must
+    // preserve the values and emit no warning.
+    auto const src_simple = Simple{ .blocks = 5, .enabled = true };
+    auto const src_floating = Floating{ .ratio = 2.5 };
+
+    auto const benc = tr_variant_serde::benc().to_string(
+        tr_variant{ save(src_simple, Simple::Fields, src_floating, Floating::Fields) });
+
+    auto serde = tr_variant_serde::benc();
+    auto const parsed = serde.parse(benc);
+    ASSERT_TRUE(parsed.has_value());
+
+    auto dst_simple = Simple{};
+    auto dst_floating = Floating{};
+    testing::internal::CaptureStderr();
+    load(*parsed, dst_simple, Simple::Fields, dst_floating, Floating::Fields);
+    EXPECT_TRUE(testing::internal::GetCapturedStderr().empty());
+
+    EXPECT_EQ(5, dst_simple.blocks);
+    EXPECT_TRUE(dst_simple.enabled); // recovered from i1e (integer) -> bool
+    EXPECT_DOUBLE_EQ(2.5, dst_floating.ratio); // recovered from string -> double
+}
+
 TEST_F(SerializerTest, serializableToVariantByKey)
 {
     auto const endpoint = Endpoint{ .address = "localhost", .port = tr_port::from_host(TrDefaultPeerPort) };
@@ -586,6 +640,122 @@ TEST_F(SerializerTest, serializableConstexprGetSet)
     }();
 
     static_assert(CompileTimeSet);
+}
+
+// --- Group A: multiple coupled (object, Fields) pairs ---
+
+static_assert(tr::serializer::has_unique_keys<Endpoint, Simple>());
+static_assert(!tr::serializer::has_unique_keys<Endpoint, Endpoint>());
+
+TEST_F(SerializerTest, multiPairSaveMergesIntoOneMap)
+{
+    auto const endpoint = Endpoint{ .address = "localhost", .port = tr_port::from_host(TrDefaultPeerPort) };
+    auto const simple = Simple{ .blocks = 7, .enabled = true };
+
+    auto const map = save(endpoint, Endpoint::Fields, simple, Simple::Fields);
+
+    EXPECT_NE(std::end(map), map.find(TR_KEY_address));
+    EXPECT_NE(std::end(map), map.find(TR_KEY_port));
+    EXPECT_NE(std::end(map), map.find(TR_KEY_blocks));
+    EXPECT_NE(std::end(map), map.find(TR_KEY_dht_enabled));
+}
+
+TEST_F(SerializerTest, multiPairLoadRoundTrip)
+{
+    auto const src_endpoint = Endpoint{ .address = "example.com", .port = tr_port::from_host(1234) };
+    auto const src_simple = Simple{ .blocks = 9, .enabled = true };
+    auto const map = save(src_endpoint, Endpoint::Fields, src_simple, Simple::Fields);
+
+    auto dst_endpoint = Endpoint{};
+    auto dst_simple = Simple{};
+    auto const changed = load(map, dst_endpoint, Endpoint::Fields, dst_simple, Simple::Fields);
+
+    EXPECT_EQ(src_endpoint, dst_endpoint);
+    EXPECT_EQ(src_simple.blocks, dst_simple.blocks);
+    EXPECT_EQ(src_simple.enabled, dst_simple.enabled);
+
+    // changed_keys aggregates across both pairs and is sorted
+    EXPECT_TRUE(std::ranges::is_sorted(changed));
+    EXPECT_TRUE(std::ranges::binary_search(changed, TR_KEY_address));
+    EXPECT_TRUE(std::ranges::binary_search(changed, TR_KEY_blocks));
+}
+
+TEST_F(SerializerTest, multiPairLoadIgnoresNonMap)
+{
+    auto endpoint = Endpoint{ .address = "keep", .port = tr_port::from_host(42) };
+    auto simple = Simple{ .blocks = 3, .enabled = true };
+    auto const original_endpoint = endpoint;
+
+    auto const changed = load(tr_variant{ 7 }, endpoint, Endpoint::Fields, simple, Simple::Fields);
+
+    EXPECT_TRUE(changed.empty());
+    EXPECT_EQ(original_endpoint, endpoint);
+    EXPECT_EQ(3, simple.blocks);
+}
+
+// --- Group B: one key across multiple Serializables ---
+
+TEST_F(SerializerTest, multiObjectGetAndToVariantByKey)
+{
+    auto const endpoint = Endpoint{ .address = "localhost", .port = tr_port::from_host(TrDefaultPeerPort) };
+    auto const simple = Simple{ .blocks = 11, .enabled = true };
+
+    // key owned by the first object
+    EXPECT_EQ("localhost", get<std::string>(TR_KEY_address, endpoint, simple).value_or(""));
+
+    // key owned by the second object
+    EXPECT_EQ(11, get<int>(TR_KEY_blocks, endpoint, simple).value_or(0));
+
+    // to_variant finds the owner regardless of argument position
+    EXPECT_TRUE(to_variant(TR_KEY_dht_enabled, endpoint, simple));
+
+    // key owned by neither
+    EXPECT_FALSE(to_variant(TR_KEY_comment, endpoint, simple));
+    EXPECT_FALSE(get<int>(TR_KEY_comment, endpoint, simple).has_value());
+}
+
+TEST_F(SerializerTest, multiObjectSetRoutesToOwner)
+{
+    auto endpoint = Endpoint{ .address = "localhost", .port = tr_port::from_host(TrDefaultPeerPort) };
+    auto simple = Simple{ .blocks = 1, .enabled = false };
+
+    // routes to the second object, leaving the first untouched
+    EXPECT_TRUE(set(TR_KEY_blocks, 5, endpoint, simple));
+    EXPECT_EQ(5, simple.blocks);
+    EXPECT_EQ("localhost", endpoint.address);
+
+    // routes to the first object
+    EXPECT_TRUE(set(TR_KEY_address, std::string{ "example.com" }, endpoint, simple));
+    EXPECT_EQ("example.com", endpoint.address);
+
+    // owned by neither
+    EXPECT_FALSE(set(TR_KEY_comment, 99, endpoint, simple));
+
+    // via variant, routes to the owning object
+    EXPECT_TRUE(set_from_variant(TR_KEY_dht_enabled, tr_variant{ true }, endpoint, simple));
+    EXPECT_TRUE(simple.enabled);
+    EXPECT_FALSE(set_from_variant(TR_KEY_comment, tr_variant{ true }, endpoint, simple));
+}
+
+TEST_F(SerializerTest, hasKeyAcrossMultipleObjects)
+{
+    auto const endpoint = Endpoint{ .address = "localhost", .port = tr_port::from_host(TrDefaultPeerPort) };
+    auto const simple = Simple{ .blocks = 1, .enabled = false };
+
+    using tr::serializer::has_key;
+
+    // single object: key present / absent
+    EXPECT_TRUE(has_key(TR_KEY_address, endpoint));
+    EXPECT_FALSE(has_key(TR_KEY_blocks, endpoint));
+
+    // key owned by the first object
+    EXPECT_TRUE(has_key(TR_KEY_port, endpoint, simple));
+
+    // key owned by the second object
+    EXPECT_TRUE(has_key(TR_KEY_blocks, endpoint, simple));
+
+    // owned by neither
+    EXPECT_FALSE(has_key(TR_KEY_comment, endpoint, simple));
 }
 
 } // namespace

@@ -4,18 +4,14 @@
 // License text can be found in the licenses/ folder.
 
 #include <array>
-#include <memory>
 #include <string_view>
-
-#include <QDir>
+#include <vector>
 
 #include <fmt/format.h>
 
-#include <libtransmission/transmission.h>
-
-#include <libtransmission/tr-getopt.h>
-#include <libtransmission/utils.h>
-#include <libtransmission/version.h>
+#include "libtransmission/tr-getopt.h"
+#include "libtransmission/utils.h" // tr_main
+#include "libtransmission/version.h"
 
 #include <libtransmission-app/app.h>
 
@@ -23,7 +19,6 @@
 #include "InteropHelper.h"
 #include "Prefs.h"
 #include "RpcClient.h"
-#include "VariantHelpers.h"
 
 using namespace std::string_view_literals;
 
@@ -151,7 +146,6 @@ bool tryDelegate(QStringList const& filenames)
 
     return delegated;
 }
-
 } // namespace
 
 int tr_main(int argc, char** argv)
@@ -245,7 +239,6 @@ int tr_main(int argc, char** argv)
         config_dir = QString::fromStdString(tr::platform::get_default_config_dir("transmission"));
     }
 
-    // initialize the prefs
     auto prefs = Prefs{ config_dir };
 
     if (!host.isNull()) {
@@ -289,8 +282,7 @@ int tr_main(int argc, char** argv)
     auto const ret = QApplication::exec();
 
     // save prefs before exiting
-    auto const filename = QDir{ config_dir }.absoluteFilePath(QStringLiteral("settings.json"));
-    prefs.save(filename);
+    prefs.save(config_dir.toStdString(), app.local_session_settings());
 
     return ret;
 }
