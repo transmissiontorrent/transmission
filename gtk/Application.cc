@@ -27,6 +27,7 @@
 #include <libtransmission/transmission.h>
 #include <libtransmission/api-compat.h>
 #include <libtransmission/log.h>
+#include <libtransmission/macros.h>
 #include <libtransmission/quark.h>
 #include <libtransmission/rpcimpl.h>
 #include <libtransmission/utils.h>
@@ -1434,7 +1435,7 @@ void Application::Impl::actions_handler(Glib::ustring const& action_name)
         gtr_window_on_close(*dialog, [dialog]() mutable { dialog.reset(); });
         dialog->show();
     } else if (action_name == "donate") {
-        gtr_open_uri("https://transmissiontorrent.com/donate/");
+        gtr_open_uri(TR_PROJ_URL_DONATE);
     } else if (action_name == "pause-all-torrents") {
         pause_all_torrents();
     } else if (action_name == "start-all-torrents") {

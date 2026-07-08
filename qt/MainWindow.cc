@@ -19,8 +19,9 @@
 #include <QProxyStyle>
 #include <QtGui>
 
-#include <libtransmission/transmission.h>
-#include <libtransmission/version.h>
+#include "libtransmission/macros.h"
+#include "libtransmission/transmission.h"
+#include "libtransmission/version.h"
 
 #include "AboutDialog.h"
 #include "AddData.h"
@@ -603,7 +604,7 @@ void MainWindow::openStats()
 
 void MainWindow::openDonate() const
 {
-    QDesktopServices::openUrl(QUrl{ QStringLiteral("https://transmissiontorrent.com/donate/") });
+    QDesktopServices::openUrl(QUrl{ QStringLiteral(TR_PROJ_URL_DONATE) });
 }
 
 void MainWindow::openAbout()
