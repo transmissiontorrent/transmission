@@ -876,6 +876,5 @@ void gtr_label_set_text(Gtk::Label& lb, Glib::ustring const& text)
 
 std::string gtr_get_full_resource_path(std::string const& rel_path)
 {
-    static auto const BasePath = "/com/transmissionbt/transmission/"s;
-    return BasePath + rel_path;
+    return fmt::format("/{:s}/{:s}/{:s}/{:s}", TR_PROJ_DOMAIN_TLD, TR_PROJ_DOMAIN_SLD, TR_PROJ_APPNAME, rel_path);
 }
