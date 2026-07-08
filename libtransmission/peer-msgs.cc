@@ -388,7 +388,6 @@ public:
 
     void cancel_block_request(tr_block_index_t block)
     {
-        cancels_sent_to_peer.add(tr_time(), 1);
         active_requests.unset(block);
         publish(tr_peer_event::SentCancel(tor_.block_info(), block));
         protocol_send_cancel(peer_request::from_block(tor_, block));
@@ -589,7 +588,7 @@ private:
 
     void maybe_send_metadata_requests(time_t now) const;
     [[nodiscard]] size_t add_next_metadata_piece();
-    [[nodiscard]] size_t add_next_block(time_t now_sec, uint64_t now_msec);
+    [[nodiscard]] size_t add_next_block(uint64_t now_msec);
 
     [[nodiscard]] size_t fill_output_buffer_impl(time_t now_sec, uint64_t now_msec);
     void fill_output_buffer(time_t now_sec, uint64_t now_msec)
@@ -1457,7 +1456,6 @@ ReadResult tr_peerMsgsImpl::process_peer_message(uint8_t id, MessageReader& payl
             r.index = payload.to_uint32();
             r.offset = payload.to_uint32();
             r.length = payload.to_uint32();
-            cancels_sent_to_client.add(tr_time(), 1);
             logtrace(this, fmt::format("got a Cancel {:d}:{:d}->{:d}", r.index, r.offset, r.length));
 
             auto& requests = peer_requested_;
@@ -1883,7 +1881,7 @@ void tr_peerMsgsImpl::check_request_timeout(time_t const now)
     // fulfill piece requests
     for (;;) {
         auto const old_len = n_bytes_written;
-        n_bytes_written += add_next_block(now_sec, now_msec);
+        n_bytes_written += add_next_block(now_msec);
         if (old_len == n_bytes_written) {
             break;
         }
@@ -1922,7 +1920,7 @@ void tr_peerMsgsImpl::check_request_timeout(time_t const now)
     return protocol_send_message(BtPeerMsgs::Ltep, ut_metadata_id_, tr_variant_serde::benc().to_string(std::move(tmp)), *data);
 }
 
-[[nodiscard]] size_t tr_peerMsgsImpl::add_next_block(time_t now_sec, uint64_t now_msec)
+[[nodiscard]] size_t tr_peerMsgsImpl::add_next_block(uint64_t const now_msec)
 {
     if (std::empty(peer_requested_) || io_->get_write_buffer_space(now_msec) == 0U) {
         return {};
@@ -1951,7 +1949,6 @@ void tr_peerMsgsImpl::check_request_timeout(time_t const now)
     }
 
     if (ok) {
-        blocks_sent_to_peer.add(now_sec, 1);
         auto const piece_data = std::string_view{ reinterpret_cast<char const*>(std::data(buf)), req.length };
         return protocol_send_message(BtPeerMsgs::Piece, req.index, req.offset, piece_data);
     }

@@ -389,17 +389,6 @@ struct tr_peer_stat {
 
     float progress = {};
 
-    // THESE NEXT FOUR FIELDS ARE EXPERIMENTAL.
-    // Don't rely on them; they'll probably go away
-    // how many blocks we've sent to this peer in the last 120 seconds
-    uint32_t blocks_to_peer = {};
-    // how many blocks this client's sent to us in the last 120 seconds
-    uint32_t blocks_to_client = {};
-    // how many requests to this peer that we've cancelled in the last 120 seconds
-    uint32_t cancels_to_peer = {};
-    // how many requests this peer made of us, then cancelled, in the last 120 seconds
-    uint32_t cancels_to_client = {};
-
     uint16_t port = {};
     uint8_t from = {};
 

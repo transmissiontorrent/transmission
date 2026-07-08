@@ -241,10 +241,6 @@ struct tr_peer {
 
     tr_swarm* const swarm;
 
-    tr_recentHistory<uint16_t> blocks_sent_to_peer;
-
-    tr_recentHistory<uint16_t> cancels_sent_to_client;
-
     tr_bitfield active_requests;
 
     /// The following fields are only to be used in peer-mgr.cc.
@@ -255,12 +251,6 @@ struct tr_peer {
 
     // how many bad pieces this piece has contributed to
     uint8_t strikes = 0;
-
-    // how many blocks this peer has sent us
-    tr_recentHistory<uint16_t> blocks_sent_to_client;
-
-    // how many requests we made to this peer and then canceled
-    tr_recentHistory<uint16_t> cancels_sent_to_peer;
 
     tr_recentHistory<size_t> bytes_sent_to_client;
     tr_recentHistory<size_t> bytes_sent_to_peer;
