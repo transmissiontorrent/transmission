@@ -60,7 +60,7 @@ struct evbuffer;
  * http://www.webappsec.org/lists/websecurity/archive/2008-04/msg00037.html */
 #define REQUIRE_SESSION_ID
 
-#define MY_REALM "Transmission"
+#define MY_REALM TR_PROJ_APPNAME_CAPITALIZED
 
 using namespace std::literals;
 

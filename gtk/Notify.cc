@@ -221,11 +221,11 @@ void gtr_notify_torrent_completed(Glib::RefPtr<Session> const& core, tr_torrent_
         "Notify",
         [n](auto& res) { notify_callback(res, n); },
         make_variant_tuple(
-            Glib::ustring("Transmission"),
-            0U,
-            Glib::ustring("transmission"),
-            Glib::ustring(_("Torrent Complete")),
-            Glib::ustring{ tr_torrentName(tor) },
+            Glib::ustring(TR_PROJ_APPNAME_CAPITALIZED), // app_name
+            0U, // replaces_id
+            Glib::ustring("transmission"), // app_icon
+            Glib::ustring(_("Torrent Complete")), // summary
+            Glib::ustring{ tr_torrentName(tor) }, // body
             actions,
             hints,
             -1));
@@ -253,11 +253,11 @@ void gtr_notify_torrent_added(Glib::RefPtr<Session> const& core, tr_torrent_id_t
         "Notify",
         [n](auto& res) { notify_callback(res, n); },
         make_variant_tuple(
-            Glib::ustring("Transmission"),
-            0U,
-            Glib::ustring("transmission"),
-            Glib::ustring(_("Torrent Added")),
-            Glib::ustring{ tr_torrentName(tor) },
+            Glib::ustring(TR_PROJ_APPNAME_CAPITALIZED), // app_name
+            0U, // replaces
+            Glib::ustring(TR_PROJ_APPNAME), // icon_name
+            Glib::ustring(_("Torrent Added")), //  summary
+            Glib::ustring{ tr_torrentName(tor) }, // body
             actions,
             std::map<Glib::ustring, Glib::VariantBase>(),
             -1));

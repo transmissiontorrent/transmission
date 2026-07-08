@@ -11,6 +11,7 @@
 #include <libtransmission-app/app.h>
 
 #include <libtransmission/transmission.h>
+#include <libtransmission/macros.h>
 #include <libtransmission/utils.h>
 #include <libtransmission/version.h>
 
@@ -61,7 +62,7 @@ int main(int argc, char** argv)
     /* init glib/gtk */
     Gio::init();
     Glib::init();
-    Glib::set_application_name(_("Transmission"));
+    Glib::set_application_name(TR_PROJ_APPNAME_CAPITALIZED);
 
     /* Workaround "..." */
     Gio::File::create_for_path(".");

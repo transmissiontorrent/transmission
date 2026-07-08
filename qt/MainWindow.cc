@@ -683,7 +683,7 @@ void MainWindow::onRefreshTimer()
 
 void MainWindow::refreshTitle()
 {
-    QString title(QStringLiteral("Transmission"));
+    QString title(QStringLiteral(TR_PROJ_APPNAME_CAPITALIZED));
 
     if (auto const url = QUrl{ session_.getRemoteUrl() }; !url.isEmpty()) {
         //: Second (optional) part of main window title "Transmission - host:port" (added when connected to remote session)

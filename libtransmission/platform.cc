@@ -44,6 +44,7 @@
 #include "libtransmission/file-utils.h"
 #include "libtransmission/file.h"
 #include "libtransmission/log.h"
+#include "libtransmission/macros.h"
 #include "libtransmission/platform.h"
 #include "libtransmission/session.h"
 #include "libtransmission/string-utils.h"
@@ -125,7 +126,7 @@ namespace tr::platform
 std::string get_default_config_dir(std::string_view appname)
 {
     if (std::empty(appname)) {
-        appname = "Transmission"sv;
+        appname = TR_PROJ_APPNAME_CAPITALIZED;
     }
 
     if (auto dir = tr_env_get_string("TRANSMISSION_HOME"sv); !std::empty(dir)) {

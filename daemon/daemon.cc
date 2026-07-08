@@ -35,6 +35,7 @@
 #include <libtransmission/file-utils.h>
 #include <libtransmission/file.h>
 #include <libtransmission/log.h>
+#include <libtransmission/macros.h>
 #include <libtransmission/quark.h>
 #include <libtransmission/string-utils.h>
 #include <libtransmission/timer-ev.h>
@@ -72,14 +73,15 @@ using tr::Watchdir;
 namespace
 {
 char constexpr MyName[] = "transmission-daemon";
-char constexpr Usage[] = "Transmission " LONG_VERSION_STRING "  " TR_PROJ_URL_HOMEPAGE
-                         "\n"
-                         "A fast and easy BitTorrent client\n"
-                         "\n"
-                         "transmission-daemon is a headless Transmission session that can be\n"
-                         "controlled via transmission-qt, transmission-remote, or its web interface.\n"
-                         "\n"
-                         "Usage: transmission-daemon [options]";
+char constexpr Usage[] = TR_PROJ_APPNAME_CAPITALIZED
+    " " LONG_VERSION_STRING "  " TR_PROJ_URL_HOMEPAGE
+    "\n"
+    "A fast and easy BitTorrent client\n"
+    "\n"
+    "transmission-daemon is a headless Transmission session that can be\n"
+    "controlled via transmission-qt, transmission-remote, or its web interface.\n"
+    "\n"
+    "Usage: transmission-daemon [options]";
 
 using Arg = tr_option::Arg;
 static_assert(TrDefaultRpcWhitelist == "127.0.0.1,::1", "update 'allowed' desc");

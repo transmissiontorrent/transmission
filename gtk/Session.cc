@@ -963,7 +963,7 @@ auto const SessionManagerObjectPath = "/org/gnome/SessionManager"sv; // TODO(C++
 bool gtr_inhibit_hibernation(guint32& cookie)
 {
     bool success = false;
-    char const* application = "Transmission BitTorrent Client";
+    char const* application = TR_PROJ_APPNAME_RDNS;
     char const* reason = "BitTorrent Activity";
     int const toplevel_xid = 0;
     int const flags = 4; /* Inhibit suspending the session or computer */

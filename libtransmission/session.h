@@ -9,8 +9,6 @@
 #error only libtransmission should #include this header.
 #endif
 
-#define TR_NAME "Transmission"
-
 #include <array>
 #include <atomic>
 #include <chrono>

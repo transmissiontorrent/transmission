@@ -29,6 +29,7 @@
 
 #include <libtransmission/api-compat.h>
 #include <libtransmission/constants.h> // TrRpcSessionIdHeader, TrRpcVersionHeader
+#include <libtransmission/macros.h>
 #include <libtransmission/net.h> // sockaddr_storage, ntohs()
 #include <libtransmission/quark.h>
 #include <libtransmission/rpcimpl.h> // TrRpcVersionSemver
@@ -293,7 +294,7 @@ TEST_F(AppRpcClientTest, firstPostUsesDefaultStyleTr4)
 
     // headers look right
     EXPECT_NE(std::string::npos, server.last_content_type().find("application/json"));
-    EXPECT_EQ(0U, server.last_user_agent().rfind("Transmission/", 0)); // starts with
+    EXPECT_EQ(0U, server.last_user_agent().rfind(TR_PROJ_APPNAME_CAPITALIZED "/", 0)); // starts with
 }
 
 TEST_F(AppRpcClientTest, firstPostUsesDefaultStyleTr5)

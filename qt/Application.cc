@@ -30,6 +30,7 @@
 
 #include <libtransmission/transmission.h>
 
+#include <libtransmission/macros.h>
 #include <libtransmission/values.h>
 
 #include "AccessibleSqueezeLabel.h"
@@ -479,9 +480,9 @@ bool Application::notifyApp(QString const& title, QString const& body, QStringLi
             FDONotificationsInterfaceName,
             QStringLiteral("Notify"));
         QVariantList args;
-        args.append(QStringLiteral("Transmission")); // app_name
+        args.append(QStringLiteral(TR_PROJ_APPNAME_CAPITALIZED)); // app_name
         args.append(0U); // replaces_id
-        args.append(QStringLiteral("transmission")); // icon
+        args.append(QStringLiteral(TR_PROJ_APPNAME)); // icon
         args.append(title); // summary
         args.append(body); // body
         args.append(actions);
