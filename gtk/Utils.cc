@@ -11,6 +11,7 @@
 
 #include <libtransmission/transmission.h> /* TR_RATIO_NA, TR_RATIO_INF */
 #include <libtransmission/error.h>
+#include <libtransmission/macros.h>
 #include <libtransmission/string-utils.h>
 #include <libtransmission/torrent-metainfo.h>
 #include <libtransmission/tr-strbuf.h>
@@ -568,7 +569,7 @@ void gtr_object_notify_emit(Glib::ObjectBase& object)
 
 std::string gtr_get_help_uri(std::string_view const relative_path)
 {
-    return fmt::format("https://transmissiontorrent.com/help/gtk/{}.{}x/{}", MAJOR_VERSION, MINOR_VERSION / 10, relative_path);
+    return fmt::format("{:s}/gtk/{}.{}x/{}", TR_PROJ_URL_HELP, MAJOR_VERSION, MINOR_VERSION / 10, relative_path);
 }
 
 void gtr_open_file(std::string_view const base, std::string_view const relative_path)
