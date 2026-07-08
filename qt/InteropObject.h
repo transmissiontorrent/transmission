@@ -14,7 +14,7 @@ class InteropObject : public QObject
     Q_OBJECT
 
 #ifdef ENABLE_DBUS_INTEROP
-    Q_CLASSINFO("D-Bus Interface", TR_PROJ_APPNAME_RDNS)
+    Q_CLASSINFO("D-Bus Interface", TR_PROJ_DBUS_INTERFACE)
 #endif
 
 #ifdef ENABLE_COM_INTEROP
