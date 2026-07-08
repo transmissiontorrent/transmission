@@ -58,8 +58,8 @@ namespace
 char constexpr MyName[] = "transmission-remote";
 char constexpr Usage[] = "transmission-remote " LONG_VERSION_STRING
                          "\n"
-                         "A fast and easy BitTorrent client\n"
-                         "https://transmissiontorrent.com/\n"
+                         "A fast and easy BitTorrent client\n" TR_PROJ_URL_HOMEPAGE
+                         "\n"
                          "\n"
                          "Usage: transmission-remote [host] [options]\n"
                          "       transmission-remote [port] [options]\n"

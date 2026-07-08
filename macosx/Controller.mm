@@ -128,7 +128,7 @@ static NSTimeInterval const kUpdateUISeconds = 1.0;
 
 static NSString* const kTransferPlist = @"Transfers.plist";
 
-static NSString* const kWebsiteURL = @"https://transmissiontorrent.com/";
+static NSString* const kWebsiteURL = @TR_PROJ_URL_HOMEPAGE;
 static NSString* const kForumURL = @"https://forum.transmissiontorrent.com";
 static NSString* const kGithubURL = @"https://github.com/torrenttransmission/transmission";
 static NSString* const kDonateURL = @TR_PROJ_URL_DONATE;

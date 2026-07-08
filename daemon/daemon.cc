@@ -72,8 +72,8 @@ using tr::Watchdir;
 namespace
 {
 char constexpr MyName[] = "transmission-daemon";
-char constexpr Usage[] = "Transmission " LONG_VERSION_STRING
-                         "  https://transmissiontorrent.com/\n"
+char constexpr Usage[] = "Transmission " LONG_VERSION_STRING "  " TR_PROJ_URL_HOMEPAGE
+                         "\n"
                          "A fast and easy BitTorrent client\n"
                          "\n"
                          "transmission-daemon is a headless Transmission session that can be\n"

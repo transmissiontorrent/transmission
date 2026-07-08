@@ -1301,7 +1301,7 @@ bool Application::Impl::update_model_loop()
 
 void Application::Impl::show_about_dialog()
 {
-    auto const uri = Glib::ustring("https://transmissiontorrent.com/");
+    auto const uri = Glib::ustring(TR_PROJ_URL_HOMEPAGE);
     auto const authors = std::vector<Glib::ustring>({
         "Charles Kerr (Backend; GTK+)",
         "Mitchell Livingston (Backend; macOS)",
