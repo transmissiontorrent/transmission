@@ -914,8 +914,10 @@ int tr_daemon::start([[maybe_unused]] bool foreground)
     }
 
 CLEANUP:
-    auto const msg = fmt::format("STATUS=Closing {:s} session...\n", TR_PROJ_APPNAME);
+    auto msg = fmt::format("STATUS=Closing {:s} session...\n", TR_PROJ_APPNAME);
     sd_notify(0, msg.c_str());
+
+    msg = fmt::format("Closing {:s} session...", TR_PROJ_APPNAME);
     printf("%s", msg.c_str());
 
     watchdir.reset();
