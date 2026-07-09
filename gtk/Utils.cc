@@ -814,7 +814,10 @@ void gtr_unrecognized_url_dialog(Gtk::Widget& parent, Glib::ustring const& url)
         TR_GTK_BUTTONS_TYPE(CLOSE),
         true /*modal*/);
 
-    gstr += fmt::format(fmt::runtime(_("Transmission doesn't know how to use '{url}'")), fmt::arg("url", url));
+    gstr += fmt::format(
+        fmt::runtime(_("{:s} doesn't know how to use '{url}'")),
+        fmt::arg("appname", TR_PROJ_APPNAME_CAPITALIZED),
+        fmt::arg("url", url));
 
     if (tr_magnet_metainfo{}.parseMagnet(url.raw())) {
         gstr += "\n \n";

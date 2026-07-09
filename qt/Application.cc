@@ -48,7 +48,7 @@ namespace
 {
 
 // NOLINTBEGIN(cert-err58-cpp)
-auto const ConfigName = QStringLiteral("transmission");
+auto const ConfigName = QStringLiteral(TR_PROJ_APPNAME);
 #ifdef QT_DBUS_LIB
 auto const FDONotificationsServiceName = QStringLiteral("org.freedesktop.Notifications");
 auto const FDONotificationsPath = QStringLiteral("/org/freedesktop/Notifications");
@@ -101,12 +101,12 @@ void initUnits()
 [[nodiscard]] auto makeWindowIcon()
 {
     // first, try to load it from the system theme
-    if (auto icon = QIcon::fromTheme(QStringLiteral("transmission")); !icon.isNull()) {
+    if (auto icon = QIcon::fromTheme(QStringLiteral(TR_PROJ_APPNAME)); !icon.isNull()) {
         return icon;
     }
 
     // if that fails, use our own as the fallback
-    return QIcon{ QStringLiteral(":/icons/transmission.svg") };
+    return QIcon{ QStringLiteral(":/icons/" TR_PROJ_APPNAME ".svg") };
 }
 
 #if QT_CONFIG(accessibility)

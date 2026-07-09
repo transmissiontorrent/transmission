@@ -225,7 +225,7 @@ void gtr_notify_torrent_completed(Glib::RefPtr<Session> const& core, tr_torrent_
         make_variant_tuple(
             Glib::ustring(TR_PROJ_APPNAME_CAPITALIZED), // app_name
             0U, // replaces_id
-            Glib::ustring("transmission"), // app_icon
+            Glib::ustring(TR_PROJ_APPNAME), // app_icon
             Glib::ustring(_("Torrent Complete")), // summary
             Glib::ustring{ tr_torrentName(tor) }, // body
             actions,

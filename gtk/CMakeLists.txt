@@ -31,7 +31,7 @@ target_sources(${TR_NAME}-gtk
         IconCache.h
         ListModelAdapter.cc
         ListModelAdapter.h
-        main.cc
+        Macros.h
         MainWindow.cc
         MainWindow.h
         MakeDialog.cc
@@ -46,6 +46,7 @@ target_sources(${TR_NAME}-gtk
         PathButton.h
         Percents.cc
         Percents.h
+        main.cc
         Prefs.cc
         Prefs.h
         PrefsDialog.cc

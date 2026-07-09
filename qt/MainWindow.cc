@@ -196,7 +196,7 @@ MainWindow::MainWindow(Session& session, Prefs& prefs, TorrentModel& model, bool
     menu->addSeparator();
     menu->addAction(ui_.action_Quit);
     tray_icon_.setContextMenu(menu);
-    tray_icon_.setIcon(QIcon::fromTheme(QStringLiteral("transmission-tray-icon"), QApplication::windowIcon()));
+    tray_icon_.setIcon(QIcon::fromTheme(QStringLiteral(TR_PROJ_APPNAME "-tray-icon"), QApplication::windowIcon()));
 
     connect(&prefs_, qOverload<tr_quark>(&Prefs::changed), this, &MainWindow::refreshPref);
     connect(ui_.action_ShowMainWindow, &QAction::triggered, this, &MainWindow::toggleWindows);
@@ -1412,7 +1412,7 @@ void MainWindow::onNetworkResponse(QNetworkReply::NetworkError code, QString con
     updateNetworkLabel();
 
     // Refresh our model if we've just gotten a clean connection to the session.
-    // That way we can rebuild after a restart of transmission-daemon
+    // That way we can rebuild after restarting the daemon
     if (had_error && !have_error) {
         model_.clear();
     }

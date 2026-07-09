@@ -67,21 +67,24 @@ struct tr_torrent;
 
 #endif
 
+#define MY_NAME TR_PROJ_APPNAME "-daemon"
+
 using namespace std::literals;
 using tr::Watchdir;
 
 namespace
 {
-char constexpr MyName[] = "transmission-daemon";
-char constexpr Usage[] = TR_PROJ_APPNAME_CAPITALIZED
-    " " LONG_VERSION_STRING "  " TR_PROJ_URL_HOMEPAGE
-    "\n"
-    "A fast and easy BitTorrent client\n"
-    "\n"
-    "transmission-daemon is a headless Transmission session that can be\n"
-    "controlled via transmission-qt, transmission-remote, or its web interface.\n"
-    "\n"
-    "Usage: transmission-daemon [options]";
+char constexpr MyName[] = MY_NAME;
+
+char constexpr Usage[] = TR_PROJ_APPNAME_CAPITALIZED " " LONG_VERSION_STRING "  " TR_PROJ_URL_HOMEPAGE
+                                                     "\n"
+                                                     "A fast and easy BitTorrent client\n"
+                                                     "\n" MY_NAME
+                                                     " is a headless Transmission session that can be\n"
+                                                     "controlled via " TR_PROJ_APPNAME "-qt, " TR_PROJ_APPNAME
+                                                     "-remote, or its web interface.\n"
+                                                     "\n"
+                                                     "Usage: " MY_NAME " [options]";
 
 using Arg = tr_option::Arg;
 static_assert(TrDefaultRpcWhitelist == "127.0.0.1,::1", "update 'allowed' desc");
@@ -911,8 +914,9 @@ int tr_daemon::start([[maybe_unused]] bool foreground)
     }
 
 CLEANUP:
-    sd_notify(0, "STATUS=Closing transmission session...\n");
-    printf("Closing transmission session...");
+    auto const msg = fmt::format("STATUS=Closing {:s} session...\n", TR_PROJ_APPNAME);
+    sd_notify(0, msg.c_str());
+    printf("%s", msg.c_str());
 
     watchdir.reset();
 

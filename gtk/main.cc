@@ -4,6 +4,7 @@
 
 #include "Application.h"
 #include "GtkCompat.h"
+#include "Macros.h"
 #include "Notify.h"
 #include "Prefs.h"
 #include "Utils.h"
@@ -35,9 +36,9 @@
 
 namespace
 {
-auto const* const AppConfigDirName = "transmission";
-auto const* const AppTranslationDomainName = "transmission-gtk";
-auto const* const AppName = "transmission-gtk";
+auto const* const AppConfigDirName = TR_PROJ_APPNAME;
+auto const* const AppTranslationDomainName = MY_NAME;
+auto const* const AppName = MY_NAME;
 
 Glib::OptionEntry create_option_entry(Glib::ustring const& long_name, gchar short_name, Glib::ustring const& description)
 {
