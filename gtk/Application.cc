@@ -1310,7 +1310,7 @@ void Application::Impl::show_about_dialog()
     auto d = std::make_shared<Gtk::AboutDialog>();
     d->set_authors(authors);
     d->set_comments(_("A fast and easy BitTorrent client"));
-    d->set_copyright(_("Copyright © The Transmission Project"));
+    d->set_copyright(_("Copyright © The " TR_PROJ_APPNAME_CAPITALIZED " Project"));
     d->set_logo_icon_name(std::string{ AppIconName });
     d->set_name(Glib::get_application_name());
     /* Translators: translate "translator-credits" as your name

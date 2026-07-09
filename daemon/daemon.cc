@@ -79,8 +79,8 @@ char constexpr MyName[] = MY_NAME;
 char constexpr Usage[] = TR_PROJ_APPNAME_CAPITALIZED " " LONG_VERSION_STRING "  " TR_PROJ_URL_HOMEPAGE
                                                      "\n"
                                                      "A fast and easy BitTorrent client\n"
-                                                     "\n" MY_NAME
-                                                     " is a headless Transmission session that can be\n"
+                                                     "\n" MY_NAME " is a headless " TR_PROJ_APPNAME_CAPITALIZED
+                                                     " session that can be\n"
                                                      "controlled via " TR_PROJ_APPNAME "-qt, " TR_PROJ_APPNAME
                                                      "-remote, or its web interface.\n"
                                                      "\n"
