@@ -46,8 +46,5 @@ echo "DISTRO_VERSION=$DISTRO_VERSION" >> "$GITHUB_ENV"
 echo "PKG_FAMILY=$PKG_FAMILY" >> "$GITHUB_ENV"
 
 echo "os-family=$OS_FAMILY" >> "$GITHUB_OUTPUT"
-echo "distro=$DISTRO" >> "$GITHUB_OUTPUT"
-echo "distro-version=$DISTRO_VERSION" >> "$GITHUB_OUTPUT"
-echo "pkg-family=$PKG_FAMILY" >> "$GITHUB_OUTPUT"
 
 echo "Final detected platform: OS_FAMILY=$OS_FAMILY DISTRO=$DISTRO DISTRO_VERSION=$DISTRO_VERSION PKG_FAMILY=$PKG_FAMILY"
