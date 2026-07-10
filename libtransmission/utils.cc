@@ -240,10 +240,8 @@ bool parseNumberSection(std::string_view str, number_range& range)
 } // namespace
 
 /**
- * Given a string like "1-4" or "1-4,6,9,14-51", this allocates and returns an
- * array of setmeCount ints of all the values in the array.
- * For example, "5-8" will return [ 5, 6, 7, 8 ] and setmeCount will be 4.
- * If a fragment of the string can't be parsed, nullptr is returned.
+ * Returns a vector of ints for an string like like "1-4" or "1-4,6,9,14-51",
+ * For example, "5-8" returns { 5, 6, 7, 8 }.
  */
 std::vector<int> tr_num_parse_range(std::string_view str)
 {
@@ -304,8 +302,6 @@ std::string tr_strratio(double ratio, std::string_view const none, std::string_v
 
     return tr_strpercent(ratio);
 }
-
-// ---
 
 // ---
 
