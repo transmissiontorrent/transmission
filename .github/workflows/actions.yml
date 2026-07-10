@@ -51,7 +51,6 @@ jobs:
         with:
           fetch-depth: 0
           path: src
-          submodules: recursive
       - name: Check for diffs
         id: check-diffs
         run: |
