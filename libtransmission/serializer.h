@@ -139,21 +139,6 @@ template<Serializable... S>
 }
 
 /**
- * Returns `true` iff any of the given Serializables has a field with `key`.
- * Example: has_key(TR_KEY_peer_port, session_settings, rpc_server_settings)
- */
-template<Serializable... S>
-[[nodiscard]] bool has_key(tr_quark key, S const&... /*objs*/)
-{
-    auto fields_contain = [key](auto const& fields) {
-        auto found = false;
-        std::apply([key, &found](auto const&... field) { ((found = found || field.key == key), ...); }, fields);
-        return found;
-    };
-    return (fields_contain(S::Fields) || ...);
-}
-
-/**
  * Compile-time check whether any of the given Serializable types has a
  * field with `key`. Takes the Serializables as template arguments so it
  * can be used in constant expressions. Example:
@@ -170,6 +155,17 @@ template<Serializable... S>
     return (fields_contain(S::Fields) || ...);
 }
 
+/**
+ * Returns `true` iff any of the given Serializables has a field with `key`.
+ * The objects are used only to deduce their types. Example:
+ * has_key(TR_KEY_peer_port, session_settings, rpc_server_settings)
+ */
+template<Serializable... S>
+[[nodiscard]] bool has_key(tr_quark key, S const&... /*objs*/)
+{
+    return has_key<S...>(key);
+}
+
 namespace detail
 {
 
@@ -184,13 +180,8 @@ template<Serializable S>
             return false;
         }
 
-        auto map = tr_variant::Map{ 1U };
-        field.save(&src, map);
-
-        if (auto const iter = map.find(key); iter != std::end(map)) {
-            result = iter->second.clone();
-        }
-
+        using FieldType = std::remove_cvref_t<decltype(field)>;
+        result = to_variant(src.*FieldType::MemberPointer);
         return true;
     };
 
@@ -251,6 +242,23 @@ template<typename ArgTuple, std::size_t... PairIndex>
         std::size_t{ 0 } + ... + std::tuple_size_v<std::remove_cvref_t<std::tuple_element_t<(2 * PairIndex) + 1, ArgTuple>>>);
 }
 
+// Resolve the pointer-to-member for the field in `S` whose key is `Key` and
+// whose value type is `T`. Fails to compile if no such field exists.
+template<typename T, tr_quark Key, Serializable S>
+[[nodiscard]] consteval auto member_pointer_by_key()
+{
+    using Fields = std::remove_cvref_t<decltype(S::Fields)>;
+    constexpr auto Count = std::tuple_size_v<Fields>;
+    constexpr auto Index = field_index<S, T, Key>(std::make_index_sequence<Count>{});
+
+    static_assert(Index < Count, "No field with matching tr_quark and value type in Serializable::Fields");
+
+    using FieldType = std::tuple_element_t<Index, Fields>;
+    static_assert(std::is_base_of_v<typename FieldType::owner_type, S>);
+
+    return FieldType::MemberPointer;
+}
+
 } // namespace detail
 
 /**
@@ -261,15 +269,14 @@ template<typename ArgTuple, std::size_t... PairIndex>
 template<Serializable S, Serializable... Ss>
 [[nodiscard]] std::optional<tr_variant> to_variant(tr_quark const key, S const& src, Ss const&... srcs)
 {
-    auto result = detail::to_variant_one(src, key);
-    if constexpr (sizeof...(Ss) != 0U) {
-        auto try_next = [&result, key](auto const& obj) {
-            if (!result) {
-                result = detail::to_variant_one(obj, key);
-            }
-        };
-        (try_next(srcs), ...);
-    }
+    auto result = std::optional<tr_variant>{};
+    auto try_next = [&result, key](auto const& obj) {
+        if (!result) {
+            result = detail::to_variant_one(obj, key);
+        }
+    };
+    try_next(src);
+    (try_next(srcs), ...);
     return result;
 }
 
@@ -286,31 +293,13 @@ template<typename T, Serializable S, Serializable... Ss>
 template<typename T, tr_quark Key, Serializable S>
 [[nodiscard]] constexpr T get(S const& src)
 {
-    using Fields = std::remove_cvref_t<decltype(S::Fields)>;
-    constexpr auto Count = std::tuple_size_v<Fields>;
-    constexpr auto Index = detail::field_index<S, T, Key>(std::make_index_sequence<Count>{});
-
-    static_assert(Index < Count, "No field with matching tr_quark and value type in Serializable::Fields");
-
-    using FieldType = std::tuple_element_t<Index, Fields>;
-    static_assert(std::is_base_of_v<typename FieldType::owner_type, S>);
-
-    return src.*(FieldType::MemberPointer);
+    return src.*(detail::member_pointer_by_key<T, Key, S>());
 }
 
 template<typename T, tr_quark Key, Serializable S>
 constexpr bool set(S& tgt, T val)
 {
-    using Fields = std::remove_cvref_t<decltype(S::Fields)>;
-    constexpr auto Count = std::tuple_size_v<Fields>;
-    constexpr auto Index = detail::field_index<S, T, Key>(std::make_index_sequence<Count>{});
-
-    static_assert(Index < Count, "No field with matching tr_quark and value type in Serializable::Fields");
-
-    using FieldType = std::tuple_element_t<Index, Fields>;
-    static_assert(std::is_base_of_v<typename FieldType::owner_type, S>);
-
-    auto& target = tgt.*(FieldType::MemberPointer);
+    auto& target = tgt.*(detail::member_pointer_by_key<T, Key, S>());
     if (target == val) {
         return false;
     }
@@ -413,6 +402,11 @@ auto load(tr_variant const& src, Args&&... args)
  *
  * Example: load(src, session_settings, alt_speed_settings, rpc_server_settings)
  */
+// Note: these two overloads look mergeable into one templated on the source
+// type, but the concrete `tr_variant::Map const&` / `tr_variant const&` first
+// parameter is what lets them win partial ordering against the (target, Fields)
+// pair worker `load(tr_variant::Map const&, Args&&...)` above. A templated
+// `Src const&` first parameter would tie and become ambiguous.
 template<Serializable S, Serializable... Ss>
 auto load(tr_variant::Map const& src, S& tgt, Ss&... tgts)
 {

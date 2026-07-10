@@ -90,19 +90,10 @@ template<typename T>
 inline constexpr bool is_optional_v<std::optional<T>> = true;
 
 template<typename C>
-tr_variant from_push_back_range(C const& src);
+tr_variant from_range(C const& src);
 
 template<typename C>
-bool to_push_back_range(tr_variant const& src, C* ptgt);
-
-template<typename C>
-tr_variant from_insert_range(C const& src);
-
-template<typename C>
-bool to_insert_range(tr_variant const& src, C* ptgt);
-
-template<typename C>
-tr_variant from_array(C const& src);
+bool to_range(tr_variant const& src, C* ptgt);
 
 template<typename C>
 bool to_array(tr_variant const& src, C* ptgt);
@@ -205,12 +196,8 @@ template<typename T>
 {
     if constexpr (detail::HasConverter<T>) {
         return Converter<T>::to_variant(src);
-    } else if constexpr (detail::is_push_back_range_v<T>) {
-        return detail::from_push_back_range(src);
-    } else if constexpr (detail::is_insert_range_v<T>) {
-        return detail::from_insert_range(src);
-    } else if constexpr (detail::is_std_array_v<T>) {
-        return detail::from_array(src);
+    } else if constexpr (detail::is_push_back_range_v<T> || detail::is_insert_range_v<T> || detail::is_std_array_v<T>) {
+        return detail::from_range(src);
     } else if constexpr (detail::is_optional_v<T>) {
         return detail::from_optional(src);
     } else {
@@ -229,10 +216,8 @@ bool to_value(tr_variant const& src, T* const ptgt)
 
     if constexpr (detail::HasConverter<T>) {
         ok = Converter<T>::to_value(src, ptgt);
-    } else if constexpr (detail::is_push_back_range_v<T>) {
-        ok = detail::to_push_back_range(src, ptgt);
-    } else if constexpr (detail::is_insert_range_v<T>) {
-        ok = detail::to_insert_range(src, ptgt);
+    } else if constexpr (detail::is_push_back_range_v<T> || detail::is_insert_range_v<T>) {
+        ok = detail::to_range(src, ptgt);
     } else if constexpr (detail::is_std_array_v<T>) {
         ok = detail::to_array(src, ptgt);
     } else if constexpr (detail::is_optional_v<T>) {
@@ -342,14 +327,16 @@ TR_DECLARE_CONVERTER(tr_verify_added_mode)
 // ---
 
 // N.B. This second `detail` block contains the implementations of
-// to_push_back_range, from_push_back_range, etc., which were forward-
-// declared above. They must be defined after `to_variant`/`to_value`
-// because they call them for each element.
+// from_range, to_range, etc., which were forward-declared above. They must
+// be defined after `to_variant`/`to_value` because they call them for each
+// element.
 namespace detail
 {
 
+// Serialize any non-string iterable (push_back range, insert range, or
+// std::array) to a variant vector -- all three read identically.
 template<typename C>
-tr_variant from_push_back_range(C const& src)
+tr_variant from_range(C const& src)
 {
     auto ret = tr_variant::Vector{};
     ret.reserve(std::size(src));
@@ -359,8 +346,10 @@ tr_variant from_push_back_range(C const& src)
     return ret;
 }
 
+// Deserialize a variant vector into a growable container, appending via
+// `push_back` or `insert` as the container supports.
 template<typename C>
-bool to_push_back_range(tr_variant const& src, C* const ptgt)
+bool to_range(tr_variant const& src, C* const ptgt)
 {
     auto const* const vec = src.get_if<tr_variant::Vector>();
     if (vec == nullptr) {
@@ -375,55 +364,15 @@ bool to_push_back_range(tr_variant const& src, C* const ptgt)
         if (!to_value(elem, &value)) {
             return false;
         }
-        tmp.push_back(std::move(value));
-    }
-
-    *ptgt = std::move(tmp);
-    return true;
-}
-
-template<typename C>
-tr_variant from_insert_range(C const& src)
-{
-    auto ret = tr_variant::Vector{};
-    ret.reserve(std::size(src));
-    for (auto const& elem : src) {
-        ret.emplace_back(to_variant(elem));
-    }
-    return ret;
-}
-
-template<typename C>
-bool to_insert_range(tr_variant const& src, C* const ptgt)
-{
-    auto const* const vec = src.get_if<tr_variant::Vector>();
-    if (vec == nullptr) {
-        return false;
-    }
-
-    auto tmp = C{};
-
-    for (auto const& elem : *vec) {
-        typename C::value_type value{};
-        if (!to_value(elem, &value)) {
-            return false;
+        if constexpr (is_push_back_range_v<C>) {
+            tmp.push_back(std::move(value));
+        } else {
+            tmp.insert(std::move(value));
         }
-        tmp.insert(std::move(value));
     }
 
     *ptgt = std::move(tmp);
     return true;
-}
-
-template<typename C>
-tr_variant from_array(C const& src)
-{
-    auto ret = tr_variant::Vector{};
-    ret.reserve(std::size(src));
-    for (auto const& elem : src) {
-        ret.emplace_back(to_variant(elem));
-    }
-    return ret;
 }
 
 template<typename C>
