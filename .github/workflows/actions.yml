@@ -1516,8 +1516,6 @@ jobs:
         uses: ./.github/actions/install-deps
         with:
           compiler: clang # Workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=109717
-          enable-gtk: false
-          enable-qt: false
           use-sudo: true
           enable-mold: true
       - name: Install Crypto Library
