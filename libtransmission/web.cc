@@ -336,10 +336,9 @@ public:
                 return impl.mediator.bind_address_V6();
             default:
                 auto ip = impl.mediator.bind_address_V4();
-                if (ip == std::nullopt) {
+                if (!ip) {
                     ip = impl.mediator.bind_address_V6();
                 }
-
                 return ip;
             }
         }
