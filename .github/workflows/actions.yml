@@ -144,7 +144,6 @@ jobs:
         uses: ./.github/actions/install-deps
         with:
           compiler: clang
-          enable-debugging: true
           enable-qt: qt6
           use-sudo: true
       - name: Configure
@@ -726,8 +725,6 @@ jobs:
         run: cmake --build obj --config RelWithDebInfo
       - name: Test
         if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
-        env:
-          TMPDIR: /private/tmp
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
@@ -1203,8 +1200,6 @@ jobs:
         run: cmake --build obj --config RelWithDebInfo
       - name: Test
         if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
-        env:
-          TMPDIR: /private/tmp
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
@@ -1213,7 +1208,7 @@ jobs:
         run: cmake --install obj --config RelWithDebInfo --strip
       - uses: actions/upload-artifact@v6
         with:
-          name: binaries-${{ github.job }}-${{ matrix.enable-utp && 'with' || 'without' }}-utp
+          name: binaries-${{ github.job }}-without-utp
           path: pfx/**/*
 
   android:
@@ -1521,8 +1516,6 @@ jobs:
         uses: ./.github/actions/install-deps
         with:
           compiler: clang # Workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=109717
-          enable-gtk: false
-          enable-qt: false
           use-sudo: true
           enable-mold: true
       - name: Install Crypto Library
