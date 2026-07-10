@@ -99,8 +99,6 @@ jobs:
           cat /etc/os-release
       - name: Get Source
         uses: actions/checkout@v6
-        with:
-          submodules: recursive
       - name: Check for style diffs
         id: check-for-diffs
         working-directory: .
