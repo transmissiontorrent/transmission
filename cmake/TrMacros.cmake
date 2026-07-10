@@ -256,6 +256,8 @@ macro(tr_add_external_auto_library ID PACKAGENAME)
                 "-DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}"
                 "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
                 "-DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}"
+                "-DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER}"
+                "-DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}"
                 "-DCMAKE_AR=${CMAKE_AR}"
                 "-DCMAKE_NM=${CMAKE_NM}"
                 "-DCMAKE_RANLIB=${CMAKE_RANLIB}"
