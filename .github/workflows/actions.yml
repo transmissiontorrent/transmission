@@ -1213,7 +1213,7 @@ jobs:
         run: cmake --install obj --config RelWithDebInfo --strip
       - uses: actions/upload-artifact@v6
         with:
-          name: binaries-${{ github.job }}-${{ matrix.enable-utp && 'with' || 'without' }}-utp
+          name: binaries-${{ github.job }}-without-utp
           path: pfx/**/*
 
   android:
