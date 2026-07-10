@@ -83,10 +83,10 @@ template<std::floating_point T>
 
 /**
  * @brief Given a string like "1-4" or "1-4,6,9,14-51", this returns a
- *        newly-allocated array of all the integers in the set.
+ *        vector of all the integers in the set.
  * @return a vector of integers, which is empty if the string can't be parsed.
  *
- * For example, "5-8" will return [ 5, 6, 7, 8 ] and setmeCount will be 4.
+ * For example, "5-8" will return [ 5, 6, 7, 8 ].
  */
 [[nodiscard]] std::vector<int> tr_num_parse_range(std::string_view str);
 
