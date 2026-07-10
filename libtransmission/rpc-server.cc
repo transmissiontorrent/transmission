@@ -584,9 +584,6 @@ void handle_request(struct evhttp_request* req, void* arg)
 
         evhttp_add_header(output_headers, std::data(TrRpcVersionHeader), std::data(TrRpcVersionSemver));
 
-        auto const expose_val = fmt::format("{:s}, {:s}", TrRpcSessionIdHeader, TrRpcVersionHeader);
-        evhttp_add_header(output_headers, "Access-Control-Expose-Headers", expose_val.c_str());
-
         auto const body = fmt::format(
             "<p>Your request had an invalid session_id header.</p>"
             "<p>To fix this, follow these steps:"
