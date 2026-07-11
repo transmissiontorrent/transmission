@@ -41,6 +41,7 @@ include(ExternalProject)
 include(GNUInstallDirs)
 include(TrMacros)
 
+set(ARCHIVE_MINIMUM 3.8)
 set(CURL_MINIMUM 7.28.0)
 set(ZLIB_MINIMUM 1.2.1)
 set(WOLFSSL_MINIMUM 3.4)
@@ -82,6 +83,7 @@ option(INSTALL_DOC "Build/install documentation" ON)
 option(INSTALL_LIB "Install the library" OFF)
 tr_auto_option(USE_SYSTEM_DEFAULT "Default value for USE_SYSTEM_* options" AUTO)
 tr_auto_option(RUN_CLANG_TIDY "Run clang-tidy on the code" ${USE_SYSTEM_DEFAULT})
+tr_auto_option(USE_SYSTEM_ARCHIVE "Use system libarchive library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_EVENT2 "Use system event2 library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_DHT "Use system dht library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_FAST_FLOAT "Use system fast_float library" ${USE_SYSTEM_DEFAULT})
@@ -526,6 +528,47 @@ if(ENABLE_MAC)
 
     tr_fixup_auto_option(ENABLE_MAC MAC_FOUND MAC_IS_REQUIRED)
 endif()
+
+# libarchive gives us cross-platform tar/zip/gzip decompression. Built via
+# ExternalProject (not a subdirectory) because its CMakeLists.txt mutates global
+# CMAKE_* variables. Only the tar/zip/raw formats + the gzip (zlib) filter are
+# enabled; everything else is turned off to keep it lean. Its gzip support needs
+# zlib, so forward our prefix path (where the Windows build stages zlib) to the
+# sub-build's find_package(ZLIB).
+string(REPLACE ";" "$<SEMICOLON>" ARCHIVE_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+tr_add_external_auto_library(ARCHIVE libarchive
+    LIBNAME archive
+    TARGET libarchive::libarchive
+    CMAKE_ARGS
+        "-DCMAKE_PREFIX_PATH:STRING=${ARCHIVE_CMAKE_PREFIX_PATH}"
+        -DBUILD_SHARED_LIBS:BOOL=OFF
+        -DENABLE_INSTALL:BOOL=ON
+        -DENABLE_TEST:BOOL=OFF
+        -DENABLE_COVERAGE:BOOL=OFF
+        -DENABLE_TAR:BOOL=OFF
+        -DENABLE_CPIO:BOOL=OFF
+        -DENABLE_CAT:BOOL=OFF
+        -DENABLE_UNZIP:BOOL=OFF
+        -DENABLE_ACL:BOOL=OFF
+        -DENABLE_XATTR:BOOL=OFF
+        -DENABLE_ICONV:BOOL=OFF
+        -DENABLE_ZLIB:BOOL=ON
+        -DENABLE_BZip2:BOOL=OFF
+        -DENABLE_LZMA:BOOL=OFF
+        -DENABLE_LZO:BOOL=OFF
+        -DENABLE_LZ4:BOOL=OFF
+        -DENABLE_ZSTD:BOOL=OFF
+        -DENABLE_LIBB2:BOOL=OFF
+        -DENABLE_OPENSSL:BOOL=OFF
+        -DENABLE_MBEDTLS:BOOL=OFF
+        -DENABLE_NETTLE:BOOL=OFF
+        -DENABLE_LIBXML2:BOOL=OFF
+        -DENABLE_EXPAT:BOOL=OFF
+        -DENABLE_PCREPOSIX:BOOL=OFF
+        -DENABLE_PCRE2POSIX:BOOL=OFF
+        -DENABLE_LIBGCC:BOOL=OFF
+        -DENABLE_CNG:BOOL=OFF
+        -DENABLE_WIN32_XMLLITE:BOOL=OFF)
 
 tr_add_external_auto_library(EVENT2 Libevent
     SUBPROJECT
