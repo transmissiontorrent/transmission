@@ -444,6 +444,7 @@
 		EDD735D62D83087400852628 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EDD735D52D83087400852628 /* UniformTypeIdentifiers.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		F11545ACA7C4D7A464F703AB /* block-info.h in Headers */ = {isa = PBXBuildFile; fileRef = 6A044CBD8C049AFCBD4DB411 /* block-info.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		F63480631E1D7274005B9E09 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F63480621E1D7274005B9E09 /* Images.xcassets */; };
+		ADD1A0000000000000000200 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C88771A92803EE42005C7523 /* libz.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1577,6 +1578,7 @@
 			files = (
 				ED5E0E7E2CD30B180071433B /* Quartz.framework in Frameworks */,
 				ED5E0E9D2CD3134B0071433B /* libtransmission.a in Frameworks */,
+				ADD1A0000000000000000200 /* libz.tbd in Frameworks */,
 				ED5E0EA02CD3147B0071433B /* libcurl.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
