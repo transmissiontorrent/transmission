@@ -735,7 +735,7 @@ void tr_torrentSetPeerLimit(tr_torrent* tor, uint16_t max_connected_peers);
 void tr_torrentSetFilePriorities(tr_torrent* torrent, std::span<tr_file_index_t const> files, tr_priority_t priority);
 
 /** @brief Set a batch of files to be downloaded or not. */
-void tr_torrentSetFileDLs(tr_torrent* tor, std::span<tr_file_index_t const>, bool wanted);
+void tr_torrentSetFileDLs(tr_torrent* tor, std::span<tr_file_index_t const> files, bool wanted);
 
 /**
  * Returns a permanently interned string of the torrent's download directory.
