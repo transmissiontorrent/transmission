@@ -39,7 +39,7 @@
 #if defined(_WIN32) && !defined(WITH_OPENSSL)
 #error Windows builds require the OpenSSL crypto backend (WITH_CRYPTO=openssl): \
     tracker TLS certs are verified against the Windows system certificate store, \
-    which is injected into OpenSSL's trust store by ssl_context_func() below.
+    which is injected into the OpenSSL trust store by ssl_context_func() below.
 #endif
 
 #if defined(_WIN32) && defined(WITH_OPENSSL)
