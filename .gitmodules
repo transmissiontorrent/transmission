@@ -20,10 +20,6 @@
 [submodule "third-party/googletest"]
 	path = third-party/googletest
 	url = https://github.com/google/googletest.git
-[submodule "third-party/libdeflate"]
-	path = third-party/libdeflate
-	# synced with https://github.com/ebiggers/libdeflate.git
-	url = https://github.com/transmissiontorrent/libdeflate.git
 [submodule "third-party/libpsl"]
 	path = third-party/libpsl
 	url = https://github.com/transmissiontorrent/libpsl.git

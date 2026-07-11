@@ -57,11 +57,11 @@ On Debian, you can build transmission with a few dependencies on top of a base i
 
 For building transmission-daemon you will need basic dependencies:
 ```bash
-$ sudo apt install build-essential cmake git libcurl4-openssl-dev
+$ sudo apt install build-essential cmake git libcurl4-openssl-dev zlib1g-dev
 ```
 These packages are not mandatory for a working binary. Transmission brings its own libraries if they aren't installed, except for `libsystemd-dev`.
 ```bash
-$ sudo apt install libdeflate-dev libevent-dev libminiupnpc-dev libnatpmp-dev libsystemd-dev
+$ sudo apt install libevent-dev libminiupnpc-dev libnatpmp-dev libsystemd-dev
 ```
 
 You likely want to install transmission as a native GUI application.
@@ -91,11 +91,11 @@ On Debian, you can build transmission with a few dependencies on top of a base i
 
 For building transmission-daemon you will need basic dependencies:
 ```bash
-$ sudo apt install build-essential cmake git libcurl4-openssl-dev libssl-dev
+$ sudo apt install build-essential cmake git libcurl4-openssl-dev libssl-dev zlib1g-dev
 ```
 These packages are not mandatory for a working binary. Transmission brings its own libraries if they aren't installed, except for `libsystemd-dev`.
 ```bash
-$ sudo apt install libdeflate-dev libevent-dev libminiupnpc-dev libnatpmp-dev libpsl-dev libsystemd-dev
+$ sudo apt install libevent-dev libminiupnpc-dev libnatpmp-dev libpsl-dev libsystemd-dev
 ```
 
 You likely want to install transmission as a native GUI application.
@@ -121,7 +121,7 @@ Then you can begin [building.](#building-transmission-from-git-first-time)
 On Ubuntu, you can install the required development tools for GTK with this command:
 
 ```bash
-$ sudo apt-get install build-essential automake autoconf libtool pkg-config intltool libcurl4-openssl-dev libglib2.0-dev libevent-dev libminiupnpc-dev libgtk-3-dev libappindicator3-dev libssl-dev
+$ sudo apt-get install build-essential automake autoconf libtool pkg-config intltool libcurl4-openssl-dev libglib2.0-dev libevent-dev libminiupnpc-dev libgtk-3-dev libappindicator3-dev libssl-dev zlib1g-dev
 ```
 
 Then you can begin [building.](#building-transmission-from-git-first-time)

@@ -32,7 +32,8 @@
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 
-#include <libdeflate.h>
+#define ZLIB_CONST
+#include <zlib.h>
 
 #include "libtransmission/crypto-utils.h" /* tr_ssha1_matches() */
 #include "libtransmission/error.h"
@@ -229,18 +230,23 @@ void send_simple_response(struct evhttp_request* req, int code, char const* text
     if (bool const do_compress = encoding != nullptr && tr_strv_contains(encoding, "gzip"sv); !do_compress) {
         evbuffer_add(out, std::data(content), std::size(content));
     } else {
-        auto const max_compressed_len = libdeflate_deflate_compress_bound(server->compressor.get(), std::size(content));
+        auto strm = z_stream{};
+        // 15 + 16 => window bits 31 = gzip wrapper (15 alone = zlib, -15 = raw deflate)
+        deflateInit2(&strm, DeflateLevel, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
+        auto const max_compressed_len = deflateBound(&strm, std::size(content));
 
         auto iov = evbuffer_iovec{};
         evbuffer_reserve_space(out, static_cast<ev_ssize_t>(std::max(std::size(content), max_compressed_len)), &iov, 1);
 
-        auto const compressed_len = libdeflate_gzip_compress(
-            server->compressor.get(),
-            std::data(content),
-            std::size(content),
-            iov.iov_base,
-            iov.iov_len);
-        if (0 < compressed_len && compressed_len < std::size(content)) {
+        strm.next_in = reinterpret_cast<Bytef const*>(std::data(content));
+        strm.avail_in = static_cast<uInt>(std::size(content));
+        strm.next_out = static_cast<Bytef*>(iov.iov_base);
+        strm.avail_out = static_cast<uInt>(iov.iov_len);
+        auto const rc = deflate(&strm, Z_FINISH);
+        auto const compressed_len = strm.total_out;
+        deflateEnd(&strm);
+
+        if (rc == Z_STREAM_END && 0 < compressed_len && compressed_len < std::size(content)) {
             iov.iov_len = compressed_len;
             evhttp_add_header(output_headers, "Content-Encoding", "gzip");
         } else {
@@ -901,8 +907,7 @@ void tr_rpc_server::set_anti_brute_force_enabled(bool enabled) noexcept
 // --- LIFECYCLE
 
 tr_rpc_server::tr_rpc_server(tr_session* session_in, Settings&& settings)
-    : compressor{ libdeflate_alloc_compressor(DeflateLevel), libdeflate_free_compressor }
-    , web_client_dir_{ tr_getWebClientDir(session_in) }
+    : web_client_dir_{ tr_getWebClientDir(session_in) }
     , bind_address_{ std::make_unique<class tr_rpc_address>() }
     , session{ session_in }
 {
