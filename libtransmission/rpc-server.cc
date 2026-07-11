@@ -233,7 +233,7 @@ void send_simple_response(struct evhttp_request* req, int code, char const* text
         auto strm = z_stream{};
         // 15 + 16 => window bits 31 = gzip wrapper (15 alone = zlib, -15 = raw deflate)
         deflateInit2(&strm, DeflateLevel, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
-        auto const max_compressed_len = deflateBound(&strm, std::size(content));
+        auto const max_compressed_len = static_cast<size_t>(deflateBound(&strm, std::size(content)));
 
         auto iov = evbuffer_iovec{};
         evbuffer_reserve_space(out, static_cast<ev_ssize_t>(std::max(std::size(content), max_compressed_len)), &iov, 1);
