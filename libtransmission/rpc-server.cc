@@ -32,7 +32,8 @@
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 
-#include <libdeflate.h>
+#define ZLIB_CONST
+#include <zlib.h>
 
 #include "libtransmission/crypto-utils.h" /* tr_ssha1_matches() */
 #include "libtransmission/error.h"
@@ -218,7 +219,7 @@ void send_simple_response(struct evhttp_request* req, int code, char const* text
     return "application/octet-stream";
 }
 
-[[nodiscard]] evbuffer* make_response(struct evhttp_request* req, tr_rpc_server const* server, std::string_view content)
+[[nodiscard]] evbuffer* make_response(struct evhttp_request* req, std::string_view const content)
 {
     auto* const out = evbuffer_new();
     auto const* const input_headers = evhttp_request_get_input_headers(req);
@@ -229,18 +230,23 @@ void send_simple_response(struct evhttp_request* req, int code, char const* text
     if (bool const do_compress = encoding != nullptr && tr_strv_contains(encoding, "gzip"sv); !do_compress) {
         evbuffer_add(out, std::data(content), std::size(content));
     } else {
-        auto const max_compressed_len = libdeflate_deflate_compress_bound(server->compressor.get(), std::size(content));
+        auto strm = z_stream{};
+        // 15 + 16 => window bits 31 = gzip wrapper (15 alone = zlib, -15 = raw deflate)
+        deflateInit2(&strm, DeflateLevel, Z_DEFLATED, 15 + 16, 8, Z_DEFAULT_STRATEGY);
+        auto const max_compressed_len = static_cast<size_t>(deflateBound(&strm, std::size(content)));
 
         auto iov = evbuffer_iovec{};
         evbuffer_reserve_space(out, static_cast<ev_ssize_t>(std::max(std::size(content), max_compressed_len)), &iov, 1);
 
-        auto const compressed_len = libdeflate_gzip_compress(
-            server->compressor.get(),
-            std::data(content),
-            std::size(content),
-            iov.iov_base,
-            iov.iov_len);
-        if (0 < compressed_len && compressed_len < std::size(content)) {
+        strm.next_in = reinterpret_cast<Bytef const*>(std::data(content));
+        strm.avail_in = static_cast<uInt>(std::size(content));
+        strm.next_out = static_cast<Bytef*>(iov.iov_base);
+        strm.avail_out = static_cast<uInt>(iov.iov_len);
+        auto const rc = deflate(&strm, Z_FINISH);
+        auto const compressed_len = strm.total_out;
+        deflateEnd(&strm);
+
+        if (rc == Z_STREAM_END && 0 < compressed_len && compressed_len < std::size(content)) {
             iov.iov_len = compressed_len;
             evhttp_add_header(output_headers, "Content-Encoding", "gzip");
         } else {
@@ -260,7 +266,7 @@ void add_time_header(struct evkeyvalq* headers, char const* key, time_t now)
     evhttp_add_header(headers, key, fmt::format("{:%a %b %d %T %Y%n}", fmt::gmtime(now)).c_str());
 }
 
-void serve_file(struct evhttp_request* req, tr_rpc_server const* server, std::string_view filename)
+void serve_file(struct evhttp_request* req, std::string_view const filename)
 {
     auto* const output_headers = evhttp_request_get_output_headers(req);
     if (auto const cmd = evhttp_request_get_command(req); cmd != EVHTTP_REQ_GET) {
@@ -281,7 +287,7 @@ void serve_file(struct evhttp_request* req, tr_rpc_server const* server, std::st
     add_time_header(output_headers, "Expires", now + (24 * 60 * 60));
     evhttp_add_header(output_headers, "Content-Type", mimetype_guess(filename));
 
-    auto* const response = make_response(req, server, std::string_view{ std::data(content), std::size(content) });
+    auto* const response = make_response(req, std::string_view{ std::data(content), std::size(content) });
     evhttp_send_reply(req, HTTP_OK, "OK", response);
     evbuffer_free(response);
 }
@@ -342,37 +348,37 @@ void handle_web_client(struct evhttp_request* req, tr_rpc_server const* server)
         }
         send_simple_response(req, HTTP_NOTFOUND);
     } else {
-        serve_file(req, server, tr_pathbuf{ server->web_client_dir_, '/', subpath });
+        serve_file(req, tr_pathbuf{ server->web_client_dir_, '/', subpath });
     }
 }
 
-void handle_rpc_from_json(struct evhttp_request* req, tr_rpc_server* server, std::string_view json)
+void handle_rpc_from_json(struct evhttp_request* req, tr_session* const session, std::string_view const json)
 {
     tr_rpc_request_exec(
-        server->session,
+        session,
         json,
         // NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
-        [req, server](tr_variant&& content) {
+        [req](tr_variant&& content) {
             if (!content.has_value()) {
                 evhttp_send_reply(req, HTTP_NOCONTENT, "OK", nullptr);
                 return;
             }
 
             auto* const output_headers = evhttp_request_get_output_headers(req);
-            auto* const response = make_response(req, server, tr_variant_serde::json().compact().to_string(content));
+            auto* const response = make_response(req, tr_variant_serde::json().compact().to_string(content));
             evhttp_add_header(output_headers, "Content-Type", "application/json; charset=UTF-8");
             evhttp_send_reply(req, HTTP_OK, "OK", response);
             evbuffer_free(response);
         });
 }
 
-void handle_rpc(struct evhttp_request* req, tr_rpc_server* server)
+void handle_rpc(struct evhttp_request* req, tr_session* session)
 {
     if (auto const cmd = evhttp_request_get_command(req); cmd == EVHTTP_REQ_POST) {
         auto* const input_buffer = evhttp_request_get_input_buffer(req);
         auto json = std::string_view{ reinterpret_cast<char const*>(evbuffer_pullup(input_buffer, -1)),
                                       evbuffer_get_length(input_buffer) };
-        handle_rpc_from_json(req, server, json);
+        handle_rpc_from_json(req, session, json);
         return;
     }
 
@@ -605,7 +611,7 @@ void handle_request(struct evhttp_request* req, void* arg)
     }
 #endif
     else {
-        handle_rpc(req, server);
+        handle_rpc(req, server->session);
     }
 }
 
@@ -901,8 +907,7 @@ void tr_rpc_server::set_anti_brute_force_enabled(bool enabled) noexcept
 // --- LIFECYCLE
 
 tr_rpc_server::tr_rpc_server(tr_session* session_in, Settings&& settings)
-    : compressor{ libdeflate_alloc_compressor(DeflateLevel), libdeflate_free_compressor }
-    , web_client_dir_{ tr_getWebClientDir(session_in) }
+    : web_client_dir_{ tr_getWebClientDir(session_in) }
     , bind_address_{ std::make_unique<class tr_rpc_address>() }
     , session{ session_in }
 {

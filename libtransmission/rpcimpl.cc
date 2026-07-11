@@ -24,7 +24,8 @@
 
 #include <small/map.hpp>
 
-#include <libdeflate.h>
+#define ZLIB_CONST
+#include <zlib.h>
 
 #include "libtransmission/transmission.h"
 
@@ -1456,36 +1457,27 @@ void onBlocklistFetched(tr_web::FetchResponse const& web_response)
     auto content = std::vector<char>{};
     content.resize(1024 * 128);
     for (;;) {
-        auto decompressor = std::unique_ptr<libdeflate_decompressor, void (*)(libdeflate_decompressor*)>{
-            libdeflate_alloc_decompressor(),
-            libdeflate_free_decompressor
-        };
-        auto actual_size = size_t{};
-        auto const decompress_result = libdeflate_gzip_decompress(
-            decompressor.get(),
-            std::data(body),
-            std::size(body),
-            std::data(content),
-            std::size(content),
-            &actual_size);
-        switch (decompress_result) {
-        case LIBDEFLATE_INSUFFICIENT_SPACE:
+        auto strm = z_stream{};
+        // 15 + 16 => window bits 31 = gzip wrapper (15 alone = zlib, -15 = raw deflate)
+        inflateInit2(&strm, 15 + 16);
+        strm.next_in = reinterpret_cast<Bytef const*>(std::data(body));
+        strm.avail_in = static_cast<uInt>(std::size(body));
+        strm.next_out = reinterpret_cast<Bytef*>(std::data(content));
+        strm.avail_out = static_cast<uInt>(std::size(content));
+        auto const rc = inflate(&strm, Z_FINISH);
+        auto const actual_size = strm.total_out;
+        inflateEnd(&strm);
+
+        if (rc == Z_STREAM_END) {
+            // shrink buffer to actual size
+            content.resize(actual_size);
+        } else if (strm.avail_out == 0) {
             // need a bigger buffer
             content.resize(content.size() * 2);
             continue;
-
-        case LIBDEFLATE_BAD_DATA:
+        } else {
             // couldn't decompress it; maybe we downloaded an uncompressed file
             content.assign(std::begin(body), std::end(body));
-            break;
-
-        case LIBDEFLATE_SUCCESS:
-            // shrink buffer to actual size
-            content.resize(actual_size);
-            break;
-
-        default:
-            break;
         }
         break;
     }

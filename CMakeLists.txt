@@ -42,8 +42,8 @@ include(GNUInstallDirs)
 include(TrMacros)
 
 set(CURL_MINIMUM 7.28.0)
+set(ZLIB_MINIMUM 1.2.1)
 set(WOLFSSL_MINIMUM 3.4)
-set(DEFLATE_MINIMUM 1.7)
 set(EVENT2_MINIMUM 2.1.0)
 # fast_float's version file is configured with `COMPATIBILITY SameMajorVersion`
 # The version range currently distributed varies greatly (e.g. Debian Trixie -> 8.0.0, Ubuntu 24.04 -> 3.9.0)
@@ -83,7 +83,6 @@ option(INSTALL_LIB "Install the library" OFF)
 tr_auto_option(USE_SYSTEM_DEFAULT "Default value for USE_SYSTEM_* options" AUTO)
 tr_auto_option(RUN_CLANG_TIDY "Run clang-tidy on the code" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_EVENT2 "Use system event2 library" ${USE_SYSTEM_DEFAULT})
-tr_auto_option(USE_SYSTEM_DEFLATE "Use system deflate library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_DHT "Use system dht library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_FAST_FLOAT "Use system fast_float library" ${USE_SYSTEM_DEFAULT})
 tr_auto_option(USE_SYSTEM_FMT "Use system fmt library" ${USE_SYSTEM_DEFAULT})
@@ -289,6 +288,7 @@ find_package(Threads)
 find_package(PkgConfig QUIET)
 
 find_package(CURL ${CURL_MINIMUM} REQUIRED)
+find_package(ZLIB ${ZLIB_MINIMUM} REQUIRED)
 
 set(CRYPTO_PKG "")
 if(WITH_CRYPTO STREQUAL "AUTO" OR WITH_CRYPTO STREQUAL "ccrypto")
@@ -526,20 +526,6 @@ if(ENABLE_MAC)
 
     tr_fixup_auto_option(ENABLE_MAC MAC_FOUND MAC_IS_REQUIRED)
 endif()
-
-# Don't build libdeflate as subdirectory as its CMakeLists.txt
-# messes with global CMAKE_* variables and global compiler options
-if(WIN32 AND NOT MINGW)
-    set(DEFLATE_LIB_NAME deflatestatic)
-else()
-    set(DEFLATE_LIB_NAME deflate)
-endif()
-tr_add_external_auto_library(DEFLATE libdeflate
-    LIBNAME ${DEFLATE_LIB_NAME}
-    TARGET libdeflate::libdeflate
-    CMAKE_ARGS
-        -DLIBDEFLATE_BUILD_SHARED_LIB=OFF
-        -DLIBDEFLATE_BUILD_GZIP=OFF)
 
 tr_add_external_auto_library(EVENT2 Libevent
     SUBPROJECT

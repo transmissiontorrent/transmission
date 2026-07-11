@@ -695,8 +695,6 @@ jobs:
             fmt-dev \
             gettext-dev \
             git \
-            libdeflate-dev \
-            libdeflate-static \
             libevent-dev \
             libnatpmp-dev \
             libpsl-dev \
@@ -707,7 +705,8 @@ jobs:
             npm \
             pkgconfig \
             simdutf-dev \
-            xz
+            xz \
+            zlib-dev
       - name: Get Dependencies (GTK)
         if: ${{ needs.what-to-make.outputs.make-gtk == 'true' }}
         run: apk add --upgrade gtkmm4-dev
@@ -1485,7 +1484,6 @@ jobs:
               fast_float \
               gettext \
               `[ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] && echo gtkmm40` \
-              libdeflate \
               libevent \
               libfmt \
               libnatpmp \
@@ -1666,7 +1664,6 @@ jobs:
               gettext-tools \
               gtar-- \
               `[ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] && echo gtkmm40` \
-              libdeflate \
               libevent \
               libnatpmp \
               libpsl \
@@ -1752,7 +1749,6 @@ jobs:
               gcc14 \
               gettext-tools \
               `[ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] && echo gtkmm4` \
-              libdeflate \
               libevent \
               libpsl \
               miniupnpc \

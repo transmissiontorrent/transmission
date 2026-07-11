@@ -25,7 +25,6 @@
 class tr_rpc_address;
 struct tr_session;
 struct tr_variant;
-struct libdeflate_compressor;
 
 namespace tr
 {
@@ -120,8 +119,6 @@ public:
     {
         settings_.anti_brute_force_limit = limit;
     }
-
-    std::unique_ptr<libdeflate_compressor, void (*)(libdeflate_compressor*)> compressor;
 
     [[nodiscard]] constexpr auto const& url() const noexcept
     {
