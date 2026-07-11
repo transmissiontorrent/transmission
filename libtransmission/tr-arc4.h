@@ -5,8 +5,11 @@
 #pragma once
 
 #include <array>
-#include <cstddef> // size_t
+#include <cstddef> // size_t, std::byte
 #include <cstdint> // uint8_t
+#include <numeric> // std::iota
+#include <span>
+#include <utility> // std::swap
 
 /**
  * This is a tiny and reusable implementation of alleged RC4 cipher.
@@ -26,55 +29,48 @@
 class tr_arc4
 {
 public:
-    constexpr tr_arc4() = default;
-
-    constexpr tr_arc4(void const* key, size_t key_length)
+    constexpr void init(std::span<std::byte const> key)
     {
-        init(key, key_length);
-    }
-
-    constexpr void init(void const* key, size_t key_length)
-    {
-        for (size_t i = 0; i < 256; ++i) {
-            s_[i] = static_cast<uint8_t>(i);
-        }
+        std::iota(std::begin(s_), std::end(s_), uint8_t{ 0 });
 
         for (size_t i = 0, j = 0; i < 256; ++i) {
-            j = static_cast<uint8_t>(j + s_[i] + static_cast<uint8_t const*>(key)[i % key_length]);
-            arc4_swap(i, j);
+            j = static_cast<uint8_t>(j + s_[i] + std::to_integer<uint8_t>(key[i % std::size(key)]));
+            std::swap(s_[i], s_[j]);
         }
     }
 
-    constexpr void process(uint8_t const* const src, size_t n_bytes, uint8_t* const tgt)
+    // tgt must hold at least std::size(src) bytes; src and tgt may be equal
+    constexpr void process(std::span<std::byte const> src, std::span<std::byte> tgt)
     {
-        for (size_t i = 0; i != n_bytes; ++i) {
-            tgt[i] = src[i] ^ arc4_next();
+        auto i = i_;
+        auto j = j_;
+
+        for (size_t k = 0, n = std::size(src); k < n; ++k) {
+            tgt[k] = src[k] ^ std::byte{ next(i, j) };
         }
+
+        i_ = i;
+        j_ = j;
     }
 
     constexpr void discard(size_t length)
     {
         while (length-- > 0) {
-            arc4_next();
+            next(i_, j_);
         }
     }
 
 private:
-    constexpr void arc4_swap(size_t i, size_t j)
+    // state is passed by reference so that process() can keep it
+    // in locals across its hot loop instead of touching members
+    constexpr uint8_t next(uint8_t& i, uint8_t& j)
     {
-        auto const tmp = s_[i];
-        s_[i] = s_[j];
-        s_[j] = tmp;
-    }
+        i += 1;
+        j += s_[i];
 
-    constexpr uint8_t arc4_next()
-    {
-        i_ += 1;
-        j_ += s_[i_];
+        std::swap(s_[i], s_[j]);
 
-        arc4_swap(i_, j_);
-
-        return s_[static_cast<uint8_t>(s_[i_] + s_[j_])];
+        return s_[static_cast<uint8_t>(s_[i] + s_[j])];
     }
 
     std::array<uint8_t, 256> s_ = {};

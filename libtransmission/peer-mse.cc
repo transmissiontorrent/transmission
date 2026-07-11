@@ -118,7 +118,7 @@ void Filter::decrypt_init(bool is_incoming, DH const& dh, tr_sha1_digest_t const
     auto const key = is_incoming ? "keyA"sv : "keyB"sv;
     auto const buf = tr_sha1::digest(key, dh.secret(), info_hash);
     dec_active_ = true;
-    dec_key_.init(std::data(buf), std::size(buf));
+    dec_key_.init(buf);
     dec_key_.discard(1024);
 }
 
@@ -127,7 +127,7 @@ void Filter::encrypt_init(bool is_incoming, DH const& dh, tr_sha1_digest_t const
     auto const key = is_incoming ? "keyB"sv : "keyA"sv;
     auto const buf = tr_sha1::digest(key, dh.secret(), info_hash);
     enc_active_ = true;
-    enc_key_.init(std::data(buf), std::size(buf));
+    enc_key_.init(buf);
     enc_key_.discard(1024);
 }
 
