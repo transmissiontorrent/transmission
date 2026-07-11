@@ -14,6 +14,7 @@
 #include <ctime>
 #include <limits>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -564,10 +565,10 @@ struct tr_pex {
     }
 
     template<typename OutputIt>
-    static OutputIt to_compact(OutputIt out, tr_pex const* pex, size_t n_pex)
+    static OutputIt to_compact(OutputIt out, std::span<tr_pex const> const pex)
     {
-        for (size_t i = 0; i < n_pex; ++i) {
-            out = pex[i].to_compact(out);
+        for (auto const& p : pex) {
+            out = p.to_compact(out);
         }
         return out;
     }

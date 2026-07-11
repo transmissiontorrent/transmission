@@ -1030,7 +1030,7 @@ void tr_peerMsgsImpl::send_ut_pex()
             // "added"
             tmpbuf.clear();
             tmpbuf.reserve(std::size(added) * tr_socket_address::CompactSockAddrBytes[i]);
-            tr_pex::to_compact(std::back_inserter(tmpbuf), std::data(added), std::size(added));
+            tr_pex::to_compact(std::back_inserter(tmpbuf), added);
             TR_ASSERT(std::size(tmpbuf) == std::size(added) * tr_socket_address::CompactSockAddrBytes[i]);
             map.try_emplace(AddedMap[i], std::string_view{ reinterpret_cast<char*>(std::data(tmpbuf)), std::size(tmpbuf) });
 
@@ -1051,7 +1051,7 @@ void tr_peerMsgsImpl::send_ut_pex()
             // "dropped"
             tmpbuf.clear();
             tmpbuf.reserve(std::size(dropped) * tr_socket_address::CompactSockAddrBytes[i]);
-            tr_pex::to_compact(std::back_inserter(tmpbuf), std::data(dropped), std::size(dropped));
+            tr_pex::to_compact(std::back_inserter(tmpbuf), dropped);
             TR_ASSERT(std::size(tmpbuf) == std::size(dropped) * tr_socket_address::CompactSockAddrBytes[i]);
             map.try_emplace(DroppedMap[i], std::string_view{ reinterpret_cast<char*>(std::data(tmpbuf)), std::size(tmpbuf) });
         }

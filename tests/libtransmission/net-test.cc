@@ -109,7 +109,7 @@ TEST_F(NetTest, compact4)
     // ...serialize that back again too
     buf.fill(std::byte{});
     out = std::data(buf);
-    out = tr_pex::to_compact(out, std::data(pex), std::size(pex));
+    out = tr_pex::to_compact(out, pex);
     EXPECT_EQ(std::size(Compact4), static_cast<size_t>(out - std::data(buf)));
     EXPECT_TRUE(std::equal(std::begin(Compact4), std::end(Compact4), std::data(buf)));
 }
@@ -177,7 +177,7 @@ TEST_F(NetTest, compact6)
     // ...serialize that back again too
     std::ranges::fill(compact6, std::byte{});
     out = std::data(compact6);
-    out = tr_pex::to_compact(out, std::data(pex), std::size(pex));
+    out = tr_pex::to_compact(out, pex);
     EXPECT_EQ(std::data(compact6) + std::size(compact6), out);
     EXPECT_EQ(Compact6, compact6);
 }
