@@ -1,0 +1,71 @@
+name: Expire the "new" label on pull requests
+
+# Removes the `new` label once min(2 weekdays, 3 calendar days) have elapsed
+# since a PR was opened. Runs on a schedule and can be triggered manually.
+
+on:
+  schedule:
+    - cron: '0 * * * *' # hourly
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+
+env:
+  LABEL: new
+
+jobs:
+  expire-label:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const label = process.env.LABEL;
+            const { owner, repo } = context.repo;
+            const now = new Date();
+
+            const DAY_MS = 24 * 60 * 60 * 1000;
+
+            // created + n weekdays (skipping Sat/Sun), preserving time-of-day.
+            const addWeekdays = (start, n) => {
+              const d = new Date(start);
+              while (n > 0) {
+                d.setUTCDate(d.getUTCDate() + 1);
+                const day = d.getUTCDay();
+                if (day !== 0 && day !== 6) n--;
+              }
+              return d;
+            };
+
+            // All open PRs currently carrying the label (PRs are issues here).
+            const items = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open',
+              labels: label,
+              per_page: 100,
+            });
+
+            for (const item of items) {
+              if (!item.pull_request) continue; // skip plain issues
+
+              const created = new Date(item.created_at);
+              const byWeekdays = addWeekdays(created, 2);
+              const byCalendar = new Date(created.getTime() + 3 * DAY_MS);
+              const expiry = byWeekdays < byCalendar ? byWeekdays : byCalendar;
+
+              if (now < expiry) continue;
+
+              try {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: item.number,
+                  name: label,
+                });
+                core.info(`Removed "${label}" from #${item.number}`);
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+            }

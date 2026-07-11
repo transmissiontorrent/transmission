@@ -1,0 +1,75 @@
+name: Label new pull requests
+
+# Adds a `new` label when a PR is opened, and removes it once the PR is approved.
+# The label is also removed on a timer by pr-new-label-expiry.yml.
+
+on:
+  # `pull_request_target` (rather than `pull_request`) so the GITHUB_TOKEN has
+  # write access even for PRs opened from forks. This workflow only calls the
+  # labels API and never checks out or runs PR-supplied code, so it is safe.
+  pull_request_target:
+    types: [opened]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+env:
+  LABEL: new
+
+jobs:
+  add-label:
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const label = process.env.LABEL;
+            const { owner, repo } = context.repo;
+
+            // Create the label on first use so the repo does not need manual setup.
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: label });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name: label,
+                color: 'ff6700',
+                description: 'Newly opened, not yet reviewed',
+              });
+            }
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: context.payload.pull_request.number,
+              labels: [label],
+            });
+
+  remove-on-approval:
+    if: >-
+      github.event_name == 'pull_request_review' &&
+      github.event.review.state == 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const label = process.env.LABEL;
+            const { owner, repo } = context.repo;
+            try {
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number: context.payload.pull_request.number,
+                name: label,
+              });
+            } catch (error) {
+              // 404 just means the label was already gone; anything else is real.
+              if (error.status !== 404) throw error;
+            }
