@@ -275,7 +275,7 @@ static tr_torrent_rename_done_func makeRenameDoneCallback(NSDictionary* contextI
         return;
     }
 
-    auto stats = tr_torrentStat(torrent_handles.data(), torrent_handles.size());
+    auto stats = tr_torrentStat(torrent_handles);
 
     // Update stats
     bool transmitting_changed = false;
