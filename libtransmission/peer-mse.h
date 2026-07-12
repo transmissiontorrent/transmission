@@ -12,7 +12,7 @@
 #include <algorithm> // for std::copy_n()
 #include <array>
 #include <cstddef> // size_t, std::byte
-#include <cstdint> // uint8_t
+#include <span>
 
 #include "libtransmission/tr-arc4.h"
 #include "libtransmission/types.h" // tr_sha1_digest_t
@@ -110,7 +110,7 @@ private:
         if (buf_in == nullptr || buf_out == nullptr) {
             skip(buf_len, active, arc4);
         } else if (active) {
-            arc4.process(reinterpret_cast<uint8_t const*>(buf_in), buf_len, reinterpret_cast<uint8_t*>(buf_out));
+            arc4.process(std::as_bytes(std::span{ buf_in, buf_len }), std::as_writable_bytes(std::span{ buf_out, buf_len }));
         } else if (buf_in != buf_out) {
             std::copy_n(buf_in, buf_len, buf_out);
         }
