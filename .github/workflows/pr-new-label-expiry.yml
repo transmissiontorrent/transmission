@@ -1,12 +1,11 @@
 name: Expire the "new" label on pull requests
 
 # Removes the `new` label once min(2 weekdays, 3 calendar days) have elapsed
-# since a PR was opened. Runs on a schedule and can be triggered manually.
+# since a PR was opened. Runs hourly on a schedule.
 
 on:
   schedule:
     - cron: '0 * * * *' # hourly
-  workflow_dispatch:
 
 permissions:
   pull-requests: write
