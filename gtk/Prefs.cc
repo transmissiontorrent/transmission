@@ -84,9 +84,7 @@ std::string gl_confdir;
 
 [[nodiscard]] auto load_settings(std::string_view const config_dir)
 {
-    auto settings = tr_sessionLoadSettings(config_dir);
-    settings.merge(get_default_app_settings());
-    return settings;
+    return tr_sessionLoadSettings(config_dir, get_default_app_settings());
 }
 
 } // namespace

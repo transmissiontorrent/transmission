@@ -22,6 +22,7 @@
 #include <libtransmission/quark.h>
 #include <libtransmission/session-id.h>
 #include <libtransmission/session.h>
+#include <libtransmission/tr-strbuf.h>
 #include <libtransmission/variant.h>
 #include <libtransmission/version.h>
 
@@ -310,6 +311,35 @@ TEST_F(SessionTest, getDefaultSettingsIncludesSubmodules)
         ASSERT_TRUE(flag);
         EXPECT_FALSE(*flag);
     }
+}
+
+TEST_F(SessionTest, loadSettingsHonorsAppDefaults)
+{
+    // `rpc_enabled` is `false` in libtransmission's defaults,
+    // but apps, e.g. the daemon, may default it to `true`
+    static auto constexpr Key = TR_KEY_rpc_enabled;
+    auto const config_dir = tr_pathbuf{ sandboxDir(), "/app-defaults-config"sv };
+    auto app_defaults = tr::Settings{};
+    app_defaults.try_emplace(Key, true);
+
+    // app defaults fill in keys missing from the settings file
+    // and take precedence over libtransmission's defaults
+    auto settings = tr_sessionLoadSettings(config_dir, app_defaults);
+    auto flag = settings.value_if<bool>(Key);
+    ASSERT_TRUE(flag);
+    EXPECT_TRUE(*flag);
+
+    // values from the settings file take precedence over app defaults
+    createFileWithContents(tr_pathbuf{ config_dir, "/settings.json"sv }, R"({ "rpc-enabled": false })");
+    settings = tr_sessionLoadSettings(config_dir, app_defaults);
+    flag = settings.value_if<bool>(Key);
+    ASSERT_TRUE(flag);
+    EXPECT_FALSE(*flag);
+
+    // keys absent from both fall back to libtransmission's defaults
+    flag = settings.value_if<bool>(TR_KEY_peer_port_random_on_start);
+    ASSERT_TRUE(flag);
+    EXPECT_FALSE(*flag);
 }
 
 TEST_F(SessionTest, honorsSettings)

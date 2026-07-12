@@ -453,10 +453,11 @@ tr::Settings tr_sessionGetSettings(tr_session const* session)
     return settings;
 }
 
-tr::Settings tr_sessionLoadSettings(std::string_view const config_dir)
+tr::Settings tr_sessionLoadSettings(std::string_view const config_dir, tr::Settings const& app_defaults)
 {
-    auto settings = tr::settings::load(get_settings_filename(config_dir));
-    settings.merge(tr_sessionGetDefaultSettings());
+    auto settings = tr::settings::load(get_settings_filename(config_dir)); // file vals
+    settings.merge(app_defaults); // fallbacks from app defaults
+    settings.merge(tr_sessionGetDefaultSettings()); // fallbacks from defaults
     return settings;
 }
 

@@ -31,9 +31,10 @@ namespace
     // get pre-existing settings from the settings config file
     auto fallbacks = tr::settings::load(settings_filename);
 
-    // fill in any missing values with defaults (eg missing/incomplete config file)
-    fallbacks.merge(tr_sessionGetDefaultSettings());
+    // fill in any missing values with the app's defaults,
+    // then with libtransmission's defaults (eg missing/incomplete config file)
     fallbacks.merge(tr::serializer::save(AppPrefs{}, SessionPrefs{}));
+    fallbacks.merge(tr_sessionGetDefaultSettings());
 
     return fallbacks;
 }
