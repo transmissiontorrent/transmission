@@ -360,7 +360,7 @@ void tr_announcerParseHttpAnnounceResponse(tr_announce_response& response, std::
             } else if (pathIs("tracker id"sv)) {
                 response_.tracker_id = value;
             } else if (pathIs("peers"sv)) {
-                response_.pex = tr_pex::from_compact_ipv4(std::data(value), std::size(value), nullptr, 0);
+                response_.pex = tr_pex::from_compact_ipv4(value, {});
             } else if (pathIs("peers6"sv)) {
                 response_.pex6 = tr_pex::from_compact_ipv6(std::data(value), std::size(value), nullptr, 0);
             } else if (pathIs("peers"sv, ArrayKey, "ip"sv)) {

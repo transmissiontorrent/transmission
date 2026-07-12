@@ -955,11 +955,8 @@ void tr_peerMsgsImpl::parse_ut_pex(MessageReader& payload)
     logtrace(this, "got ut pex");
 
     if (auto const added = map->value_if<std::string_view>(TR_KEY_added)) {
-        auto const added_f_sv = map->value_if<std::string_view>(TR_KEY_added_f);
-        auto const* const added_f = added_f_sv ? reinterpret_cast<uint8_t const*>(std::data(*added_f_sv)) : nullptr;
-        auto const added_f_len = added_f_sv ? std::size(*added_f_sv) : 0U;
-
-        auto pex = tr_pex::from_compact_ipv4(std::data(*added), std::size(*added), added_f, added_f_len);
+        auto const added_f = map->value_if<std::string_view>(TR_KEY_added_f);
+        auto pex = tr_pex::from_compact_ipv4(*added, added_f.value_or(""sv));
         pex.resize(std::min(MaxPexPeerCount, std::size(pex)));
         tr_peerMgrAddPex(&tor_, TR_PEER_FROM_PEX, std::data(pex), std::size(pex));
     }

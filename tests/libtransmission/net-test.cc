@@ -101,7 +101,7 @@ TEST_F(NetTest, compact4)
     /// compact <--> tr_pex
 
     // extract them into a tr_pex struct...
-    auto const pex = tr_pex::from_compact_ipv4(std::data(buf), out - std::data(buf), nullptr, 0U);
+    auto const pex = tr_pex::from_compact_ipv4(std::span{ buf }.first(out - std::data(buf)), {});
     ASSERT_EQ(1U, std::size(pex));
     EXPECT_EQ(addr, pex.front().socket_address.address());
     EXPECT_EQ(port, pex.front().socket_address.port());
@@ -112,6 +112,39 @@ TEST_F(NetTest, compact4)
     out = tr_pex::to_compact(out, pex);
     EXPECT_EQ(std::size(Compact4), static_cast<size_t>(out - std::data(buf)));
     EXPECT_TRUE(std::equal(std::begin(Compact4), std::end(Compact4), std::data(buf)));
+}
+
+TEST_F(NetTest, compact4TemplatedOverload)
+{
+    static auto constexpr ExpectedReadable = std::to_array<std::string_view>({ "10.10.10.5"sv, "127.0.0.1"sv });
+    static auto constexpr ExpectedPort = std::to_array({ tr_port::from_host(128), tr_port::from_host(6881) });
+    static auto constexpr Compact4 = std::to_array<uint8_t>({
+        0x0A,
+        0x0A,
+        0x0A,
+        0x05,
+        0x00,
+        0x80,
+        0x7F,
+        0x00,
+        0x00,
+        0x01,
+        0x1A,
+        0xE1,
+    });
+    static auto constexpr AddedF = std::to_array<uint8_t>({ 0x01, 0x80 });
+
+    auto const compact4 = std::string_view{ reinterpret_cast<char const*>(std::data(Compact4)), std::size(Compact4) };
+    auto const added_f = std::string_view{ reinterpret_cast<char const*>(std::data(AddedF)), std::size(AddedF) };
+    auto const pex = tr_pex::from_compact_ipv4(compact4, added_f);
+
+    ASSERT_EQ(std::size(ExpectedReadable), std::size(pex));
+
+    for (size_t i = 0; i < std::size(pex); ++i) {
+        EXPECT_EQ(ExpectedReadable[i], pex[i].socket_address.address().display_name());
+        EXPECT_EQ(ExpectedPort[i], pex[i].socket_address.port());
+        EXPECT_EQ(AddedF[i], pex[i].flags);
+    }
 }
 
 TEST_F(NetTest, compact6)

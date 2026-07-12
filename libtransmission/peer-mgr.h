@@ -574,10 +574,21 @@ struct tr_pex {
     }
 
     [[nodiscard]] static std::vector<tr_pex> from_compact_ipv4(
-        void const* compact,
-        size_t compact_len,
-        uint8_t const* added_f,
-        size_t added_f_len);
+        std::span<std::byte const> compact,
+        std::span<uint8_t const> added_f);
+
+    template<typename Compact, typename AddedF = std::span<uint8_t const>>
+        requires(!requires(Compact const& compact, AddedF const& added_f) {
+            std::span<std::byte const>{ compact };
+            std::span<uint8_t const>{ added_f };
+        })
+    [[nodiscard]] static std::vector<tr_pex> from_compact_ipv4(Compact const& compact, AddedF const& added_f)
+    {
+        auto const added_f_span = std::span{ added_f };
+        return from_compact_ipv4(
+            std::as_bytes(std::span<typename Compact::value_type const>{ compact }),
+            std::span{ reinterpret_cast<uint8_t const*>(added_f_span.data()), added_f_span.size_bytes() });
+    }
 
     [[nodiscard]] static std::vector<tr_pex> from_compact_ipv6(
         void const* compact,

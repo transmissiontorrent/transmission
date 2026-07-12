@@ -1312,21 +1312,16 @@ size_t tr_peerMgrAddPex(tr_torrent* tor, tr_peer_from from, tr_pex const* pex, s
     return n_used;
 }
 
-// TODO(C++20): convert to std::span
-std::vector<tr_pex> tr_pex::from_compact_ipv4(
-    void const* compact,
-    size_t compact_len,
-    uint8_t const* added_f,
-    size_t added_f_len)
+std::vector<tr_pex> tr_pex::from_compact_ipv4(std::span<std::byte const> const compact, std::span<uint8_t const> const added_f)
 {
-    size_t const n = compact_len / tr_socket_address::CompactSockAddrBytes[TR_AF_INET];
-    auto const* walk = static_cast<std::byte const*>(compact);
+    size_t const n = compact.size() / tr_socket_address::CompactSockAddrBytes[TR_AF_INET];
+    auto const* walk = compact.data();
     auto pex = std::vector<tr_pex>(n);
 
     for (size_t i = 0; i < n; ++i) {
         std::tie(pex[i].socket_address, walk) = tr_socket_address::from_compact_ipv4(walk);
 
-        if (added_f != nullptr && n == added_f_len) {
+        if (n == added_f.size()) {
             pex[i].flags = added_f[i];
         }
     }
