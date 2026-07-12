@@ -191,7 +191,7 @@
  *   crypto      : HAVE_LIBCRYPTO/OPENSSL_*, NETTLE, MBEDTLS, LIBB2/BLAKE2 and all
  *                 ARCHIVE_CRYPTO_* backends (digest/hmac/cryptor degrade to stubs)
  *   xml (xar)   : HAVE_LIBXML_XMLREADER_H, HAVE_EXPAT_H, HAVE_BSDXML_H
- *   iconv/pcre  : HAVE_ICONV*, HAVE_LIBPCRE*/HAVE_PCRE*POSIX_H
+ *   iconv/pcre  : HAVE_ICONV*, HAVE_LIBPCRE*, HAVE_PCRE*POSIX_H
  *   acl/xattr   : ARCHIVE_ACL_DARWIN, HAVE_SYS_ACL_H, ARCHIVE_XATTR_DARWIN,
  *                 HAVE_SYS_XATTR_H, HAVE_COPYFILE_H, HAVE_MEMBERSHIP_H
  *   device nums : MAJOR_IN_MKDEV, MAJOR_IN_SYSMACROS (Darwin: <sys/types.h>)
