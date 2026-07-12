@@ -537,7 +537,7 @@ void DetailsDialog::Impl::refreshInfo(std::vector<tr_torrent*> const& torrents)
     Glib::ustring stateString;
     uint64_t sizeWhenDone = 0;
 
-    auto const stats = tr_torrentStat(std::data(torrents), std::size(torrents));
+    auto const stats = tr_torrentStat(torrents);
 
     std::vector<tr_torrent_view> infos;
     infos.reserve(torrents.size());

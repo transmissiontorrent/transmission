@@ -1298,21 +1298,17 @@ tr_stat tr_torrentStat(tr_torrent* const tor)
     return tor->stats();
 }
 
-std::vector<tr_stat> tr_torrentStat(tr_torrent* const* torrents, size_t n_torrents)
+std::vector<tr_stat> tr_torrentStat(std::span<tr_torrent* const> const torrents)
 {
-    tr_return_val_if_fail(torrents != nullptr, {});
-    tr_return_val_if_fail(std::all_of(torrents, torrents + n_torrents, tr_isTorrent), {});
+    tr_return_val_if_fail(!torrents.empty(), {});
+    tr_return_val_if_fail(std::ranges::all_of(torrents, tr_isTorrent), {});
 
     auto ret = std::vector<tr_stat>{};
+    ret.reserve(torrents.size());
 
-    if (n_torrents != 0U) {
-        ret.reserve(n_torrents);
-
-        auto const lock = torrents[0]->unique_lock();
-
-        for (size_t idx = 0U; idx != n_torrents; ++idx) {
-            ret.emplace_back(torrents[idx]->stats());
-        }
+    auto const lock = torrents.front()->unique_lock();
+    for (auto const tor : torrents) {
+        ret.emplace_back(tor->stats());
     }
 
     return ret;
