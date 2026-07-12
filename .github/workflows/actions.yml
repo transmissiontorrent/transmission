@@ -695,6 +695,7 @@ jobs:
             fmt-dev \
             gettext-dev \
             git \
+            libarchive-dev \
             libevent-dev \
             libnatpmp-dev \
             libpsl-dev \

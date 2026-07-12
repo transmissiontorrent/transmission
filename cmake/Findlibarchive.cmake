@@ -20,6 +20,24 @@ if(UNIX)
     pkg_check_modules(_ARCHIVE QUIET libarchive)
 endif()
 
+if(APPLE)
+    # macOS ships an ancient libarchive with no public headers, so Homebrew
+    # installs its copy keg-only (off the default search path). Ask brew where
+    # it is and add that to the search hints.
+    find_program(_ARCHIVE_BREW NAMES brew)
+    if(_ARCHIVE_BREW)
+        execute_process(
+            COMMAND ${_ARCHIVE_BREW} --prefix libarchive
+            OUTPUT_VARIABLE _ARCHIVE_BREW_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET)
+        if(_ARCHIVE_BREW_PREFIX)
+            list(APPEND _ARCHIVE_INCLUDEDIR "${_ARCHIVE_BREW_PREFIX}/include")
+            list(APPEND _ARCHIVE_LIBDIR "${_ARCHIVE_BREW_PREFIX}/lib")
+        endif()
+    endif()
+endif()
+
 find_path(${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIR
     NAMES archive.h
     HINTS ${_ARCHIVE_INCLUDEDIR})

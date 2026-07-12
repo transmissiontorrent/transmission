@@ -41,7 +41,11 @@ include(ExternalProject)
 include(GNUInstallDirs)
 include(TrMacros)
 
-set(ARCHIVE_MINIMUM 3.8)
+# Vendored copy is pinned to the latest stable; accept an older system
+# libarchive so distros that package 3.4+ (Debian/Ubuntu/Fedora/Alpine ship
+# 3.6/3.7) can be used instead of building our bundled copy. We only need its
+# stable read-side tar/zip/gzip API.
+set(ARCHIVE_MINIMUM 3.4)
 set(CURL_MINIMUM 7.28.0)
 set(ZLIB_MINIMUM 1.2.1)
 set(WOLFSSL_MINIMUM 3.4)
