@@ -549,6 +549,9 @@ tr_add_external_auto_library(ARCHIVE libarchive
         -DENABLE_INSTALL:BOOL=ON
         -DENABLE_TEST:BOOL=OFF
         -DENABLE_COVERAGE:BOOL=OFF
+        # libarchive's own code is warning-noisy (its ENABLE_WERROR defaults ON
+        # in Debug); don't let its warnings fail our build (e.g. Android/NDK).
+        -DENABLE_WERROR:BOOL=OFF
         -DENABLE_TAR:BOOL=OFF
         -DENABLE_CPIO:BOOL=OFF
         -DENABLE_CAT:BOOL=OFF
