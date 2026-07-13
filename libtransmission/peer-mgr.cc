@@ -455,7 +455,7 @@ public:
         return tor->unique_lock();
     }
 
-    tr_swarm(tr_peerMgr* manager_in, tr_torrent* tor_in) noexcept
+    tr_swarm(tr_peerMgr* manager_in, tr_torrent* tor_in)
         : manager{ manager_in }
         , tor{ tor_in }
         , tags_{ {
