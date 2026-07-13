@@ -55,7 +55,7 @@ public:
             return {};
         }
 
-        [[nodiscard]] virtual std::span<std::string const> settings_ip_endpoint(tr_address_type /*type*/)
+        [[nodiscard]] virtual std::span<std::string const> settings_ip_endpoint(tr_address_type /*type*/) noexcept
         {
             return {};
         }

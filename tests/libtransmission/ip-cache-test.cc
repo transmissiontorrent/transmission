@@ -231,7 +231,7 @@ TEST_F(IPCacheTest, onResponseIPQuery)
             options.done_func(response);
         }
 
-        [[nodiscard]] std::span<std::string const> settings_ip_endpoint(tr_address_type /*type*/) override
+        [[nodiscard]] std::span<std::string const> settings_ip_endpoint(tr_address_type /*type*/) noexcept override
         {
             return ip_endpoints;
         }
