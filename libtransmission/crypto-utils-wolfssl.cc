@@ -96,10 +96,10 @@ void tr_sha1::clear()
     wc_InitSha(&handle_);
 }
 
-void tr_sha1::add(void const* data, size_t data_length)
+void tr_sha1::add(std::span<std::byte const> const data)
 {
-    if (data_length > 0U) {
-        wc_ShaUpdate(&handle_, static_cast<byte const*>(data), data_length);
+    if (!data.empty()) {
+        wc_ShaUpdate(&handle_, reinterpret_cast<byte const*>(data.data()), data.size());
     }
 }
 

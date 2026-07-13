@@ -208,7 +208,7 @@ std::optional<tr_sha1_digest_t> recalculate_hash(tr_torrent const& tor, tr_piece
         auto const end = std::min(end_byte, block_loc.byte + block_len);
         auto const piece_data = contents.subspan(start - block_loc.byte, static_cast<size_t>(end - start));
 
-        sha.add(std::data(piece_data), std::size(piece_data));
+        sha.add(piece_data);
         n_bytes_checked += std::size(piece_data);
     }
 

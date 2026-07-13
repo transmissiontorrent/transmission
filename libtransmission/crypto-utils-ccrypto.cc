@@ -102,13 +102,13 @@ void tr_sha1::clear()
     CC_SHA1_Init(&handle_);
 }
 
-void tr_sha1::add(void const* data, size_t data_length)
+void tr_sha1::add(std::span<std::byte const> const data)
 {
-    if (data_length == 0U) {
+    if (data.empty()) {
         return;
     }
 
-    CC_SHA1_Update(&handle_, data, data_length);
+    CC_SHA1_Update(&handle_, data.data(), data.size());
 }
 
 tr_sha1_digest_t tr_sha1::finish()

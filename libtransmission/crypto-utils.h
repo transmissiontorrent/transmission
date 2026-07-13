@@ -56,7 +56,15 @@ public:
     tr_sha1& operator=(tr_sha1 const&) = delete;
     ~tr_sha1();
 
-    void add(void const* data, size_t data_length);
+    void add(std::span<std::byte const> data);
+
+    template<typename R>
+        requires(!requires(R const& range) { std::span<std::byte const>{ range }; })
+    void add(R const& data)
+    {
+        add(std::as_bytes(std::span<typename R::value_type const>{ data }));
+    }
+
     [[nodiscard]] tr_sha1_digest_t finish();
     void clear();
 
@@ -64,7 +72,7 @@ public:
     [[nodiscard]] static auto digest(T const&... args)
     {
         auto context = tr_sha1{};
-        (context.add(std::data(args), std::size(args)), ...);
+        (context.add(args), ...);
         return context.finish();
     }
 

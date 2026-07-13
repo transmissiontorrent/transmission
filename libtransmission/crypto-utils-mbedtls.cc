@@ -117,16 +117,16 @@ void tr_sha1::clear()
 #endif
 }
 
-void tr_sha1::add(void const* data, size_t data_length)
+void tr_sha1::add(std::span<std::byte const> const data)
 {
-    if (data_length == 0U) {
+    if (data.empty()) {
         return;
     }
 
 #if MBEDTLS_VERSION_NUMBER < 0x03000000 && MBEDTLS_VERSION_NUMBER >= 0x02070000
-    mbedtls_sha1_update_ret(&handle_, static_cast<unsigned char const*>(data), data_length);
+    mbedtls_sha1_update_ret(&handle_, reinterpret_cast<unsigned char const*>(data.data()), data.size());
 #else
-    mbedtls_sha1_update(&handle_, static_cast<unsigned char const*>(data), data_length);
+    mbedtls_sha1_update(&handle_, reinterpret_cast<unsigned char const*>(data.data()), data.size());
 #endif
 }
 
