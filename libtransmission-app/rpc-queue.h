@@ -155,20 +155,21 @@ private:
     static QueuedFunction normalize_func(Func&& func)
     {
         using F = std::remove_cvref_t<Func>;
-        return [func = make_copyable(std::forward<Func>(func))](RpcResponse const& prev, Continue done) mutable {
-            if constexpr (std::invocable<F, RpcResponse const&, Continue>) {
-                std::invoke(func, prev, std::move(done));
-            } else if constexpr (std::invocable<F, Continue>) {
-                std::invoke(func, std::move(done));
-            } else if constexpr (std::invocable<F, RpcResponse const&>) {
-                std::invoke(func, prev);
-                done(make_ok_response());
-            } else {
-                static_assert(std::invocable<F>, "step must take (prev, done), (done), (prev), or ()");
-                std::invoke(func);
-                done(make_ok_response());
-            }
-        };
+        return
+            [func = make_copyable(std::forward<Func>(func))]([[maybe_unused]] RpcResponse const& prev, Continue done) mutable {
+                if constexpr (std::invocable<F, RpcResponse const&, Continue>) {
+                    std::invoke(func, prev, std::move(done));
+                } else if constexpr (std::invocable<F, Continue>) {
+                    std::invoke(func, std::move(done));
+                } else if constexpr (std::invocable<F, RpcResponse const&>) {
+                    std::invoke(func, prev);
+                    done(make_ok_response());
+                } else {
+                    static_assert(std::invocable<F>, "step must take (prev, done), (done), (prev), or ()");
+                    std::invoke(func);
+                    done(make_ok_response());
+                }
+            };
     }
 
     // Adapts an error handler that takes either the failing response or nothing.
@@ -176,7 +177,7 @@ private:
     static ErrorHandlerFunction normalize_error_handler(Func&& func)
     {
         using F = std::remove_cvref_t<Func>;
-        return [func = make_copyable(std::forward<Func>(func))](RpcResponse const& r) mutable {
+        return [func = make_copyable(std::forward<Func>(func))]([[maybe_unused]] RpcResponse const& r) mutable {
             if constexpr (std::invocable<F, RpcResponse const&>) {
                 std::invoke(func, r);
             } else {
