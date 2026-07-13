@@ -1484,16 +1484,15 @@ int8_t tr_peerMgrPieceAvailability(tr_torrent const* tor, tr_piece_index_t piece
     return static_cast<int8_t>(std::ranges::count_if(peers, [piece](auto const& peer) { return peer->has_piece(piece); }));
 }
 
-void tr_peerMgrTorrentAvailability(tr_torrent const* tor, int8_t* tab, unsigned int n_tabs)
+void tr_peerMgrTorrentAvailability(tr_torrent const* tor, std::span<int8_t> const tab)
 {
     TR_ASSERT(tr_isTorrent(tor));
-    TR_ASSERT(tab != nullptr);
-    TR_ASSERT(n_tabs > 0);
+    TR_ASSERT(!tab.empty());
 
-    std::fill_n(tab, n_tabs, int8_t{});
+    std::ranges::fill(tab, int8_t{});
 
-    auto const interval = static_cast<double>(tor->piece_count()) / static_cast<double>(n_tabs);
-    for (unsigned int i = 0; i < n_tabs; ++i) {
+    auto const interval = static_cast<double>(tor->piece_count()) / static_cast<double>(tab.size());
+    for (size_t i = 0; i < tab.size(); ++i) {
         auto const piece = static_cast<tr_piece_index_t>(static_cast<double>(i) * interval);
         tab[i] = tr_peerMgrPieceAvailability(tor, piece);
     }

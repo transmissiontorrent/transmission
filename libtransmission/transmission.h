@@ -880,7 +880,7 @@ struct tr_torrent_view tr_torrentView(tr_torrent const* tor);
  * to either -1 if we have the piece, otherwise it is set to the number
  * of connected peers who have the piece.
  */
-void tr_torrentAvailability(tr_torrent const* torrent, int8_t* tab, int size);
+void tr_torrentAvailability(tr_torrent const* torrent, std::span<int8_t> tab);
 
 void tr_torrentAmountFinished(tr_torrent const* torrent, float* tab, int n_tabs);
 

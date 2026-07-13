@@ -1422,12 +1422,12 @@ std::vector<tr_peer_stat> tr_torrentPeers(tr_torrent const* tor)
     return tr_peerMgrPeerStats(tor);
 }
 
-void tr_torrentAvailability(tr_torrent const* tor, int8_t* tab, int size)
+void tr_torrentAvailability(tr_torrent const* tor, std::span<int8_t> const tab)
 {
     tr_return_if_fail(tr_isTorrent(tor));
 
-    if (tab != nullptr && size > 0) {
-        tr_peerMgrTorrentAvailability(tor, tab, size);
+    if (!tab.empty()) {
+        tr_peerMgrTorrentAvailability(tor, tab);
     }
 }
 
