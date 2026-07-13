@@ -130,27 +130,6 @@ bool is_valid_path(std::string_view path)
     return path_to_fixed_native_path(path);
 }
 
-std::string native_path_to_path(std::wstring_view wide_path)
-{
-    if (std::empty(wide_path)) {
-        return {};
-    }
-
-    if (tr_strv_starts_with(wide_path, NativeUncPathPrefix)) {
-        wide_path.remove_prefix(std::size(NativeUncPathPrefix));
-        auto path = tr_win32_native_to_utf8(wide_path);
-        path.insert(0, R"(\\)"sv);
-        return path;
-    }
-
-    if (tr_strv_starts_with(wide_path, NativeLocalPathPrefix)) {
-        wide_path.remove_prefix(std::size(NativeLocalPathPrefix));
-        return tr_win32_native_to_utf8(wide_path);
-    }
-
-    return tr_win32_native_to_utf8(wide_path);
-}
-
 [[nodiscard]] tr_sys_file_t open_file(
     std::string_view const path,
     DWORD const access,
