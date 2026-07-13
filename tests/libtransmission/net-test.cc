@@ -202,7 +202,7 @@ TEST_F(NetTest, compact6)
     /// compact <--> tr_pex
 
     // extract them into a tr_pex struct...
-    auto const pex = tr_pex::from_compact_ipv6(std::data(compact6), std::size(compact6), nullptr, 0U);
+    auto const pex = tr_pex::from_compact_ipv6(compact6, {});
     ASSERT_EQ(1U, std::size(pex));
     EXPECT_EQ(addr, pex.front().socket_address.address());
     EXPECT_EQ(port, pex.front().socket_address.port());
@@ -213,6 +213,32 @@ TEST_F(NetTest, compact6)
     out = tr_pex::to_compact(out, pex);
     EXPECT_EQ(std::data(compact6) + std::size(compact6), out);
     EXPECT_EQ(Compact6, compact6);
+}
+
+TEST_F(NetTest, compact6TemplatedOverload)
+{
+    static auto constexpr ExpectedReadable = std::to_array<std::string_view>({
+        "1002:1035:4527:3546:7854:1237:3247:3217"sv,
+        "2001:db8:1234:5678:9abc:def0:1111:2222"sv,
+    });
+    static auto constexpr ExpectedPort = std::to_array({ tr_port::from_host(6881), tr_port::from_host(128) });
+    static auto constexpr Compact6 = std::to_array<uint8_t>({
+        0x10, 0x02, 0x10, 0x35, 0x45, 0x27, 0x35, 0x46, 0x78, 0x54, 0x12, 0x37, 0x32, 0x47, 0x32, 0x17, 0x1A, 0xE1,
+        0x20, 0x01, 0x0D, 0xB8, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0, 0x11, 0x11, 0x22, 0x22, 0x00, 0x80,
+    });
+    static auto constexpr AddedF = std::to_array<uint8_t>({ 0xA5, 0x5A });
+
+    auto const compact6 = std::string_view{ reinterpret_cast<char const*>(std::data(Compact6)), std::size(Compact6) };
+    auto const added_f = std::string_view{ reinterpret_cast<char const*>(std::data(AddedF)), std::size(AddedF) };
+    auto const pex = tr_pex::from_compact_ipv6(compact6, added_f);
+
+    ASSERT_EQ(std::size(ExpectedReadable), std::size(pex));
+
+    for (size_t i = 0; i < std::size(pex); ++i) {
+        EXPECT_EQ(ExpectedReadable[i], pex[i].socket_address.address().display_name());
+        EXPECT_EQ(ExpectedPort[i], pex[i].socket_address.port());
+        EXPECT_EQ(AddedF[i], pex[i].flags);
+    }
 }
 
 TEST_F(NetTest, isGlobalUnicastAddress)
