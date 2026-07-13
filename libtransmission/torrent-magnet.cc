@@ -48,7 +48,7 @@ template<typename T>
 }
 } // namespace
 
-void tr_metadata_download::create_all_needed(int64_t n_pieces) noexcept
+void tr_metadata_download::create_all_needed(int64_t const n_pieces)
 {
     pieces_needed_.clear();
     pieces_needed_.resize(n_pieces);

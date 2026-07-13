@@ -66,7 +66,7 @@ private:
             MetadataPieceSize;
     }
 
-    void create_all_needed(int64_t n_pieces) noexcept;
+    void create_all_needed(int64_t n_pieces);
 
     std::vector<char> metadata_;
     std::deque<metadata_node> pieces_needed_;
