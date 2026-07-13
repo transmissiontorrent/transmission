@@ -558,6 +558,16 @@ jobs:
           key: ctcache-${{ github.job }}-${{ matrix.toolkit }}-${{ hashFiles('**/.clang-tidy') }}-${{ github.run_id }}
           restore-keys: |
             ctcache-${{ github.job }}-${{ matrix.toolkit }}-${{ hashFiles('**/.clang-tidy') }}-
+      - name: Zero ctcache stats
+        if: matrix.enabled == 'true'
+        shell: bash
+        env:
+          CTCACHE_LOCAL: '1'
+          CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
+        run: |
+          mkdir -p "$CTCACHE_DIR"
+          py=$(command -v python3 || command -v python || echo python)
+          "$py" ctcache-tool/src/ctcache/clang_tidy_cache.py --zero-stats || true
       - name: Run clang-tidy (ctcache)
         if: matrix.enabled == 'true'
         env:
@@ -577,6 +587,15 @@ jobs:
           # compute its hash, and cl.exe -E needs the MSVC environment, so run the
           # bash driver inside vcvarsall.
           cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && bash .github/actions/clang-tidy-cached/run.sh"
+      - name: Show ctcache stats
+        if: ${{ always() && matrix.enabled == 'true' }}
+        shell: bash
+        env:
+          CTCACHE_LOCAL: '1'
+          CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
+        run: |
+          py=$(command -v python3 || command -v python || echo python)
+          "$py" ctcache-tool/src/ctcache/clang_tidy_cache.py --show-stats | grep -i 'local' || true
       - name: Save ctcache
         if: ${{ always() && matrix.enabled == 'true' }}
         uses: actions/cache/save@v5
