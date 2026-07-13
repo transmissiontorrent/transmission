@@ -55,7 +55,7 @@ void ComInteropHelper::registerObject(QObject* parent)
 {
     QAxFactory::startServer();
     // The new object is owned by its QObject parent (Qt parent-child ownership),
-    // which the analyzer can't see, so it is not actually leaked.
-    // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
+    // which the analyzer can't see, so it is not actually leaked. The analyzer
+    // anchors the leak to the closing brace, so the suppression must live there.
     QAxFactory::registerActiveObject(new InteropObject{ parent });
-}
+} // NOLINT(clang-analyzer-cplusplus.NewDeleteLeaks)
