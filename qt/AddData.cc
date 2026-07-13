@@ -58,9 +58,10 @@ AddData::Type AddData::set(QString const& key)
             this->filename = file.fileName();
             this->type = FILENAME;
 
-            file.open(QIODevice::ReadOnly);
-            this->metainfo = file.readAll();
-            file.close();
+            if (file.open(QIODevice::ReadOnly)) {
+                this->metainfo = file.readAll();
+                file.close();
+            }
         }
     } else if (auto const raw = QByteArray::fromBase64(key.toUtf8()); !raw.isEmpty()) {
         this->metainfo.append(raw);
