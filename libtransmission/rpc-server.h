@@ -87,7 +87,7 @@ public:
         return settings_.username;
     }
 
-    void set_username(std::string_view username);
+    void set_username(std::string username) noexcept;
 
     [[nodiscard]] constexpr auto is_password_enabled() const noexcept
     {

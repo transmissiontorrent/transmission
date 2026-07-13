@@ -871,10 +871,10 @@ void tr_rpc_server::set_whitelist(std::string_view whitelist)
 
 // --- PASSWORD
 
-void tr_rpc_server::set_username(std::string_view username)
+void tr_rpc_server::set_username(std::string username) noexcept
 {
-    settings_.username = username;
-    tr_logAddDebug(fmt::format("setting our username to '{:s}'", username));
+    settings_.username = std::move(username);
+    tr_logAddDebug(fmt::format("setting our username to '{:s}'", settings_.username));
 }
 
 void tr_rpc_server::set_password(std::string_view password) noexcept

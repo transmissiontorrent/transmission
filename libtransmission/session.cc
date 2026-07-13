@@ -1737,7 +1737,7 @@ void tr_sessionSetRPCUsername(tr_session* session, std::string_view const userna
 {
     TR_ASSERT(session != nullptr);
 
-    session->rpc_server_->set_username(username);
+    session->rpc_server_->set_username(std::string{ username });
 }
 
 std::string tr_sessionGetRPCUsername(tr_session const* session)
