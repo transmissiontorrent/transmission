@@ -971,6 +971,8 @@ void tr_rpc_server::load(Settings&& settings)
     }
 }
 
+// NOLINTNEXTLINE(bugprone-exception-escape): stop_server can throw on OOM, but a
+// destructor must not propagate; terminating is the correct behavior here.
 tr_rpc_server::~tr_rpc_server()
 {
     stop_server(this);
