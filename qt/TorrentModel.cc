@@ -52,7 +52,7 @@ constexpr struct {
 } TorrentIdLessThan;
 
 template<typename Iter>
-auto getIds(Iter it, Iter end)
+auto getIds(Iter it, Iter const& end)
 {
     torrent_ids_t ids;
 
