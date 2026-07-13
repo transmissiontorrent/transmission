@@ -634,7 +634,7 @@ struct tr_torrent {
 
     void set_metadata_piece(int64_t piece, void const* data, size_t len);
 
-    [[nodiscard]] std::optional<int64_t> get_next_metadata_request(time_t now) noexcept;
+    [[nodiscard]] std::optional<int64_t> get_next_metadata_request(time_t now);
 
     [[nodiscard]] double get_metadata_percent() const noexcept;
 
