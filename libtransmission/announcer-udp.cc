@@ -277,10 +277,10 @@ struct tau_announce_request {
 
             switch (ip_protocol_resp) {
             case TR_AF_INET:
-                response.pex = tr_pex::from_compact_ipv4(std::data(buf), std::size(buf), nullptr, 0);
+                response.pex = tr_pex::from_compact_ipv4(buf, {});
                 break;
             case TR_AF_INET6:
-                response.pex6 = tr_pex::from_compact_ipv6(std::data(buf), std::size(buf), nullptr, 0);
+                response.pex6 = tr_pex::from_compact_ipv6(buf, {});
                 break;
             default:
                 break;
