@@ -90,12 +90,12 @@ public:
 
     bool set_global_addr(tr_address const& addr_new) noexcept;
 
-    void update_addr(tr_address_type type) noexcept;
-    void update_global_addr(tr_address_type type) noexcept;
+    void update_addr(tr_address_type type);
+    void update_global_addr(tr_address_type type);
     void update_source_addr(tr_address_type type) noexcept;
 
     // Only use as a callback for web_->fetch()
-    void on_response_ip_query(tr_address_type type, tr_web::FetchResponse const& response) noexcept;
+    void on_response_ip_query(tr_address_type type, tr_web::FetchResponse const& response);
 
     [[nodiscard]] constexpr auto has_ip_protocol(tr_address_type type) const noexcept
     {

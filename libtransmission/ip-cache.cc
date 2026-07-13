@@ -202,7 +202,7 @@ bool tr_ip_cache::set_global_addr(tr_address const& addr_new) noexcept
     return false;
 }
 
-void tr_ip_cache::update_addr(tr_address_type type) noexcept
+void tr_ip_cache::update_addr(tr_address_type type)
 {
     update_source_addr(type);
     if (source_addr(type)) {
@@ -210,7 +210,7 @@ void tr_ip_cache::update_addr(tr_address_type type) noexcept
     }
 }
 
-void tr_ip_cache::update_global_addr(tr_address_type const type) noexcept
+void tr_ip_cache::update_global_addr(tr_address_type const type)
 {
     TR_ASSERT(type < NUM_TR_AF_INET_TYPES);
     TR_ASSERT(has_ip_protocol_[type]);
@@ -291,7 +291,7 @@ void tr_ip_cache::update_source_addr(tr_address_type type) noexcept
     unset_is_updating(type);
 }
 
-void tr_ip_cache::on_response_ip_query(tr_address_type const type, tr_web::FetchResponse const& response) noexcept
+void tr_ip_cache::on_response_ip_query(tr_address_type const type, tr_web::FetchResponse const& response)
 {
     auto& ix_service = ix_service_[type];
     auto const& ip_endpoints = current_ip_endpoints_[type];
