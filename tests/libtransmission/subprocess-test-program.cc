@@ -12,6 +12,7 @@
 #include <fstream>
 #include <string>
 
+// NOLINTNEXTLINE(bugprone-exception-escape): test helper; terminating on OOM is fine
 int main(int argc, char** argv)
 {
     if (argc < 3) {
