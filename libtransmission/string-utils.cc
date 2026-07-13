@@ -11,6 +11,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <utility> // std::cmp_equal
 
 #ifdef _WIN32
 #include <windows.h>
@@ -113,7 +114,7 @@ std::string tr_win32_native_to_utf8(std::wstring_view in)
         static_cast<int>(std::size(out)),
         nullptr,
         nullptr);
-    TR_ASSERT(len == std::size(out));
+    TR_ASSERT(std::cmp_equal(len, std::size(out)));
     return out;
 }
 
@@ -128,7 +129,7 @@ std::wstring tr_win32_utf8_to_native(std::string_view in)
         static_cast<int>(std::size(in)),
         std::data(out),
         static_cast<int>(std::size(out)));
-    TR_ASSERT(len == std::size(out));
+    TR_ASSERT(std::cmp_equal(len, std::size(out)));
     return out;
 }
 
