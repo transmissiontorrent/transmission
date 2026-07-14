@@ -379,6 +379,7 @@ void Session::torrentRenamePath(torrent_ids_t const& torrent_ids, QString const&
                 QObject::connect(d, &QMessageBox::rejected, d, &QMessageBox::deleteLater);
                 d->show();
             })
+        // NOLINTNEXTLINE(bugprone-exception-escape)
         .add([this, torrent_ids](RpcResponse const& /*r*/) { refreshTorrents(torrent_ids, TorrentProperties::Rename); })
         .run();
 }
@@ -589,6 +590,7 @@ void Session::sendTorrentRequest(tr_quark const method, torrent_ids_t const& tor
         .add([this, method, params = makeParams(TR_KEY_ids, torrent_ids)](RpcClient::ResponseFunc done) mutable {
             exec(method, std::move(params), std::move(done));
         })
+        // NOLINTNEXTLINE(bugprone-exception-escape)
         .add([this, torrent_ids]() { refreshTorrents(torrent_ids, TorrentProperties::MainStats); })
         .run();
 }

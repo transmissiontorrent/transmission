@@ -48,7 +48,7 @@ template<typename T>
 }
 } // namespace
 
-void tr_metadata_download::create_all_needed(int64_t n_pieces) noexcept
+void tr_metadata_download::create_all_needed(int64_t const n_pieces)
 {
     pieces_needed_.clear();
     pieces_needed_.resize(n_pieces);
@@ -301,7 +301,7 @@ void tr_torrent::set_metadata_piece(int64_t const piece, void const* const data,
 
 // ---
 
-[[nodiscard]] std::optional<int64_t> tr_metadata_download::get_next_metadata_request(time_t const now) noexcept
+[[nodiscard]] std::optional<int64_t> tr_metadata_download::get_next_metadata_request(time_t const now)
 {
     auto& needed = pieces_needed_;
     if (std::empty(needed) || needed.front().requested_at + MinRepeatIntervalSecs >= now) {
@@ -316,9 +316,9 @@ void tr_torrent::set_metadata_piece(int64_t const piece, void const* const data,
     return req.piece;
 }
 
-[[nodiscard]] std::optional<int64_t> tr_torrent::get_next_metadata_request(time_t const now) noexcept
+[[nodiscard]] std::optional<int64_t> tr_torrent::get_next_metadata_request(time_t const now)
 {
-    if (auto& m = metadata_download_; m) {
+    if (auto& m = metadata_download_) {
         return m->get_next_metadata_request(now);
     }
 

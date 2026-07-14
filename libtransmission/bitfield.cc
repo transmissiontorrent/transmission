@@ -375,7 +375,7 @@ void tr_bitfield::set_span(size_t begin, size_t end, bool value)
     }
 }
 
-tr_bitfield& tr_bitfield::operator|=(tr_bitfield const& that) noexcept
+tr_bitfield& tr_bitfield::operator|=(tr_bitfield const& that)
 {
     if (has_all() || that.has_none()) {
         return *this;
@@ -396,7 +396,7 @@ tr_bitfield& tr_bitfield::operator|=(tr_bitfield const& that) noexcept
     return *this;
 }
 
-tr_bitfield& tr_bitfield::operator&=(tr_bitfield const& that) noexcept
+tr_bitfield& tr_bitfield::operator&=(tr_bitfield const& that)
 {
     if (has_none() || that.has_all()) {
         return *this;

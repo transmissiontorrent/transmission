@@ -871,13 +871,13 @@ void tr_rpc_server::set_whitelist(std::string_view whitelist)
 
 // --- PASSWORD
 
-void tr_rpc_server::set_username(std::string_view username)
+void tr_rpc_server::set_username(std::string username) noexcept
 {
-    settings_.username = username;
-    tr_logAddDebug(fmt::format("setting our username to '{:s}'", username));
+    settings_.username = std::move(username);
+    tr_logAddDebug(fmt::format("setting our username to '{:s}'", settings_.username));
 }
 
-void tr_rpc_server::set_password(std::string_view password) noexcept
+void tr_rpc_server::set_password(std::string_view password)
 {
     auto const is_salted = tr_ssha1_test(password);
     settings_.salted_password = is_salted ? password : tr_ssha1(password);
@@ -971,6 +971,9 @@ void tr_rpc_server::load(Settings&& settings)
     }
 }
 
+// stop_server can throw on OOM, but a destructor must not propagate;
+// terminating is the correct behavior here.
+// NOLINTNEXTLINE(bugprone-exception-escape)
 tr_rpc_server::~tr_rpc_server()
 {
     stop_server(this);

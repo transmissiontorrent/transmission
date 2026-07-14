@@ -332,7 +332,7 @@ private:
             }
         }
 
-        [[nodiscard]] std::span<std::string const> settings_ip_endpoint(tr_address_type type) override
+        [[nodiscard]] std::span<std::string const> settings_ip_endpoint(tr_address_type type) noexcept override
         {
             switch (type) {
             case TR_AF_INET:

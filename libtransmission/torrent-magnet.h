@@ -39,7 +39,7 @@ public:
 
     bool set_metadata_piece(int64_t piece, void const* data, size_t len);
 
-    [[nodiscard]] std::optional<int64_t> get_next_metadata_request(time_t now) noexcept;
+    [[nodiscard]] std::optional<int64_t> get_next_metadata_request(time_t now);
 
     [[nodiscard]] double get_metadata_percent() const noexcept;
 
@@ -66,7 +66,7 @@ private:
             MetadataPieceSize;
     }
 
-    void create_all_needed(int64_t n_pieces) noexcept;
+    void create_all_needed(int64_t n_pieces);
 
     std::vector<char> metadata_;
     std::deque<metadata_node> pieces_needed_;

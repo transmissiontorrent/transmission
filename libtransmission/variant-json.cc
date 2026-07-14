@@ -149,7 +149,7 @@ private:
         return depth < MaxDepth ? prealloc_guess_[depth] : 0;
     }
 
-    tr_variant* push_stack() noexcept
+    tr_variant* push_stack()
     {
         return std::size(stack_) < MaxDepth ? stack_.emplace(get_leaf()) : nullptr;
     }
