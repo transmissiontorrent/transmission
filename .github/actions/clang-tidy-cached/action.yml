@@ -7,7 +7,9 @@ description: >
   removed code or by changes in included headers.
 inputs:
   regex:
-    description: Anchored path regex selecting which TUs to check
+    description: >
+      Regex selecting which TUs to check, matched (anchored) against
+      workspace-relative file paths, so build-dir TUs never match.
     required: true
   cache-key:
     description: Distinguishing part of the ctcache cache key (e.g. job-toolkit)
