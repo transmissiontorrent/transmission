@@ -60,18 +60,17 @@ struct HashResult {
             return { .error = err, .hash = {} };
         }
 
-        auto* begin = std::data(buffer);
-        auto* end = begin + byte_span.size();
+        auto span = std::span{ buffer.data(), static_cast<size_t>(byte_span.size()) };
 
-        if (block == begin_block) {
-            begin += (begin_byte - byte_span.begin);
-        }
         if (block + 1U == end_block) {
-            end -= (byte_span.end - end_byte);
+            span = span.first(end_byte - byte_span.begin);
+        }
+        if (block == begin_block) {
+            span = span.subspan(begin_byte - byte_span.begin);
         }
 
-        sha.add(begin, end - begin);
-        n_bytes_checked += (end - begin);
+        sha.add(span);
+        n_bytes_checked += span.size();
     }
 
     TR_ASSERT(block_info.piece_size(piece) == n_bytes_checked);

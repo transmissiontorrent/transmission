@@ -59,25 +59,24 @@ void tr_verify_worker::verify_torrent(
         }
 
         /* figure out how much we can read this pass */
-        uint64_t left_in_piece = metainfo.piece_size(piece) - piece_pos;
-        uint64_t left_in_file = file_length - file_pos;
-        uint64_t bytes_this_pass = std::min(left_in_file, left_in_piece);
-        bytes_this_pass = std::min(bytes_this_pass, static_cast<uint64_t>(std::size(buffer)));
+        size_t left_in_piece = metainfo.piece_size(piece) - piece_pos;
+        size_t left_in_file = file_length - file_pos;
+        auto this_pass = std::span{ buffer.data(), std::min({ left_in_file, left_in_piece, buffer.size() }) };
 
         /* read a bit */
         if (fd != TR_BAD_SYS_FILE) {
             auto num_read = uint64_t{};
-            if (tr_sys_file_read_at(fd, std::data(buffer), bytes_this_pass, file_pos, &num_read) && num_read > 0U) {
-                bytes_this_pass = num_read;
-                sha.add(std::data(buffer), bytes_this_pass);
+            if (tr_sys_file_read_at(fd, this_pass.data(), this_pass.size(), file_pos, &num_read) && num_read > 0U) {
+                this_pass = this_pass.first(num_read);
+                sha.add(this_pass);
             }
         }
 
         /* move our offsets */
-        left_in_piece -= bytes_this_pass;
-        left_in_file -= bytes_this_pass;
-        piece_pos += bytes_this_pass;
-        file_pos += bytes_this_pass;
+        left_in_piece -= this_pass.size();
+        left_in_file -= this_pass.size();
+        piece_pos += this_pass.size();
+        file_pos += this_pass.size();
 
         /* if we're finishing a piece... */
         if (left_in_piece == 0U) {
