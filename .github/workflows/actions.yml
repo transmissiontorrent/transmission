@@ -144,7 +144,7 @@ jobs:
           enable-qt: qt6
           use-sudo: true
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -209,7 +209,7 @@ jobs:
         with:
           compiler: clang
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -669,7 +669,7 @@ jobs:
           enable-gtk: ${{ needs.what-to-make.outputs.make-gtk == 'true' && 'gtk4' || 'false' }}
           enable-qt: ${{ needs.what-to-make.outputs.make-qt == 'true' && 'qt6' || 'false' }}
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.os }}
       - name: Configure
@@ -972,7 +972,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.os }}
       - name: Configure
@@ -1245,7 +1245,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -1367,7 +1367,7 @@ jobs:
           use-sudo: true
           enable-mold: true
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -1446,7 +1446,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -1626,7 +1626,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.crypto.cmake }}
       - name: Configure
