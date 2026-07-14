@@ -882,7 +882,7 @@ struct tr_torrent_view tr_torrentView(tr_torrent const* tor);
  */
 void tr_torrentAvailability(tr_torrent const* torrent, std::span<int8_t> tab);
 
-void tr_torrentAmountFinished(tr_torrent const* torrent, float* tab, int n_tabs);
+void tr_torrentAmountFinished(tr_torrent const* torrent, std::span<float> tab);
 
 /**
  * Queue a torrent for verification.

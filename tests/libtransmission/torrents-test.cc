@@ -132,7 +132,7 @@ TEST_F(TorrentsTest, invalidArgsAreLogged)
     tr_torrentAvailability(nullptr, {});
     ++expected_log_size;
 
-    tr_torrentAmountFinished(nullptr, nullptr, 0);
+    tr_torrentAmountFinished(nullptr, {});
     ++expected_log_size;
 
     tr_torrentStart(nullptr);

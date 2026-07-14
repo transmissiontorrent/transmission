@@ -225,7 +225,7 @@ static tr_torrent_rename_done_func makeRenameDoneCallback(NSDictionary* contextI
 
 - (void)getAmountFinished:(float*)tab size:(int)size
 {
-    tr_torrentAmountFinished(self.fHandle, tab, size);
+    tr_torrentAmountFinished(self.fHandle, { tab, static_cast<size_t>(size) });
 }
 
 - (NSIndexSet*)previousFinishedPieces

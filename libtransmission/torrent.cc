@@ -1431,11 +1431,11 @@ void tr_torrentAvailability(tr_torrent const* tor, std::span<int8_t> const tab)
     }
 }
 
-void tr_torrentAmountFinished(tr_torrent const* tor, float* tabs, int n_tabs)
+void tr_torrentAmountFinished(tr_torrent const* const tor, std::span<float> const tabs)
 {
     tr_return_if_fail(tr_isTorrent(tor));
 
-    tor->amount_done_bins(tabs, n_tabs);
+    tor->amount_done_bins(tabs);
 }
 
 // --- Start/Stop Callback

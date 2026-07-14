@@ -76,14 +76,14 @@ uint64_t tr_completion::size_when_done() const
     return *size_when_done_;
 }
 
-void tr_completion::amount_done(float* tab, size_t n_tabs) const
+void tr_completion::amount_done(std::span<float> const tab) const
 {
-    if (n_tabs < 1) {
+    if (tab.empty()) {
         return;
     }
 
-    auto const blocks_per_tab = std::size(blocks_) / n_tabs;
-    for (size_t i = 0; i < n_tabs; ++i) {
+    auto const blocks_per_tab = std::size(blocks_) / tab.size();
+    for (size_t i = 0; i < tab.size(); ++i) {
         auto const begin = i * blocks_per_tab;
         auto const end = std::min(begin + blocks_per_tab, std::size(blocks_));
         auto const numerator = blocks_.count(begin, end);
