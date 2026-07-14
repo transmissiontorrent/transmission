@@ -791,12 +791,21 @@ jobs:
         uses: ./.github/actions/setup-vs-env-win32
         with:
           arch: ${{ matrix.arch }}
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2.23
+        with:
+          key: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}
       - name: Configure
         run: |
           $CmakeArgs = @(
             '-S .'
             '-B obj'
             '-G Ninja'
+            '-DCMAKE_C_COMPILER_LAUNCHER=ccache'
+            '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+            # ccache cannot cache /Zi; store debug info in the objects (/Z7) instead
+            '-DCMAKE_POLICY_DEFAULT_CMP0141=NEW'
+            '-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded'
             '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
             '-DCMAKE_INSTALL_PREFIX=pfx'
             "-DCMAKE_PREFIX_PATH=`"$Env:DEPS_PREFIX`""

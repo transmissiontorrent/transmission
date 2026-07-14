@@ -242,6 +242,12 @@ macro(tr_add_external_auto_library ID PACKAGENAME)
                 "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}")
         endif()
 
+        if(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT)
+            list(APPEND ${PACKAGENAME}_EXT_PROJ_CMAKE_ARGS
+                "-DCMAKE_POLICY_DEFAULT_CMP0141:STRING=NEW"
+                "-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT:STRING=${CMAKE_MSVC_DEBUG_INFORMATION_FORMAT}")
+        endif()
+
         ExternalProject_Add(
             ${${PACKAGENAME}_UPSTREAM_TARGET}
             PREFIX "${_TAEAL_BINARY_DIR}"
