@@ -163,6 +163,7 @@ jobs:
             -DENABLE_CLI=OFF \
             -DENABLE_DAEMON=OFF \
             -DENABLE_GTK=OFF \
+            -DENABLE_IPO=OFF \
             -DENABLE_MAC=OFF \
             -DENABLE_QT=ON \
             -DENABLE_TESTS=ON \
@@ -226,6 +227,7 @@ jobs:
             -DENABLE_CLI=OFF \
             -DENABLE_DAEMON=OFF \
             -DENABLE_GTK=OFF \
+            -DENABLE_IPO=OFF \
             -DENABLE_MAC=OFF \
             -DENABLE_QT=OFF \
             -DENABLE_TESTS=ON \
@@ -290,6 +292,7 @@ jobs:
             '-DENABLE_CLI=OFF'
             '-DENABLE_DAEMON=OFF'
             '-DENABLE_GTK=OFF'
+            '-DENABLE_IPO=OFF'
             '-DENABLE_MAC=OFF'
             # Qt must be ON so the Qt unit tests are built and exercised under ASan.
             '-DENABLE_QT=ON'
