@@ -25,6 +25,10 @@ inputs:
     description: 'Install the mold linker (used via -fuse-ld=mold)'
     required: false
     default: 'false'
+  enable-ccache:
+    description: 'Install ccache'
+    required: false
+    default: 'false'
 runs:
   using: composite
   steps:
@@ -140,6 +144,11 @@ runs:
           # Faster linker
           if [[ "${{ inputs.enable-mold }}" == "true" ]]; then
             BASE_PACKAGES+=(mold)
+          fi
+
+          # Compiler cache
+          if [[ "${{ inputs.enable-ccache }}" == "true" ]]; then
+            BASE_PACKAGES+=(ccache)
           fi
 
           SUDO_CMD="$SUDO_CMD" bash "$GITHUB_ACTION_PATH/apt-install.sh" "${BASE_PACKAGES[@]}"
