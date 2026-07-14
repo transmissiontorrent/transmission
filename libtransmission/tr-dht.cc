@@ -378,10 +378,12 @@ private:
         std::copy_n(reinterpret_cast<std::byte const*>(info_hash), std::size(hash), std::data(hash));
 
         if (event == DHT_EVENT_VALUES) {
-            auto const pex = remove_bad_pex(tr_pex::from_compact_ipv4(data, data_len, nullptr, 0));
+            auto const pex = remove_bad_pex(
+                tr_pex::from_compact_ipv4(std::span{ static_cast<std::byte const*>(data), data_len }, {}));
             self->mediator_.add_pex(hash, pex);
         } else if (event == DHT_EVENT_VALUES6) {
-            auto const pex = remove_bad_pex(tr_pex::from_compact_ipv6(data, data_len, nullptr, 0));
+            auto const pex = remove_bad_pex(
+                tr_pex::from_compact_ipv6(std::span{ static_cast<std::byte const*>(data), data_len }, {}));
             self->mediator_.add_pex(hash, pex);
         }
     }
