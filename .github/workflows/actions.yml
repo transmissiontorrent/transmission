@@ -34,7 +34,6 @@ jobs:
       tidy-core: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.tidy-core-src-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' || steps.check-diffs.outputs.tidy-config-changed == '1' }}
       tidy-gtk: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.tidy-gtk-src-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' || steps.check-diffs.outputs.tidy-config-changed == '1' }}
       tidy-qt: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.tidy-qt-src-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' || steps.check-diffs.outputs.tidy-config-changed == '1' }}
-      tidy-everything: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.tidy-config-changed == '1' }}
     steps:
       - name: Check Push to Main Branch
         id: check-main-push
@@ -69,9 +68,9 @@ jobs:
           get_changes any-code   CMakeLists.txt cmake Transmission.xcodeproj libtransmission libtransmission-app cli daemon gtk macosx qt utils tests web third-party
           get_changes our-code   CMakeLists.txt cmake Transmission.xcodeproj libtransmission libtransmission-app cli daemon gtk macosx qt utils tests web
           get_changes tidy-config libtransmission/.clang-tidy libtransmission-app/.clang-tidy gtk/.clang-tidy qt/.clang-tidy tests/libtransmission/.clang-tidy tests/qt/.clang-tidy
-          # clang-tidy-diff only inspects changed lines, so each tidy cell keys
-          # off just the directories its -regex matches -- not the wider build
-          # deps (a libtransmission-only change has no gtk/qt lines to check).
+          # Each tidy cell only checks the directories its regex covers, so it
+          # keys off just those sources -- not the wider build deps (a
+          # libtransmission-only change has no gtk/qt files to re-check).
           get_changes tidy-core-src libtransmission libtransmission-app tests/libtransmission
           get_changes tidy-gtk-src  gtk
           get_changes tidy-qt-src   qt tests/qt
@@ -343,10 +342,10 @@ jobs:
       needs.what-to-make.outputs.tidy-core == 'true' ||
       needs.what-to-make.outputs.tidy-gtk == 'true' ||
       needs.what-to-make.outputs.tidy-qt == 'true'
-    # One cell per toolkit version. clang-tidy-diff.py checks only the lines
-    # changed since the merge base, so each cell needs to generate code (Qt moc/
-    # uic) but never compiles the whole target. The matrix.enabled flag (wired to
-    # the what-to-make tidy-* outputs) skips cells whose area did not change.
+    # One cell per toolkit version. Each cell generates code (Qt moc/uic) so
+    # clang-tidy can parse every TU, but never compiles the whole target;
+    # ctcache caches per-TU results across runs. The matrix.enabled flag (wired
+    # to the what-to-make tidy-* outputs) skips cells whose area did not change.
     # TODO: try removing '-DFMT_USE_CONSTEVAL=0' either when upgrading clang or fmt
     strategy:
       fail-fast: false
@@ -398,7 +397,6 @@ jobs:
         if: matrix.enabled == 'true'
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           submodules: false
       - name: Check out submodules (shallow)
         if: matrix.enabled == 'true'
@@ -452,12 +450,11 @@ jobs:
           fi
       - name: Run clang-tidy
         if: matrix.enabled == 'true'
-        uses: ./.github/actions/clang-tidy-diff
+        uses: ./.github/actions/clang-tidy-cached
         with:
-          build-path: obj
           regex: ${{ matrix.regex }}
+          cache-key: ${{ github.job }}-${{ matrix.toolkit }}
           clang-tidy-binary: clang-tidy-22
-          full-run: ${{ needs.what-to-make.outputs.tidy-everything }}
           extra-arg: '-DFMT_USE_CONSTEVAL=0'
 
   clang-tidy-windows:
@@ -541,67 +538,18 @@ jobs:
           if ($targets) {
             cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --target $($targets -join ' ')"
           }
-      # SPIKE (ci/ctcache): replace clang-tidy-diff.py with ctcache-backed
-      # whole-TU clang-tidy. run.sh tidies every matching TU through ctcache,
-      # which skips any TU unchanged since a cached run. The cross-run cache is
-      # stored via actions/cache, so a warm cache should turn the ~70min full
-      # run into roughly the cost of preprocessing (not analysing) every TU.
-      - name: Get ctcache
+      - name: Run clang-tidy
         if: matrix.enabled == 'true'
-        shell: bash
-        run: git clone --depth 1 --branch 1.2.0 https://github.com/matus-chochlik/ctcache ctcache-tool
-      - name: Restore ctcache
-        if: matrix.enabled == 'true'
-        uses: actions/cache/restore@v5
+        uses: ./.github/actions/clang-tidy-cached
         with:
-          path: ${{ runner.temp }}/ctcache-store
-          key: ctcache-${{ github.job }}-${{ matrix.toolkit }}-${{ hashFiles('**/.clang-tidy') }}-${{ github.run_id }}
-          restore-keys: |
-            ctcache-${{ github.job }}-${{ matrix.toolkit }}-${{ hashFiles('**/.clang-tidy') }}-
-      - name: Zero ctcache stats
-        if: matrix.enabled == 'true'
-        shell: bash
-        env:
-          CTCACHE_LOCAL: '1'
-          CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
-        run: |
-          mkdir -p "$CTCACHE_DIR"
-          py=$(command -v python3 || command -v python || echo python)
-          "$py" ctcache-tool/src/ctcache/clang_tidy_cache.py --zero-stats || true
-      - name: Run clang-tidy (ctcache)
-        if: matrix.enabled == 'true'
-        env:
-          CTCACHE_LOCAL: '1'
-          CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
-          CTCACHE_STRIP: ${{ github.workspace }}
-          CTCACHE_CLIENT: ctcache-tool/src/ctcache/clang_tidy_cache.py
-          TIDY_REGEX: ${{ matrix.regex }}
-          BUILD_PATH: obj
-          CLANG_TIDY: clang-tidy
+          regex: ${{ matrix.regex }}
+          cache-key: ${{ github.job }}-${{ matrix.toolkit }}
+          clang-tidy-binary: clang-tidy
           # MSVC-style compile commands carry flags clang-cl ignores (e.g. /GL);
           # silence the resulting driver diagnostic so -warnings-as-errors=* does
           # not treat it as a finding.
-          TIDY_EXTRA_ARG: -Wno-unused-command-line-argument
-        run: |
-          # ctcache preprocesses each TU with the compile-DB compiler (cl.exe) to
-          # compute its hash, and cl.exe -E needs the MSVC environment, so run the
-          # bash driver inside vcvarsall.
-          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && bash .github/actions/clang-tidy-cached/run.sh"
-      - name: Show ctcache stats
-        if: ${{ always() && matrix.enabled == 'true' }}
-        shell: bash
-        env:
-          CTCACHE_LOCAL: '1'
-          CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
-        run: |
-          py=$(command -v python3 || command -v python || echo python)
-          "$py" ctcache-tool/src/ctcache/clang_tidy_cache.py --show-stats | grep -i 'local' || true
-      - name: Save ctcache
-        if: ${{ always() && matrix.enabled == 'true' }}
-        uses: actions/cache/save@v5
-        with:
-          path: ${{ runner.temp }}/ctcache-store
-          key: ctcache-${{ github.job }}-${{ matrix.toolkit }}-${{ hashFiles('**/.clang-tidy') }}-${{ github.run_id }}
+          extra-arg: -Wno-unused-command-line-argument
+          msvc-env: true
 
   macos-xcodebuild-universal:
     runs-on: macos-26

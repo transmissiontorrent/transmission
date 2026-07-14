@@ -1,0 +1,99 @@
+name: 'clang-tidy (cached)'
+description: >
+  Run clang-tidy over every compile_commands.json entry matching a regex,
+  caching results with ctcache (matus-chochlik/ctcache) so translation units
+  unchanged since a previous run are skipped. Findings fail the step. Unlike a
+  diff-based check this analyses whole TUs, catching warnings introduced by
+  removed code or by changes in included headers.
+inputs:
+  regex:
+    description: Anchored path regex selecting which TUs to check
+    required: true
+  cache-key:
+    description: Distinguishing part of the ctcache cache key (e.g. job-toolkit)
+    required: true
+  build-path:
+    description: Directory containing compile_commands.json
+    default: obj
+  clang-tidy-binary:
+    description: clang-tidy executable
+    default: clang-tidy
+  extra-arg:
+    description: Optional single -extra-arg value appended to every invocation
+    default: ''
+  msvc-env:
+    description: >
+      Run inside the MSVC environment (vcvarsall) so ctcache can preprocess with
+      cl.exe. Requires VCVARSALL/VC_ARCH in the environment (setup-vs-env-win32).
+    default: 'false'
+  ctcache-ref:
+    description: git ref (tag/branch/sha) of matus-chochlik/ctcache to clone
+    default: '1.2.0'
+runs:
+  using: composite
+  steps:
+    # The cache key hashes only the repo's own .clang-tidy files (not '**', which
+    # would also pick up the cloned ctcache-tool) so restore and save agree.
+    - name: Restore ctcache
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ runner.temp }}/ctcache-store
+        key: ctcache-${{ inputs.cache-key }}-${{ hashFiles('libtransmission/.clang-tidy', 'libtransmission-app/.clang-tidy', 'gtk/.clang-tidy', 'qt/.clang-tidy', 'tests/libtransmission/.clang-tidy', 'tests/qt/.clang-tidy') }}-${{ github.run_id }}
+        restore-keys: |
+          ctcache-${{ inputs.cache-key }}-${{ hashFiles('libtransmission/.clang-tidy', 'libtransmission-app/.clang-tidy', 'gtk/.clang-tidy', 'qt/.clang-tidy', 'tests/libtransmission/.clang-tidy', 'tests/qt/.clang-tidy') }}-
+    - name: Get ctcache
+      shell: bash
+      run: git clone --depth 1 --branch ${{ inputs.ctcache-ref }} https://github.com/matus-chochlik/ctcache ctcache-tool
+    - name: Zero ctcache stats
+      shell: bash
+      env:
+        CTCACHE_LOCAL: '1'
+        CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
+      run: |
+        mkdir -p "$CTCACHE_DIR"
+        py=$(command -v python3 || command -v python || echo python)
+        "$py" ctcache-tool/src/ctcache/clang_tidy_cache.py --zero-stats || true
+    - name: Run clang-tidy (ctcache)
+      if: ${{ inputs.msvc-env != 'true' }}
+      shell: bash
+      env:
+        CTCACHE_LOCAL: '1'
+        CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
+        CTCACHE_STRIP: ${{ github.workspace }}
+        CTCACHE_CLIENT: ctcache-tool/src/ctcache/clang_tidy_cache.py
+        TIDY_REGEX: ${{ inputs.regex }}
+        BUILD_PATH: ${{ inputs.build-path }}
+        CLANG_TIDY: ${{ inputs.clang-tidy-binary }}
+        TIDY_EXTRA_ARG: ${{ inputs.extra-arg }}
+      run: bash .github/actions/clang-tidy-cached/run.sh
+    - name: Run clang-tidy (ctcache, MSVC)
+      if: ${{ inputs.msvc-env == 'true' }}
+      shell: pwsh
+      env:
+        CTCACHE_LOCAL: '1'
+        CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
+        CTCACHE_STRIP: ${{ github.workspace }}
+        CTCACHE_CLIENT: ctcache-tool/src/ctcache/clang_tidy_cache.py
+        TIDY_REGEX: ${{ inputs.regex }}
+        BUILD_PATH: ${{ inputs.build-path }}
+        CLANG_TIDY: ${{ inputs.clang-tidy-binary }}
+        TIDY_EXTRA_ARG: ${{ inputs.extra-arg }}
+      run: |
+        # ctcache preprocesses each TU with the compile-DB compiler (cl.exe) to
+        # compute its hash, and cl.exe -E needs the MSVC environment.
+        cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && bash .github/actions/clang-tidy-cached/run.sh"
+    - name: Show ctcache stats
+      if: ${{ always() }}
+      shell: bash
+      env:
+        CTCACHE_LOCAL: '1'
+        CTCACHE_DIR: ${{ runner.temp }}/ctcache-store
+      run: |
+        py=$(command -v python3 || command -v python || echo python)
+        "$py" ctcache-tool/src/ctcache/clang_tidy_cache.py --show-stats | grep -i 'local' || true
+    - name: Save ctcache
+      if: ${{ always() }}
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ runner.temp }}/ctcache-store
+        key: ctcache-${{ inputs.cache-key }}-${{ hashFiles('libtransmission/.clang-tidy', 'libtransmission-app/.clang-tidy', 'gtk/.clang-tidy', 'qt/.clang-tidy', 'tests/libtransmission/.clang-tidy', 'tests/qt/.clang-tidy') }}-${{ github.run_id }}

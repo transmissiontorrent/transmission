@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SPIKE: run clang-tidy over every compile_commands.json entry whose path matches
+# Run clang-tidy over every compile_commands.json entry whose path matches
 # TIDY_REGEX, routing each invocation through ctcache
 # (https://github.com/matus-chochlik/ctcache). ctcache short-circuits any
 # translation unit whose preprocessed source + .clang-tidy config + clang-tidy
