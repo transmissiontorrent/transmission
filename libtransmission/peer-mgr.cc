@@ -1293,18 +1293,17 @@ void tr_peerMgrAddIncoming(tr_peerMgr* manager, std::shared_ptr<tr_peer_socket> 
     }
 }
 
-// TODO(C++20): convert to std::span
-size_t tr_peerMgrAddPex(tr_torrent* tor, tr_peer_from from, tr_pex const* pex, size_t n_pex)
+size_t tr_peerMgrAddPex(tr_torrent* tor, tr_peer_from from, std::span<tr_pex const> const pex)
 {
     size_t n_used = 0;
     tr_swarm* s = tor->swarm;
     auto const lock = s->manager->unique_lock();
 
-    for (tr_pex const* const end = pex + n_pex; pex != end; ++pex) {
-        if (tr_isPex(pex) && /* safeguard against corrupt data */
-            !s->manager->blocklists_.contains(pex->socket_address.address()) && pex->is_valid_for_peers(from) &&
+    for (auto const& p : pex) {
+        if (p.is_valid() && // safeguard against corrupt data
+            !s->manager->blocklists_.contains(p.socket_address.address()) && p.is_valid_for_peers(from) &&
             from != TR_PEER_FROM_INCOMING) {
-            s->ensure_info_exists(pex->socket_address, pex->flags, from);
+            s->ensure_info_exists(p.socket_address, p.flags, from);
             ++n_used;
         }
     }
@@ -1475,16 +1474,15 @@ int8_t tr_peerMgrPieceAvailability(tr_torrent const* tor, tr_piece_index_t piece
     return static_cast<int8_t>(std::ranges::count_if(peers, [piece](auto const& peer) { return peer->has_piece(piece); }));
 }
 
-void tr_peerMgrTorrentAvailability(tr_torrent const* tor, int8_t* tab, unsigned int n_tabs)
+void tr_peerMgrTorrentAvailability(tr_torrent const* tor, std::span<int8_t> const tab)
 {
     TR_ASSERT(tr_isTorrent(tor));
-    TR_ASSERT(tab != nullptr);
-    TR_ASSERT(n_tabs > 0);
+    TR_ASSERT(!tab.empty());
 
-    std::fill_n(tab, n_tabs, int8_t{});
+    std::ranges::fill(tab, int8_t{});
 
-    auto const interval = static_cast<double>(tor->piece_count()) / static_cast<double>(n_tabs);
-    for (unsigned int i = 0; i < n_tabs; ++i) {
+    auto const interval = static_cast<double>(tor->piece_count()) / static_cast<double>(tab.size());
+    for (size_t i = 0; i < tab.size(); ++i) {
         auto const piece = static_cast<tr_piece_index_t>(static_cast<double>(i) * interval);
         tab[i] = tr_peerMgrPieceAvailability(tor, piece);
     }

@@ -637,11 +637,6 @@ struct tr_pex {
     uint8_t flags = 0;
 };
 
-constexpr bool tr_isPex(tr_pex const* pex)
-{
-    return pex != nullptr && pex->socket_address.is_valid();
-}
-
 [[nodiscard]] tr_peerMgr* tr_peerMgrNew(tr_session* session);
 
 void tr_peerMgrFree(tr_peerMgr* manager);
@@ -650,7 +645,7 @@ void tr_peerMgrFree(tr_peerMgr* manager);
 
 void tr_peerMgrAddIncoming(tr_peerMgr* manager, std::shared_ptr<tr_peer_socket> socket);
 
-size_t tr_peerMgrAddPex(tr_torrent* tor, tr_peer_from from, tr_pex const* pex, size_t n_pex);
+size_t tr_peerMgrAddPex(tr_torrent* tor, tr_peer_from from, std::span<tr_pex const> pex);
 
 enum : uint8_t { TR_PEERS_CONNECTED, TR_PEERS_INTERESTING };
 
@@ -665,7 +660,7 @@ void tr_peerMgrAddTorrent(tr_peerMgr* manager, struct tr_torrent* tor);
 // return the number of connected peers that have `piece`, or -1 if we already have it
 [[nodiscard]] int8_t tr_peerMgrPieceAvailability(tr_torrent const* tor, tr_piece_index_t piece);
 
-void tr_peerMgrTorrentAvailability(tr_torrent const* tor, int8_t* tab, unsigned int n_tabs);
+void tr_peerMgrTorrentAvailability(tr_torrent const* tor, std::span<int8_t> tab);
 
 [[nodiscard]] uint64_t tr_peerMgrGetDesiredAvailable(tr_torrent const* tor);
 

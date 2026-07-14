@@ -129,7 +129,7 @@ TEST_F(TorrentsTest, invalidArgsAreLogged)
     EXPECT_TRUE(std::empty(tr_torrentPeers(nullptr)));
     ++expected_log_size;
 
-    tr_torrentAvailability(nullptr, nullptr, 0);
+    tr_torrentAvailability(nullptr, {});
     ++expected_log_size;
 
     tr_torrentAmountFinished(nullptr, nullptr, 0);

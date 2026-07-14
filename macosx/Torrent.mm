@@ -220,7 +220,7 @@ static tr_torrent_rename_done_func makeRenameDoneCallback(NSDictionary* contextI
 
 - (void)getAvailability:(int8_t*)tab size:(int)size
 {
-    tr_torrentAvailability(self.fHandle, tab, size);
+    tr_torrentAvailability(self.fHandle, { tab, static_cast<size_t>(size) });
 }
 
 - (void)getAmountFinished:(float*)tab size:(int)size

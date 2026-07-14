@@ -958,14 +958,14 @@ void tr_peerMsgsImpl::parse_ut_pex(MessageReader& payload)
         auto const added_f = map->value_if<std::string_view>(TR_KEY_added_f);
         auto pex = tr_pex::from_compact_ipv4(*added, added_f.value_or(""sv));
         pex.resize(std::min(MaxPexPeerCount, std::size(pex)));
-        tr_peerMgrAddPex(&tor_, TR_PEER_FROM_PEX, std::data(pex), std::size(pex));
+        tr_peerMgrAddPex(&tor_, TR_PEER_FROM_PEX, pex);
     }
 
     if (auto const added = map->value_if<std::string_view>(TR_KEY_added6)) {
         auto const added_f = map->value_if<std::string_view>(TR_KEY_added6_f);
         auto pex = tr_pex::from_compact_ipv6(*added, added_f.value_or(""sv));
         pex.resize(std::min(MaxPexPeerCount, std::size(pex)));
-        tr_peerMgrAddPex(&tor_, TR_PEER_FROM_PEX, std::data(pex), std::size(pex));
+        tr_peerMgrAddPex(&tor_, TR_PEER_FROM_PEX, pex);
     }
 }
 
@@ -1263,7 +1263,7 @@ void tr_peerMsgsImpl::parse_ltep_handshake(MessageReader& payload)
             auto pex = tr_pex{ peer_info->listen_socket_address(), peer_info->pex_flags() };
             auto const* const bytes = reinterpret_cast<std::byte const*>(std::data(*addr_compact));
             pex.socket_address.address_ = tr_address::from_compact_ipv4(bytes).first;
-            tr_peerMgrAddPex(&tor_, TR_PEER_FROM_LTEP, &pex, 1);
+            tr_peerMgrAddPex(&tor_, TR_PEER_FROM_LTEP, { &pex, 1 });
         }
 
         if (auto const addr_compact = map->value_if<std::string_view>(TR_KEY_ipv6);
@@ -1271,7 +1271,7 @@ void tr_peerMsgsImpl::parse_ltep_handshake(MessageReader& payload)
             auto pex = tr_pex{ peer_info->listen_socket_address(), peer_info->pex_flags() };
             auto const* const bytes = reinterpret_cast<std::byte const*>(std::data(*addr_compact));
             pex.socket_address.address_ = tr_address::from_compact_ipv6(bytes).first;
-            tr_peerMgrAddPex(&tor_, TR_PEER_FROM_LTEP, &pex, 1);
+            tr_peerMgrAddPex(&tor_, TR_PEER_FROM_LTEP, { &pex, 1 });
         }
     }
 
