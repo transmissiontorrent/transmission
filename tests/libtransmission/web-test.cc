@@ -443,7 +443,7 @@ TEST_F(WebTest, destroyRightAfterFetchDoesNotHang)
     // Stress the shutdown path: destroying a tr_web immediately after a
     // fetch completes races the destructor's deadline against the curl
     // thread returning to its condition-variable wait. A lost wakeup there
-    // makes the destructor's join() hang forever and this test time out.
+    // hangs the destructor's join() forever, so this test times out.
     for (auto i = 0; i < 50; ++i) {
         auto web = tr_web::create(mediator_);
         fetch(*web, options());

@@ -892,10 +892,9 @@ tr_web::tr_web(Mediator& mediator)
 {
 }
 
-tr_web::~tr_web()
-{
-    impl_->startShutdown(0ms);
-}
+// ~Impl() itself starts an immediate shutdown before joining the curl
+// thread, so there's nothing to do here beyond destroying the members
+tr_web::~tr_web() = default;
 
 std::unique_ptr<tr_web> tr_web::create(Mediator& mediator)
 {
