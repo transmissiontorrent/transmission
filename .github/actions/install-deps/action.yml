@@ -76,6 +76,11 @@ runs:
             dnf install -y mold
           fi
 
+          # Compiler cache
+          if [[ "${{ inputs.enable-ccache }}" == "true" ]]; then
+            dnf install -y ccache
+          fi
+
         elif [[ "$PKG_FAMILY" == "apt" ]]; then
           # Debian/Ubuntu/APT-based installation
           SUDO_CMD=""

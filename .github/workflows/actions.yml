@@ -1115,6 +1115,8 @@ jobs:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-tests == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ubuntu-latest
+    env:
+      CCACHE_MAXSIZE: 500M
     strategy:
       fail-fast: false
       matrix:
@@ -1141,6 +1143,17 @@ jobs:
           enable-qt: ${{ needs.what-to-make.outputs.make-qt == 'true' && 'qt6' || 'false' }}
           use-sudo: false
           enable-mold: true
+          enable-ccache: true
+      - name: Setup ccache
+        # resolve the workspace path from inside the container
+        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
+        with:
+          path: .ccache
+          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ github.job }}-${{ matrix.version }}-
       - name: Get NPM
         if: ${{ needs.what-to-make.outputs.make-web == 'true' }}
         uses: actions/setup-node@v6
@@ -1158,6 +1171,8 @@ jobs:
             -S src \
             -B obj \
             -G Ninja \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
@@ -1191,6 +1206,15 @@ jobs:
         with:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
+      - name: Show ccache stats
+        if: always()
+        run: ccache --show-stats
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: .ccache
+          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
 
   utp-disabled:
     needs: [ make-source-tarball, what-to-make ]
