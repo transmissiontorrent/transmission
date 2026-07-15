@@ -1572,7 +1572,7 @@ jobs:
               -S src \
               -B obj \
               -G Ninja \
-              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+              -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=pfx \
               -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
               -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
@@ -1590,11 +1590,11 @@ jobs:
               -DUSE_SYSTEM_UTP=OFF `# Not packaged in FreeBSD` \
               -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in FreeBSD` \
               -DWITH_CRYPTO=openssl
-            cmake --build obj --config RelWithDebInfo
+            cmake --build obj --config Release
             if [ '${{ needs.what-to-make.outputs.make-tests }}' = 'true' ]; then
-              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config RelWithDebInfo --output-on-failure
+              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
             fi
-            cmake --install obj --config RelWithDebInfo --strip
+            cmake --install obj --config Release --strip
             rm -rf obj src
       - uses: actions/upload-artifact@v6
         with:
@@ -1752,7 +1752,7 @@ jobs:
               -S src \
               -B obj \
               -G Ninja \
-              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+              -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=pfx \
               -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
               -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
@@ -1770,11 +1770,11 @@ jobs:
               -DUSE_SYSTEM_SMALL=OFF `# Not packaged in OpenBSD` \
               -DUSE_SYSTEM_UTP=OFF `# Not packaged in OpenBSD` \
               -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in OpenBSD`
-            cmake --build obj --config RelWithDebInfo
+            cmake --build obj --config Release
             if [ '${{ needs.what-to-make.outputs.make-tests }}' = 'true' ]; then
-              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config RelWithDebInfo --output-on-failure
+              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
             fi
-            cmake --install obj --config RelWithDebInfo --strip
+            cmake --install obj --config Release --strip
             rm -rf obj src
       - uses: actions/upload-artifact@v6
         with:
@@ -1846,7 +1846,7 @@ jobs:
               -S src \
               -B obj \
               -G Ninja \
-              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+              -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_CXX_COMPILER='/usr/pkg/gcc14/bin/g++' \
               -DCMAKE_C_COMPILER='/usr/pkg/gcc14/bin/gcc' \
               -DCMAKE_BUILD_RPATH='/usr/pkg/gcc14/lib' \
@@ -1870,11 +1870,11 @@ jobs:
               -DUSE_SYSTEM_SMALL=OFF `# Not packaged in NetBSD` \
               -DUSE_SYSTEM_UTP=OFF `# Not packaged in NetBSD` \
               -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in NetBSD`
-            cmake --build obj --config RelWithDebInfo
+            cmake --build obj --config Release
             if [ '${{ needs.what-to-make.outputs.make-tests }}' = 'true' ]; then
-              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config RelWithDebInfo --output-on-failure
+              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
             fi
-            cmake --install obj --config RelWithDebInfo --strip
+            cmake --install obj --config Release --strip
             rm -rf obj src
       - uses: actions/upload-artifact@v6
         with:
