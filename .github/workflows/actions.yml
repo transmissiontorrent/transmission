@@ -146,6 +146,9 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
+          # only main's snapshots are saved; PR runs restore them via the
+          # base-branch fallback but must not multiply them per-ref
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           cmake \
@@ -190,7 +193,7 @@ jobs:
           # that are caused by Qt libraries not being asan instrumented
           extra-asan-options: detect_container_overflow=0
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   sanitizer-tests-macos:
@@ -215,6 +218,9 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
+          # only main's snapshots are saved; PR runs restore them via the
+          # base-branch fallback but must not multiply them per-ref
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           cmake \
@@ -252,7 +258,7 @@ jobs:
           build-config: Debug
           enable-sanitizers: true
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   sanitizer-tests-windows:
@@ -631,6 +637,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.os }}
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           cmake \
@@ -677,7 +684,7 @@ jobs:
           name: binaries-${{ matrix.os }}-cmake-universal
           path: pfx/**/*
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   alpine-musl:
@@ -807,6 +814,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           $CmakeArgs = @(
@@ -859,7 +867,7 @@ jobs:
           name: binaries-${{ github.job }}-${{ matrix.arch }}-msi
           path: obj/dist/msi/*.msi
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   make-source-tarball:
@@ -949,6 +957,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.os }}
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           cmake \
@@ -990,7 +999,7 @@ jobs:
           name: binaries-${{ matrix.os }}
           path: pfx/**/*
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   debian:
@@ -1120,14 +1129,14 @@ jobs:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         # `|| true`: Debian 11's ccache predates --evict-older-than
         run: ccache --evict-older-than 7d || true
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
       - name: Save ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         uses: actions/cache/save@v5
         with:
           path: .ccache
@@ -1229,14 +1238,14 @@ jobs:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         # `|| true`: Debian 11's ccache predates --evict-older-than
         run: ccache --evict-older-than 7d || true
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
       - name: Save ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         uses: actions/cache/save@v5
         with:
           path: .ccache
@@ -1281,6 +1290,9 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
+          # only main's snapshots are saved; PR runs restore them via the
+          # base-branch fallback but must not multiply them per-ref
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           cmake \
@@ -1327,7 +1339,7 @@ jobs:
           name: binaries-${{ github.job }}-without-utp
           path: pfx/**/*
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   android:
@@ -1415,6 +1427,9 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
+          # only main's snapshots are saved; PR runs restore them via the
+          # base-branch fallback but must not multiply them per-ref
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           cmake \
@@ -1449,7 +1464,7 @@ jobs:
       - name: Make
         run: cmake --build obj --config Release -- "-k 0"
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   ubuntu-24-04-arm64:
@@ -1497,6 +1512,9 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
+          # only main's snapshots are saved; PR runs restore them via the
+          # base-branch fallback but must not multiply them per-ref
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           cmake \
@@ -1542,7 +1560,7 @@ jobs:
           name: binaries-${{ github.job }}
           path: pfx/**/*
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   freebsd:
@@ -1676,6 +1694,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.crypto.cmake }}
+          save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
           cmake \
@@ -1721,7 +1740,7 @@ jobs:
           name: binaries-${{ github.job }}-${{ matrix.crypto.cmake }}
           path: pfx/**/*
       - name: Trim ccache
-        if: always()
+        if: ${{ always() && github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
 
   openbsd:
@@ -1894,12 +1913,12 @@ jobs:
           path: pfx/**/*
 
   prune-ccache:
-    # The timestamped ccache keys used above are write-once: every run saves a
-    # new snapshot, and the one it supersedes is never restored again but only
-    # gets deleted by LRU pressure at the repo's 10 GB cache cap -- evicting
-    # still-useful caches (e.g. the prebuilt Windows deps) along the way.
-    # Sweep every ref and keep just the newest snapshot per key prefix. Runs
-    # only on pushes to main: PR runs from forks get a read-only token.
+    # The timestamped ccache keys used above are write-once: every push run
+    # saves a new snapshot, and the one it supersedes is never restored again
+    # but only gets deleted by LRU pressure at the repo's 10 GB cache cap --
+    # evicting still-useful caches (e.g. the prebuilt Windows deps) along the
+    # way. Sweep every ref and keep just the newest snapshot per key prefix.
+    # Runs only on pushes to main: PR runs from forks get a read-only token.
     needs: [ crypto, cxx23, debian, fedora, macos, macos-cmake-universal, sanitizer-tests-linux, sanitizer-tests-macos, ubuntu-24-04-arm64, utp-disabled, windows ]
     if: ${{ always() && github.event_name == 'push' }}
     runs-on: ubuntu-slim
