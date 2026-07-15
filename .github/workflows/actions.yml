@@ -1545,7 +1545,6 @@ jobs:
             set -ex
             uname -a
             pkg update
-            pkg upgrade -y
             pkg install -y \
               curl \
               cmake \
@@ -1725,7 +1724,6 @@ jobs:
           prepare: |
             set -ex
             uname -a
-            pkg_add -u
             pkg_add -I -v \
               curl \
               cmake \
