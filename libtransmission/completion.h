@@ -124,7 +124,7 @@ struct tr_completion {
         return block_info_->piece_size(piece) - count_has_bytes_in_piece(piece);
     }
 
-    void amount_done(float* tab, size_t n_tabs) const;
+    void amount_done(std::span<float> tab) const;
 
     void add_block(tr_block_index_t block);
     void add_piece(tr_piece_index_t piece);

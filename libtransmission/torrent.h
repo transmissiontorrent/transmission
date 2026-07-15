@@ -379,9 +379,9 @@ struct tr_torrent {
         return completeness_ == TR_PARTIAL_SEED;
     }
 
-    void amount_done_bins(float* tab, int n_tabs) const
+    void amount_done_bins(std::span<float> const tab) const
     {
-        completion_.amount_done(tab, n_tabs);
+        completion_.amount_done(tab);
     }
 
     /// FILE <-> PIECE
