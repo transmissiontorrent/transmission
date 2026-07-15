@@ -34,7 +34,6 @@ jobs:
       tidy-core: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.tidy-core-src-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' || steps.check-diffs.outputs.tidy-config-changed == '1' }}
       tidy-gtk: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.tidy-gtk-src-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' || steps.check-diffs.outputs.tidy-config-changed == '1' }}
       tidy-qt: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.tidy-qt-src-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' || steps.check-diffs.outputs.tidy-config-changed == '1' }}
-      tidy-everything: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.tidy-config-changed == '1' }}
     steps:
       - name: Check Push to Main Branch
         id: check-main-push
@@ -69,9 +68,9 @@ jobs:
           get_changes any-code   CMakeLists.txt cmake Transmission.xcodeproj libtransmission libtransmission-app cli daemon gtk macosx qt utils tests web third-party
           get_changes our-code   CMakeLists.txt cmake Transmission.xcodeproj libtransmission libtransmission-app cli daemon gtk macosx qt utils tests web
           get_changes tidy-config libtransmission/.clang-tidy libtransmission-app/.clang-tidy gtk/.clang-tidy qt/.clang-tidy tests/libtransmission/.clang-tidy tests/qt/.clang-tidy
-          # clang-tidy-diff only inspects changed lines, so each tidy cell keys
-          # off just the directories its -regex matches -- not the wider build
-          # deps (a libtransmission-only change has no gtk/qt lines to check).
+          # Each tidy cell only checks the directories its regex covers, so it
+          # keys off just those sources -- not the wider build deps (a
+          # libtransmission-only change has no gtk/qt files to re-check).
           get_changes tidy-core-src libtransmission libtransmission-app tests/libtransmission
           get_changes tidy-gtk-src  gtk
           get_changes tidy-qt-src   qt tests/qt
@@ -144,7 +143,7 @@ jobs:
           enable-qt: qt6
           use-sudo: true
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -164,6 +163,7 @@ jobs:
             -DENABLE_CLI=OFF \
             -DENABLE_DAEMON=OFF \
             -DENABLE_GTK=OFF \
+            -DENABLE_IPO=OFF \
             -DENABLE_MAC=OFF \
             -DENABLE_QT=ON \
             -DENABLE_TESTS=ON \
@@ -209,7 +209,7 @@ jobs:
         with:
           compiler: clang
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -227,6 +227,7 @@ jobs:
             -DENABLE_CLI=OFF \
             -DENABLE_DAEMON=OFF \
             -DENABLE_GTK=OFF \
+            -DENABLE_IPO=OFF \
             -DENABLE_MAC=OFF \
             -DENABLE_QT=OFF \
             -DENABLE_TESTS=ON \
@@ -291,6 +292,7 @@ jobs:
             '-DENABLE_CLI=OFF'
             '-DENABLE_DAEMON=OFF'
             '-DENABLE_GTK=OFF'
+            '-DENABLE_IPO=OFF'
             '-DENABLE_MAC=OFF'
             # Qt must be ON so the Qt unit tests are built and exercised under ASan.
             '-DENABLE_QT=ON'
@@ -343,10 +345,10 @@ jobs:
       needs.what-to-make.outputs.tidy-core == 'true' ||
       needs.what-to-make.outputs.tidy-gtk == 'true' ||
       needs.what-to-make.outputs.tidy-qt == 'true'
-    # One cell per toolkit version. clang-tidy-diff.py checks only the lines
-    # changed since the merge base, so each cell needs to generate code (Qt moc/
-    # uic) but never compiles the whole target. The matrix.enabled flag (wired to
-    # the what-to-make tidy-* outputs) skips cells whose area did not change.
+    # One cell per toolkit version. Each cell generates code (Qt moc/uic) so
+    # clang-tidy can parse every TU, but never compiles the whole target;
+    # ctcache caches per-TU results across runs. The matrix.enabled flag (wired
+    # to the what-to-make tidy-* outputs) skips cells whose area did not change.
     # TODO: try removing '-DFMT_USE_CONSTEVAL=0' either when upgrading clang or fmt
     strategy:
       fail-fast: false
@@ -398,7 +400,6 @@ jobs:
         if: matrix.enabled == 'true'
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           submodules: false
       - name: Check out submodules (shallow)
         if: matrix.enabled == 'true'
@@ -452,12 +453,11 @@ jobs:
           fi
       - name: Run clang-tidy
         if: matrix.enabled == 'true'
-        uses: ./.github/actions/clang-tidy-diff
+        uses: ./.github/actions/clang-tidy-cached
         with:
-          build-path: obj
           regex: ${{ matrix.regex }}
+          cache-key: ${{ github.job }}-${{ matrix.toolkit }}
           clang-tidy-binary: clang-tidy-22
-          full-run: ${{ needs.what-to-make.outputs.tidy-everything }}
           extra-arg: '-DFMT_USE_CONSTEVAL=0'
 
   clang-tidy-windows:
@@ -493,7 +493,6 @@ jobs:
         if: matrix.enabled == 'true'
         uses: actions/checkout@v6
         with:
-          fetch-depth: 0
           submodules: false
       - name: Check out submodules (shallow)
         if: matrix.enabled == 'true'
@@ -544,16 +543,16 @@ jobs:
           }
       - name: Run clang-tidy
         if: matrix.enabled == 'true'
-        uses: ./.github/actions/clang-tidy-diff
+        uses: ./.github/actions/clang-tidy-cached
         with:
-          build-path: obj
           regex: ${{ matrix.regex }}
+          cache-key: ${{ github.job }}-${{ matrix.toolkit }}
           clang-tidy-binary: clang-tidy
-          # MSVC-style compile commands carry flags clang-cl ignores (e.g. /GL),
-          # whose per-TU 'unused argument' driver warning escapes the line
-          # filter; silence it so it is not mistaken for a finding.
+          # MSVC-style compile commands carry flags clang-cl ignores (e.g. /GL);
+          # silence the resulting driver diagnostic so -warnings-as-errors=* does
+          # not treat it as a finding.
           extra-arg: -Wno-unused-command-line-argument
-          full-run: ${{ needs.what-to-make.outputs.tidy-everything }}
+          msvc-env: true
 
   macos-xcodebuild-universal:
     runs-on: macos-26
@@ -568,6 +567,8 @@ jobs:
           echo '${{ toJSON(needs) }}'
           echo '${{ toJSON(runner) }}'
           sw_vers
+      - name: Remove untrusted pre-tapped Homebrew taps
+        run: brew tap | grep -qx 'aws/tap' && brew untap aws/tap || true
       - name: Get Dependencies
         run: brew install --formulae xcbeautify
       - name: Get Source
@@ -621,7 +622,7 @@ jobs:
           enable-gtk: ${{ needs.what-to-make.outputs.make-gtk == 'true' && 'gtk4' || 'false' }}
           enable-qt: ${{ needs.what-to-make.outputs.make-qt == 'true' && 'qt6' || 'false' }}
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.os }}
       - name: Configure
@@ -793,12 +794,21 @@ jobs:
         uses: ./.github/actions/setup-vs-env-win32
         with:
           arch: ${{ matrix.arch }}
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2.23
+        with:
+          key: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}
       - name: Configure
         run: |
           $CmakeArgs = @(
             '-S .'
             '-B obj'
             '-G Ninja'
+            '-DCMAKE_C_COMPILER_LAUNCHER=ccache'
+            '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+            # ccache cannot cache /Zi; store debug info in the objects (/Z7) instead
+            '-DCMAKE_POLICY_DEFAULT_CMP0141=NEW'
+            '-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded'
             '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
             '-DCMAKE_INSTALL_PREFIX=pfx'
             "-DCMAKE_PREFIX_PATH=`"$Env:DEPS_PREFIX`""
@@ -924,7 +934,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.os }}
       - name: Configure
@@ -972,6 +982,8 @@ jobs:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-tests == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ubuntu-latest
+    env:
+      CCACHE_MAXSIZE: 500M
     strategy:
       fail-fast: false
       matrix:
@@ -1018,6 +1030,17 @@ jobs:
           use-sudo: false
           # Debian 11 (oldoldstable) has no mold package and its GCC 10 predates -fuse-ld=mold.
           enable-mold: ${{ matrix.use-legacy-packages != true }}
+          enable-ccache: true
+      - name: Setup ccache
+        # resolve the workspace path from inside the container
+        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
+        with:
+          path: .ccache
+          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ github.job }}-${{ matrix.version }}-
       - name: Get NPM
         if: ${{ needs.what-to-make.outputs.make-web == 'true' }}
         uses: actions/setup-node@v6
@@ -1035,6 +1058,8 @@ jobs:
             -S src \
             -B obj \
             -G Ninja \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
@@ -1079,11 +1104,22 @@ jobs:
         with:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
+      - name: Show ccache stats
+        if: always()
+        run: ccache --show-stats
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: .ccache
+          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
 
   fedora:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-tests == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ubuntu-latest
+    env:
+      CCACHE_MAXSIZE: 500M
     strategy:
       fail-fast: false
       matrix:
@@ -1110,6 +1146,17 @@ jobs:
           enable-qt: ${{ needs.what-to-make.outputs.make-qt == 'true' && 'qt6' || 'false' }}
           use-sudo: false
           enable-mold: true
+          enable-ccache: true
+      - name: Setup ccache
+        # resolve the workspace path from inside the container
+        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
+      - name: Restore ccache
+        uses: actions/cache/restore@v5
+        with:
+          path: .ccache
+          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ github.job }}-${{ matrix.version }}-
       - name: Get NPM
         if: ${{ needs.what-to-make.outputs.make-web == 'true' }}
         uses: actions/setup-node@v6
@@ -1127,6 +1174,8 @@ jobs:
             -S src \
             -B obj \
             -G Ninja \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
@@ -1160,6 +1209,15 @@ jobs:
         with:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
+      - name: Show ccache stats
+        if: always()
+        run: ccache --show-stats
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: .ccache
+          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
 
   utp-disabled:
     needs: [ make-source-tarball, what-to-make ]
@@ -1197,7 +1255,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -1252,6 +1310,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VCPKG_DEFAULT_TRIPLET: arm64-android
+      VCPKG_COMMIT: 389d14fa0e0692f36967e9eb5499e909317644d5 # 2026.01.15
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-binary-cache
     steps:
     - name: Get Dependencies
       run: |
@@ -1285,10 +1345,17 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
-        vcpkgGitCommitId: 389d14fa0e0692f36967e9eb5499e909317644d5 # 2026.01.15
+        vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+
+    - name: Cache vcpkg binaries
+      uses: actions/cache@v5
+      with:
+        path: .vcpkg-binary-cache
+        key: vcpkg-${{ env.VCPKG_DEFAULT_TRIPLET }}-${{ env.VCPKG_COMMIT }}
 
     - name: Install vcpkg packages
       run: |
+        mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
         vcpkg install openssl curl
 
     - name: Build Transmission
@@ -1319,7 +1386,7 @@ jobs:
           use-sudo: true
           enable-mold: true
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -1398,7 +1465,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}
       - name: Configure
@@ -1578,7 +1645,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.crypto.cmake }}
       - name: Configure
