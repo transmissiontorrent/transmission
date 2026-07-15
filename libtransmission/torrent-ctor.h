@@ -57,7 +57,7 @@ public:
         return metainfo_.parseMagnet(magnet_link, error);
     }
 
-    [[nodiscard]] auto const& metainfo() const noexcept
+    [[nodiscard]] constexpr auto const& metainfo() const noexcept
     {
         return metainfo_;
     }
@@ -123,7 +123,7 @@ public:
         return optional_args_[mode].download_dir_;
     }
 
-    void set_download_dir(tr_ctorMode const mode, std::string_view const dir)
+    TR_CONSTEXPR_STR void set_download_dir(tr_ctorMode const mode, std::string_view const dir)
     {
         optional_args_[mode].download_dir_.assign(dir);
     }
@@ -135,7 +135,7 @@ public:
         return incomplete_dir_;
     }
 
-    void set_incomplete_dir(std::string_view const dir)
+    TR_CONSTEXPR_STR void set_incomplete_dir(std::string_view const dir)
     {
         incomplete_dir_.assign(dir);
     }
@@ -147,7 +147,7 @@ public:
         return labels_;
     }
 
-    void set_labels(tr_torrent::labels_t&& labels)
+    TR_CONSTEXPR_VEC void set_labels(tr_torrent::labels_t&& labels)
     {
         labels_ = std::move(labels);
     }
