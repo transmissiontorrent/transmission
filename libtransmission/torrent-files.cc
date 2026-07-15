@@ -110,16 +110,13 @@ bool is_junk_file(std::string_view filename)
 // ---
 
 std::optional<tr_torrent_files::FoundFile> tr_torrent_files::find(
-    tr_file_index_t file_index,
-    std::string_view const* paths,
-    size_t n_paths) const
+    tr_file_index_t const file_index,
+    std::span<std::string_view const> const paths) const
 {
     auto filename = tr_pathbuf{};
     auto const& subpath = path(file_index);
 
-    for (size_t path_idx = 0; path_idx < n_paths; ++path_idx) {
-        auto const base = paths[path_idx];
-
+    for (auto const base : paths) {
         filename.assign(base, '/', subpath);
         if (auto const info = tr_sys_path_get_info(filename); info) {
             return FoundFile{ *info, std::move(filename), std::size(base) };
@@ -134,10 +131,10 @@ std::optional<tr_torrent_files::FoundFile> tr_torrent_files::find(
     return {};
 }
 
-bool tr_torrent_files::has_any_local_data(std::string_view const* paths, size_t n_paths) const
+bool tr_torrent_files::has_any_local_data(std::span<std::string_view const> const paths) const
 {
     for (tr_file_index_t i = 0, n = file_count(); i < n; ++i) {
-        if (find(i, paths, n_paths)) {
+        if (find(i, paths)) {
             return true;
         }
     }
@@ -193,7 +190,7 @@ bool tr_torrent_files::move(
     auto err = bool{};
 
     for (tr_file_index_t i = 0, n = file_count(); i < n; ++i) {
-        auto const found = find(i, std::data(paths), std::size(paths));
+        auto const found = find(i, paths);
         if (!found) {
             continue;
         }
@@ -272,7 +269,7 @@ void tr_torrent_files::remove(
     // move the local data to the tmpdir
     auto const paths = std::to_array<std::string_view>({ parent.sv() });
     for (tr_file_index_t idx = 0, n_files = file_count(); idx < n_files; ++idx) {
-        if (auto const found = find(idx, std::data(paths), std::size(paths)); found) {
+        if (auto const found = find(idx, paths); found) {
             // if moving a file fails, give up and let the error propagate
             if (!tr_file_move(found->filename(), tr_pathbuf{ tmpdir, '/', found->subpath() }, false, error)) {
                 return;
