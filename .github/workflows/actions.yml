@@ -189,6 +189,9 @@ jobs:
           # disable container-overflow reports to avoid false errors
           # that are caused by Qt libraries not being asan instrumented
           extra-asan-options: detect_container_overflow=0
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   sanitizer-tests-macos:
     runs-on: macos-26
@@ -248,6 +251,9 @@ jobs:
           build-dir: obj
           build-config: Debug
           enable-sanitizers: true
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   sanitizer-tests-windows:
     runs-on: windows-2022
@@ -670,6 +676,9 @@ jobs:
         with:
           name: binaries-${{ matrix.os }}-cmake-universal
           path: pfx/**/*
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   alpine-musl:
     needs: [ what-to-make ]
@@ -726,7 +735,7 @@ jobs:
             -S . \
             -B obj \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
@@ -746,15 +755,15 @@ jobs:
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Alpine` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Alpine`
       - name: Make
-        run: cmake --build obj --config RelWithDebInfo
+        run: cmake --build obj --config Release
       - name: Test
         if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
-          build-config: RelWithDebInfo
+          build-config: Release
       - name: Install
-        run: cmake --install obj --config RelWithDebInfo --strip
+        run: cmake --install obj --config Release --strip
       - uses: actions/upload-artifact@v6
         with:
           name: binaries-${{ github.job }}
@@ -849,6 +858,9 @@ jobs:
         with:
           name: binaries-${{ github.job }}-${{ matrix.arch }}-msi
           path: obj/dist/msi/*.msi
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   make-source-tarball:
     runs-on: ubuntu-latest
@@ -977,6 +989,9 @@ jobs:
         with:
           name: binaries-${{ matrix.os }}
           path: pfx/**/*
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   debian:
     needs: [ make-source-tarball, what-to-make ]
@@ -1060,7 +1075,7 @@ jobs:
             -G Ninja \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
@@ -1091,19 +1106,23 @@ jobs:
 
           cmake "$@"
       - name: Build
-        run: cmake --build obj --config RelWithDebInfo
+        run: cmake --build obj --config Release
       - name: Test
         if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
-          build-config: RelWithDebInfo
+          build-config: Release
       - name: Install
-        run: cmake --install obj --config RelWithDebInfo --strip
+        run: cmake --install obj --config Release --strip
       - uses: actions/upload-artifact@v6
         with:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
+      - name: Trim ccache
+        if: always()
+        # `|| true`: Debian 11's ccache predates --evict-older-than
+        run: ccache --evict-older-than 7d || true
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
@@ -1176,7 +1195,7 @@ jobs:
             -G Ninja \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
@@ -1196,19 +1215,23 @@ jobs:
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Fedora` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Fedora`
       - name: Build
-        run: cmake --build obj --config RelWithDebInfo
+        run: cmake --build obj --config Release
       - name: Test
         if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
-          build-config: RelWithDebInfo
+          build-config: Release
       - name: Install
-        run: cmake --install obj --config RelWithDebInfo --strip
+        run: cmake --install obj --config Release --strip
       - uses: actions/upload-artifact@v6
         with:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
+      - name: Trim ccache
+        if: always()
+        # `|| true`: Debian 11's ccache predates --evict-older-than
+        run: ccache --evict-older-than 7d || true
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
@@ -1266,7 +1289,7 @@ jobs:
             -G Ninja \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CXX_COMPILER='clang++' \
             -DCMAKE_C_COMPILER='clang' \
             -DCMAKE_INSTALL_PREFIX=pfx \
@@ -1290,19 +1313,22 @@ jobs:
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
       - name: Make
-        run: cmake --build obj --config RelWithDebInfo
+        run: cmake --build obj --config Release
       - name: Test
         if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
-          build-config: RelWithDebInfo
+          build-config: Release
       - name: Install
-        run: cmake --install obj --config RelWithDebInfo --strip
+        run: cmake --install obj --config Release --strip
       - uses: actions/upload-artifact@v6
         with:
           name: binaries-${{ github.job }}-without-utp
           path: pfx/**/*
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   android:
     needs: [ what-to-make ]
@@ -1400,7 +1426,7 @@ jobs:
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_CXX_COMPILER='clang++' \
             -DCMAKE_C_COMPILER='clang' \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=mold \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
@@ -1421,7 +1447,10 @@ jobs:
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
       - name: Make
-        run: cmake --build obj --config RelWithDebInfo -- "-k 0"
+        run: cmake --build obj --config Release -- "-k 0"
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   ubuntu-24-04-arm64:
     needs: [ make-source-tarball, what-to-make ]
@@ -1478,7 +1507,7 @@ jobs:
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER='clang++' \
             -DCMAKE_C_COMPILER='clang' \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=mold \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
@@ -1499,19 +1528,22 @@ jobs:
             -DUSE_SYSTEM_UTP=OFF `# Not packaged in Ubuntu` \
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
       - name: Build
-        run: cmake --build obj --config RelWithDebInfo
+        run: cmake --build obj --config Release
       - name: Test
         if: needs.what-to-make.outputs.make-tests == 'true'
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
-          build-config: RelWithDebInfo
+          build-config: Release
       - name: Install
-        run: cmake --install obj --config RelWithDebInfo --strip
+        run: cmake --install obj --config Release --strip
       - uses: actions/upload-artifact@v6
         with:
           name: binaries-${{ github.job }}
           path: pfx/**/*
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   freebsd:
     needs: [ make-source-tarball, what-to-make ]
@@ -1652,7 +1684,7 @@ jobs:
             -G Ninja \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_CXX_COMPILER='clang++' \
             -DCMAKE_C_COMPILER='clang' \
             -DCMAKE_INSTALL_PREFIX=pfx \
@@ -1676,18 +1708,21 @@ jobs:
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu` \
             -DWITH_CRYPTO=${{ matrix.crypto.cmake }}
       - name: Make
-        run: cmake --build obj --config RelWithDebInfo
+        run: cmake --build obj --config Release
       - name: Test
         uses: ./.github/actions/run-tests
         with:
           build-dir: obj
-          build-config: RelWithDebInfo
+          build-config: Release
       - name: Install
-        run: cmake --install obj --config RelWithDebInfo --strip
+        run: cmake --install obj --config Release --strip
       - uses: actions/upload-artifact@v6
         with:
           name: binaries-${{ github.job }}-${{ matrix.crypto.cmake }}
           path: pfx/**/*
+      - name: Trim ccache
+        if: always()
+        run: ccache --evict-older-than 7d
 
   openbsd:
     needs: [ make-source-tarball, what-to-make ]
@@ -1857,3 +1892,32 @@ jobs:
         with:
           name: binaries-${{ github.job }}
           path: pfx/**/*
+
+  prune-ccache:
+    # The timestamped ccache keys used above are write-once: every run saves a
+    # new snapshot, and the one it supersedes is never restored again but only
+    # gets deleted by LRU pressure at the repo's 10 GB cache cap -- evicting
+    # still-useful caches (e.g. the prebuilt Windows deps) along the way.
+    # Sweep every ref and keep just the newest snapshot per key prefix. Runs
+    # only on pushes to main: PR runs from forks get a read-only token.
+    needs: [ crypto, cxx23, debian, fedora, macos, macos-cmake-universal, sanitizer-tests-linux, sanitizer-tests-macos, ubuntu-24-04-arm64, utp-disabled, windows ]
+    if: ${{ always() && github.event_name == 'push' }}
+    runs-on: ubuntu-slim
+    permissions:
+      actions: write
+    steps:
+      - name: Prune superseded ccache snapshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
+            --jq '.actions_caches[] | select(.key | startswith("ccache-")) | [.id, .ref, .key, .created_at] | @tsv' |
+            sort -t $'\t' -k 4,4r |
+            awk -F '\t' '{
+              prefix = $3
+              sub(/-[0-9][0-9TZ:.-]*$/, "", prefix) # strip the timestamp / run-id suffix
+              if (seen[$2 "\t" prefix]++) {
+                print $1
+              }
+            }' |
+            xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
