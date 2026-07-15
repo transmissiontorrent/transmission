@@ -1518,8 +1518,6 @@ jobs:
     if: |
       needs.what-to-make.outputs.make-cli == 'true' ||
       needs.what-to-make.outputs.make-daemon == 'true' ||
-      needs.what-to-make.outputs.make-gtk == 'true' ||
-      needs.what-to-make.outputs.make-qt == 'true' ||
       needs.what-to-make.outputs.make-tests == 'true' ||
       needs.what-to-make.outputs.make-utils == 'true'
     runs-on: ubuntu-latest
@@ -1552,17 +1550,13 @@ jobs:
               cmake \
               dht \
               fast_float \
-              gettext \
-              `[ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] && echo gtkmm40` \
               libevent \
               libfmt \
               libnatpmp \
               libpsl \
               miniupnpc \
               ninja \
-              `[ '${{ needs.what-to-make.outputs.make-web }}' = 'true' ] && echo npm` \
               pkgconf \
-              `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-svg qt6-tools` \
               rapidjson \
               simdutf
           run: |
@@ -1576,12 +1570,12 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=pfx \
               -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
               -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
-              -DENABLE_GTK=${{ (needs.what-to-make.outputs.make-gtk == 'true') && 'ON' || 'OFF' }} \
+              -DENABLE_GTK=OFF `# GUI clients are covered on non-emulated runners` \
               -DENABLE_IPO=OFF `# LTO is too slow for a portability smoke test` \
-              -DENABLE_QT=${{ (needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }} \
+              -DENABLE_QT=OFF `# GUI clients are covered on non-emulated runners` \
               -DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }} \
               -DENABLE_UTILS=${{ (needs.what-to-make.outputs.make-utils == 'true') && 'ON' || 'OFF' }} \
-              -DREBUILD_WEB=${{ (needs.what-to-make.outputs.make-web == 'true') && 'ON' || 'OFF' }} \
+              -DREBUILD_WEB=OFF \
               -DENABLE_WERROR=ON \
               -DRUN_CLANG_TIDY=OFF \
               -DUSE_SYSTEM_DEFAULT=ON \
@@ -1592,7 +1586,7 @@ jobs:
               -DWITH_CRYPTO=openssl
             cmake --build obj --config Release
             if [ '${{ needs.what-to-make.outputs.make-tests }}' = 'true' ]; then
-              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
+              cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
             fi
             cmake --install obj --config Release --strip
             rm -rf obj src
@@ -1700,8 +1694,6 @@ jobs:
     if: |
       needs.what-to-make.outputs.make-cli == 'true' ||
       needs.what-to-make.outputs.make-daemon == 'true' ||
-      needs.what-to-make.outputs.make-gtk == 'true' ||
-      needs.what-to-make.outputs.make-qt == 'true' ||
       needs.what-to-make.outputs.make-tests == 'true' ||
       needs.what-to-make.outputs.make-utils == 'true'
     runs-on: ubuntu-latest
@@ -1733,16 +1725,12 @@ jobs:
               cmake \
               fast-float \
               fmt \
-              gettext-tools \
               gtar-- \
-              `[ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] && echo gtkmm40` \
               libevent \
               libnatpmp \
               libpsl \
               miniupnpc \
               ninja \
-              `[ '${{ needs.what-to-make.outputs.make-web }}' = 'true' ] && echo node` \
-              `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-qtsvg qt6-qttools` \
               rapidjson \
               simdutf
           run: |
@@ -1756,12 +1744,12 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=pfx \
               -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
               -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
-              -DENABLE_GTK=${{ (needs.what-to-make.outputs.make-gtk == 'true') && 'ON' || 'OFF' }} \
+              -DENABLE_GTK=OFF `# GUI clients are covered on non-emulated runners` \
               -DENABLE_IPO=OFF `# LTO is too slow for a portability smoke test` \
-              -DENABLE_QT=${{ (needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }} \
+              -DENABLE_QT=OFF `# GUI clients are covered on non-emulated runners` \
               -DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }} \
               -DENABLE_UTILS=${{ (needs.what-to-make.outputs.make-utils == 'true') && 'ON' || 'OFF' }} \
-              -DREBUILD_WEB=${{ (needs.what-to-make.outputs.make-web == 'true') && 'ON' || 'OFF' }} \
+              -DREBUILD_WEB=OFF \
               -DENABLE_WERROR=ON \
               -DRUN_CLANG_TIDY=OFF \
               -DUSE_SYSTEM_DEFAULT=ON \
@@ -1772,7 +1760,7 @@ jobs:
               -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in OpenBSD`
             cmake --build obj --config Release
             if [ '${{ needs.what-to-make.outputs.make-tests }}' = 'true' ]; then
-              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
+              cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
             fi
             cmake --install obj --config Release --strip
             rm -rf obj src
@@ -1786,8 +1774,6 @@ jobs:
     if: |
       needs.what-to-make.outputs.make-cli == 'true' ||
       needs.what-to-make.outputs.make-daemon == 'true' ||
-      needs.what-to-make.outputs.make-gtk == 'true' ||
-      needs.what-to-make.outputs.make-qt == 'true' ||
       needs.what-to-make.outputs.make-tests == 'true' ||
       needs.what-to-make.outputs.make-utils == 'true'
     runs-on: ubuntu-latest
@@ -1822,21 +1808,12 @@ jobs:
               fast_float \
               fmtlib \
               gcc14 \
-              gettext-tools \
-              `[ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] && echo gtkmm4` \
               libevent \
               libpsl \
               miniupnpc \
               ninja-build \
-              `[ '${{ needs.what-to-make.outputs.make-web }}' = 'true' ] && echo nodejs` \
               pkgconf \
-              `[ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ] && echo qt6-qtsvg qt6-qttools` \
               rapidjson
-            if [ '${{ needs.what-to-make.outputs.make-gtk }}' = 'true' ] || [ '${{ needs.what-to-make.outputs.make-qt }}' = 'true' ]; then
-              for set in xbase xcomp; do
-                curl -sL "https://cdn.netbsd.org/pub/NetBSD/NetBSD-`uname -r`/amd64/binary/sets/$set.tar.xz" | tar xJpf - -C /
-              done
-            fi
           run: |
             set -ex
             export TMPDIR=/var/tmp # gcc's LTO takes up a lot of space in TMPDIR, and /tmp is too small
@@ -1851,15 +1828,15 @@ jobs:
               -DCMAKE_C_COMPILER='/usr/pkg/gcc14/bin/gcc' \
               -DCMAKE_BUILD_RPATH='/usr/pkg/gcc14/lib' \
               -DCMAKE_INSTALL_PREFIX=pfx \
-              -DCMAKE_PREFIX_PATH='/usr/pkg/qt6;/usr/pkg' \
+              -DCMAKE_PREFIX_PATH='/usr/pkg' \
               -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
               -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
-              -DENABLE_GTK=${{ (needs.what-to-make.outputs.make-gtk == 'true') && 'ON' || 'OFF' }} \
+              -DENABLE_GTK=OFF `# GUI clients are covered on non-emulated runners` \
               -DENABLE_IPO=OFF `# LTO is too slow for a portability smoke test` \
-              -DENABLE_QT=${{ (needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }} \
+              -DENABLE_QT=OFF `# GUI clients are covered on non-emulated runners` \
               -DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }} \
               -DENABLE_UTILS=${{ (needs.what-to-make.outputs.make-utils == 'true') && 'ON' || 'OFF' }} \
-              -DREBUILD_WEB=${{ (needs.what-to-make.outputs.make-web == 'true') && 'ON' || 'OFF' }} \
+              -DREBUILD_WEB=OFF \
               -DENABLE_WERROR=ON \
               -DRUN_CLANG_TIDY=OFF \
               -DUSE_SYSTEM_DEFAULT=ON \
@@ -1872,7 +1849,7 @@ jobs:
               -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in NetBSD`
             cmake --build obj --config Release
             if [ '${{ needs.what-to-make.outputs.make-tests }}' = 'true' ]; then
-              QT_QPA_PLATFORM=offscreen cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
+              cmake -E chdir obj ctest -j `getconf NPROCESSORS_ONLN` --build-config Release --output-on-failure
             fi
             cmake --install obj --config Release --strip
             rm -rf obj src
