@@ -40,7 +40,7 @@ runs:
       id: restore-cache
       with:
         path: ${{ env.DEPS_PREFIX }}
-        key: ${{ github.job }}-${{ inputs.arch }}-${{ steps.cache-key.outputs.hash }}
+        key: win-deps-${{ inputs.arch }}-${{ steps.cache-key.outputs.hash }}
     - name: Build Dependencies
       if: steps.restore-cache.outputs.cache-hit != 'true'
       shell: pwsh
@@ -58,4 +58,4 @@ runs:
       id: cache
       with:
         path: ${{ env.DEPS_PREFIX }}
-        key: ${{ github.job }}-${{ inputs.arch }}-${{ steps.cache-key.outputs.hash }}
+        key: win-deps-${{ inputs.arch }}-${{ steps.cache-key.outputs.hash }}
