@@ -7,7 +7,6 @@
   "scripts": {
     "build": "node esbuild.mjs",
     "dev": "DEV=true node esbuild.mjs",
-    "generate-buildonly": "node generate-buildonly.js",
     "lint": "biome check .",
     "lint:fix": "biome check --write ."
   },
