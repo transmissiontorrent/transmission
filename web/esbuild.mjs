@@ -17,7 +17,7 @@ const ctx = await esbuild.context({
   sourcemap: true,
   // the oldest browsers the bundle needs to run in. esbuild transpiles
   // newer JS syntax and flattens native CSS nesting to fit these targets.
-  // keep in sync with the esbuild command in README.md.
+  // keep in sync with the esbuild commands in README.md and CMakeLists.txt.
   target: ['chrome104', 'firefox115', 'safari16.4'],
 });
 

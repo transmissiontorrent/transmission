@@ -28,8 +28,19 @@ $ esbuild \
   src/main.js
 ```
 
-These flags mirror `esbuild.mjs`, which is what `npm run build` uses to
-generate the official bundle; keep the two in sync.
+These flags mirror `esbuild.mjs` (what `npm run build` uses to generate
+the official bundle) and `CMakeLists.txt` (what the main build runs when
+configured with `-DREBUILD_WEB=ON`); keep the three in sync.
+
+Instead of running esbuild by hand, you can also let the main build do
+it: configure with `-DREBUILD_WEB=ON` and CMake will find your system
+esbuild and rebuild the bundle as part of the build. To build just the
+webapp this way, point CMake at this directory:
+
+```sh
+$ cmake -S web -B build-web
+$ cmake --build build-web
+```
 
 ## Notes for Developers
 

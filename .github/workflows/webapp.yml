@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-slim
     outputs:
       test-style: ${{ steps.check-diffs.outputs.web-changed == '1' }}
+      test-cmake-build: ${{ steps.check-diffs.outputs.web-changed == '1' }}
       test-generated-files: ${{ steps.check-diffs.outputs.web-changed == '1' && steps.check-main-push.outputs.is-main-push == '0'}}
       update-generated-files: ${{ steps.check-diffs.outputs.web-changed == '1' && steps.check-main-push.outputs.is-main-push == '1'}}
     steps:
@@ -51,6 +52,33 @@ jobs:
             echo "$name-changed=$?" >> "$GITHUB_OUTPUT"
           }
           get_changes web CMakeLists.txt web
+
+  # the platform build jobs in actions.yml all use the prebuilt bundle
+  # (REBUILD_WEB=OFF); this is the one job that checks the bundle can be
+  # rebuilt from source with nothing but cmake and a standalone esbuild
+  # binary -- no node or npm -- which is how distro packagers build it
+  cmake-build:
+    runs-on: ubuntu-latest
+    needs: [ decide-what-jobs-to-run ]
+    if: ${{ needs.decide-what-jobs-to-run.outputs.test-cmake-build == 'true' }}
+    steps:
+      - name: Get source
+        uses: actions/checkout@v6
+      - name: Get esbuild
+        run: |
+          set -ex # abort if any command fails; echo commands
+          # download the pinned esbuild directly from the npm registry
+          # (no npm needed), same version `npm run build` uses
+          version="$(jq -r '.devDependencies.esbuild | ltrimstr("^")' web/package.json)"
+          curl -fsSL "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-${version}.tgz" | tar xz
+          ./package/bin/esbuild --version
+          echo "$PWD/package/bin" >> "$GITHUB_PATH"
+      - name: Build the webapp with CMake and esbuild
+        run: |
+          set -ex # abort if any command fails; echo commands
+          cmake -S web -B obj
+          cmake --build obj
+          ls -l obj/public_html
 
   code-style:
     runs-on: ubuntu-slim
