@@ -962,7 +962,14 @@ a {
   border: 0;
   cursor: pointer;
   height: 1rem;
-  mask: var(--image-magnet) no-repeat center / 14px;
+
+  /* longhands, not the `mask:` shorthand: esbuild only learned to
+     -webkit- prefix the shorthand in 0.27.2, and Chrome < 120 needs
+     the prefix. Longhands are prefixed by every supported esbuild. */
+  mask-image: var(--image-magnet);
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: 14px;
   vertical-align: middle;
   width: 1rem;
 }
@@ -1128,7 +1135,12 @@ a {
 
   .encryption[data-encrypted='true'] {
     background-color: var(--color-border-starkest);
-    mask: var(--image-lock-fill) no-repeat center / 14px;
+
+    /* longhands, not the `mask:` shorthand -- see .inspector-info-magnet */
+    mask-image: var(--image-lock-fill);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: 14px;
     width: 10px;
   }
 

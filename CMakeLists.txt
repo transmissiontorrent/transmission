@@ -61,7 +61,7 @@ set(GTKMM4_MINIMUM 4.11.1)
 set(OPENSSL_MINIMUM 1.1.0)
 set(MBEDTLS_MINIMUM 2.7)
 set(MINIUPNPC_MINIMUM 2.2.1)
-set(ESBUILD_MINIMUM 0.20.0) # the native-CSS-nesting transform matured over 0.19.x; keep in sync with web/CMakeLists.txt
+set(ESBUILD_MINIMUM 0.25.0) # 0.25.0 fixed the lowering of native CSS nesting; keep in sync with web/CMakeLists.txt
 set(PSL_MINIMUM 0.21.0)
 set(QT_MINIMUM 5.15)
 set(SIGSLOT_MINIMUM 1.2.3)

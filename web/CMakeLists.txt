@@ -5,7 +5,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
     project(transmission-web NONE)
     set(TR_NAME transmission)
-    set(ESBUILD_MINIMUM 0.20.0) # keep in sync with the root CMakeLists.txt
+    set(ESBUILD_MINIMUM 0.25.0) # keep in sync with the root CMakeLists.txt
     find_program(ESBUILD esbuild REQUIRED)
     execute_process(COMMAND "${ESBUILD}" --version
         OUTPUT_STRIP_TRAILING_WHITESPACE

@@ -58,7 +58,9 @@ jobs:
   # rebuilt from source with nothing but cmake and a standalone esbuild
   # binary -- no node or npm -- which is how distro packagers build it
   cmake-build:
-    runs-on: ubuntu-latest
+    # 26.04 rather than ubuntu-latest: its packaged esbuild (0.27.2) meets
+    # the ESBUILD_MINIMUM in CMakeLists.txt; 24.04's (0.20.1) does not
+    runs-on: ubuntu-26.04
     needs: [ decide-what-jobs-to-run ]
     if: ${{ needs.decide-what-jobs-to-run.outputs.test-cmake-build == 'true' }}
     steps:
@@ -67,12 +69,9 @@ jobs:
       - name: Get esbuild
         run: |
           set -ex # abort if any command fails; echo commands
-          # download the pinned esbuild directly from the npm registry
-          # (no npm needed), same version `npm run build` uses
-          version="$(jq -r '.devDependencies.esbuild | ltrimstr("^")' web/package.json)"
-          curl -fsSL "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-${version}.tgz" | tar xz
-          ./package/bin/esbuild --version
-          echo "$PWD/package/bin" >> "$GITHUB_PATH"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends esbuild
+          esbuild --version
       - name: Build the webapp with CMake and esbuild
         run: |
           set -ex # abort if any command fails; echo commands
