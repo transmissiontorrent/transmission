@@ -30,13 +30,14 @@ namespace
 {
 
 auto constexpr Base32HashStrLen = size_t{ 32 };
+auto constexpr Sha1Len = std::tuple_size_v<tr_sha1_digest_t>;
 
 /* this base32 code converted from code by Robert Kaye and Gordon Mohr
  * and is public domain. see http://bitzi.com/publicdomain for more info */
 namespace bitzi
 {
 
-auto constexpr Base32Lookup = std::array<int, 80>{
+auto constexpr Base32Lookup = std::to_array<uint8_t>({
     0xFF, 0xFF, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, /* '0', '1', '2', '3', '4', '5', '6', '7' */
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, /* '8', '9', ':', ';', '<', '=', '>', '?' */
     0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, /* '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G' */
@@ -47,18 +48,16 @@ auto constexpr Base32Lookup = std::array<int, 80>{
     0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, /* 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o' */
     0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, /* 'p', 'q', 'r', 's', 't', 'u', 'v', 'w' */
     0x17, 0x18, 0x19, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF /* 'x', 'y', 'z', '{', '|', '}', '~', 'DEL' */
-};
+});
 
-void base32_to_sha1(uint8_t* out, char const* in, size_t const inlen)
+void base32_to_sha1(std::span<std::byte, Sha1Len> const out, std::span<char const> const in)
 {
-    size_t const outlen = 20;
-
-    memset(out, 0, 20);
+    std::ranges::fill(out, std::byte{});
 
     size_t index = 0;
     size_t offset = 0;
-    for (size_t i = 0; i < inlen; ++i) {
-        int const lookup = in[i] - '0';
+    for (auto const c : in) {
+        auto const lookup = c - '0';
 
         /* Skip chars outside the lookup table */
         if (lookup < 0) {
@@ -66,35 +65,35 @@ void base32_to_sha1(uint8_t* out, char const* in, size_t const inlen)
         }
 
         /* If this digit is not in the table, ignore it */
-        int const digit = Base32Lookup[lookup];
+        auto const digit = Base32Lookup[lookup];
 
-        if (digit == 0xFF) {
+        if (digit == 0xFFU) {
             continue;
         }
 
-        if (index <= 3) {
-            index = (index + 5) % 8;
+        if (index <= 3U) {
+            index = (index + 5U) & 0b111U;
 
             if (index == 0) {
-                out[offset] |= digit;
+                out[offset] |= std::byte{ digit };
                 offset++;
 
-                if (offset >= outlen) {
+                if (offset >= out.size()) {
                     break;
                 }
             } else {
-                out[offset] |= digit << (8 - index);
+                out[offset] |= std::byte{ digit } << (8U - index);
             }
         } else {
-            index = (index + 5) % 8;
-            out[offset] |= digit >> index;
+            index = (index + 5U) & 0b111U;
+            out[offset] |= std::byte{ digit } >> index;
             offset++;
 
-            if (offset >= outlen) {
+            if (offset >= out.size()) {
                 break;
             }
 
-            out[offset] |= digit << (8 - index);
+            out[offset] |= std::byte{ digit } << (8U - index);
         }
     }
 }
@@ -114,7 +113,7 @@ std::optional<tr_sha1_digest_t> parseBase32Hash(std::string_view sv)
     }
 
     auto digest = tr_sha1_digest_t{};
-    bitzi::base32_to_sha1(reinterpret_cast<uint8_t*>(std::data(digest)), std::data(sv), std::size(sv));
+    bitzi::base32_to_sha1(digest, sv);
     return digest;
 }
 
