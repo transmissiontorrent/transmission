@@ -7,6 +7,7 @@ import { Appearance } from './appearance-settings.js';
 import { ContextMenu } from './context-menu.js';
 import { Formatter } from './formatter.js';
 import { Inspector } from './inspector.js';
+import { LabelsDialog } from './labels-dialog.js';
 import { MoveDialog } from './move-dialog.js';
 import { OpenDialog } from './open-dialog.js';
 import { OverflowMenu } from './overflow-menu.js';
@@ -15,16 +16,15 @@ import { PrefsDialog } from './prefs-dialog.js';
 import { Remote, RPC } from './remote.js';
 import { RemoveDialog } from './remove-dialog.js';
 import { RenameDialog } from './rename-dialog.js';
-import { LabelsDialog } from './labels-dialog.js';
 import { ShortcutsDialog } from './shortcuts-dialog.js';
 import { StatisticsDialog } from './statistics-dialog.js';
 import { Torrent } from './torrent.js';
 import { TorrentRendererCompact, TorrentRendererFull } from './torrent-row.js';
 import {
-  newOpts,
-  icon,
   debounce,
   deepEqual,
+  icon,
+  newOpts,
   setEnabled,
   setTextContent,
 } from './utils.js';

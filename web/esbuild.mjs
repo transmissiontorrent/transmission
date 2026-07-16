@@ -1,5 +1,5 @@
-import * as esbuild from 'esbuild';
 import * as process from 'node:process';
+import * as esbuild from 'esbuild';
 
 const ctx = await esbuild.context({
   bundle: true,
