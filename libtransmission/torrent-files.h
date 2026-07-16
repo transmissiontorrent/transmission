@@ -11,6 +11,7 @@
 #include <functional>
 #include <iterator>
 #include <optional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -149,8 +150,8 @@ public:
         size_t base_len_;
     };
 
-    [[nodiscard]] std::optional<FoundFile> find(tr_file_index_t file, std::string_view const* paths, size_t n_paths) const;
-    [[nodiscard]] bool has_any_local_data(std::string_view const* paths, size_t n_paths) const;
+    [[nodiscard]] std::optional<FoundFile> find(tr_file_index_t file_index, std::span<std::string_view const> paths) const;
+    [[nodiscard]] bool has_any_local_data(std::span<std::string_view const> paths) const;
     [[nodiscard]] std::string_view primary_mime_type() const;
 
     static void sanitize_subpath(std::string_view path, tr_pathbuf& append_me, bool os_specific = true);
