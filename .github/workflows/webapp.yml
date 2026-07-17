@@ -150,8 +150,6 @@ jobs:
           env | sort
       - name: Get source
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 2 # >1 needed for merge base
       - name: Generate webapp files
         run: |
           set -x # echo all executed commands to the terminal
