@@ -1589,7 +1589,6 @@ jobs:
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
-          cpu: 4
           mem: 12288
           prepare: |
             set -ex
@@ -1769,7 +1768,6 @@ jobs:
         uses: vmactions/openbsd-vm@v1
         with:
           usesh: true
-          cpu: 4
           mem: 12288
           prepare: |
             set -ex
@@ -1849,7 +1847,6 @@ jobs:
         uses: vmactions/netbsd-vm@v1
         with:
           usesh: true
-          cpu: 4
           mem: 12288
           prepare: |
             set -ex
