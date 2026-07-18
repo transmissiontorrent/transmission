@@ -1162,7 +1162,10 @@ jobs:
         uses: ./.github/actions/install-deps
         with:
           compiler: gcc
-          enable-gtk: ${{ needs.what-to-make.outputs.make-gtk == 'true' && 'gtk4' || 'false' }}
+          # TODO(ci): rawhide's glibmm2.68 2.88.1 FTBFS against glib 2.89's gtkmm/giomm
+          # headers (conflicting GDBusActionGroupClass/GEmblemClass); skip GTK there
+          # until Fedora rebuilds glibmm. Upstream skew, not a Transmission bug.
+          enable-gtk: ${{ needs.what-to-make.outputs.make-gtk == 'true' && matrix.version != 'rawhide' && 'gtk4' || 'false' }}
           enable-qt: ${{ needs.what-to-make.outputs.make-qt == 'true' && 'qt6' || 'false' }}
           use-sudo: false
           enable-mold: true
@@ -1195,7 +1198,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
-            -DENABLE_GTK=${{ (needs.what-to-make.outputs.make-gtk == 'true') && 'ON' || 'OFF' }} \
+            -DENABLE_GTK=${{ (needs.what-to-make.outputs.make-gtk == 'true' && matrix.version != 'rawhide') && 'ON' || 'OFF' }} `# rawhide: see enable-gtk note above` \
             -DENABLE_MAC=OFF \
             -DENABLE_QT=${{ (needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }} \
