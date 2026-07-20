@@ -199,31 +199,10 @@ jobs:
       - name: Configure
         run: |
           cmake \
+            --preset ci-sanitizer-macos \
             -S . \
             -B obj \
-            -G Ninja \
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_CXX_FLAGS='-gdwarf-4 -fno-omit-frame-pointer -fsanitize=address,undefined' \
-            -DCMAKE_C_FLAGS='-gdwarf-4 -fno-omit-frame-pointer -fsanitize=address,undefined' \
-            -DCMAKE_INSTALL_PREFIX=pfx \
-            -DENABLE_CLI=OFF \
-            -DENABLE_DAEMON=OFF \
-            -DENABLE_GTK=OFF \
-            -DENABLE_IPO=OFF \
-            -DENABLE_MAC=OFF \
-            -DENABLE_QT=OFF \
-            -DENABLE_TESTS=ON \
-            -DENABLE_UTILS=ON \
-            -DREBUILD_WEB=OFF \
-            -DRUN_CLANG_TIDY=OFF \
-            -DUSE_SYSTEM_DEFAULT=ON \
-            -DUSE_SYSTEM_DHT=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_UTP=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Homebrew`
+            -DCMAKE_INSTALL_PREFIX=pfx
       - name: Make
         run: cmake --build obj --config Debug --target all-tests
       - name: Test with sanitizers
@@ -604,32 +583,19 @@ jobs:
       - name: Configure
         run: |
           cmake \
+            --preset ci-macos-from-git-and-brew \
             -S . \
             -B obj \
-            -G Ninja \
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DCMAKE_PREFIX_PATH=`brew --prefix`/opt/qt \
-            -DCMAKE_CXX_FLAGS='--system-header-prefix=fmt/' `# Needed to supress system header warnings in macos-15-intel` \
-            -DCMAKE_C_FLAGS='--system-header-prefix=fmt/' `# Needed to supress system header warnings in macos-15-intel` \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_GTK=${{ (needs.what-to-make.outputs.make-gtk == 'true') && 'ON' || 'OFF' }} \
-            -DENABLE_MAC=${{ (needs.what-to-make.outputs.make-mac == 'true') && 'ON' || 'OFF' }}  \
+            -DENABLE_MAC=${{ (needs.what-to-make.outputs.make-mac == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_QT=${{ (needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_UTILS=${{ (needs.what-to-make.outputs.make-utils == 'true') && 'ON' || 'OFF' }} \
-            -DREBUILD_WEB=${{ (needs.what-to-make.outputs.make-web == 'true') && 'ON' || 'OFF' }} \
-            -DENABLE_WERROR=ON \
-            -DRUN_CLANG_TIDY=OFF \
-            -DUSE_SYSTEM_DEFAULT=ON \
-            -DUSE_SYSTEM_DHT=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_SIGSLOT=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_SMALL=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_UTP=OFF `# Not packaged in Homebrew` \
-            -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Homebrew`
+            -DREBUILD_WEB=${{ (needs.what-to-make.outputs.make-web == 'true') && 'ON' || 'OFF' }}
       - name: Make
         run: cmake --build obj --config RelWithDebInfo
       - name: Test
@@ -913,27 +879,19 @@ jobs:
       - name: Configure
         run: |
           cmake \
+            --preset ci-macos-from-tarball \
             -S src \
             -B obj \
-            -G Ninja \
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCMAKE_CXX_FLAGS='--system-header-prefix=fmt/' `# Needed to supress system header warnings in macos-26` \
-            -DCMAKE_C_FLAGS='--system-header-prefix=fmt/' `# Needed to supress system header warnings in macos26` \
             -DCMAKE_INSTALL_PREFIX=pfx \
             -DCMAKE_PREFIX_PATH=`brew --prefix`/opt/qt \
             -DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_GTK=${{ (needs.what-to-make.outputs.make-gtk == 'true') && 'ON' || 'OFF' }} \
-            -DENABLE_MAC=${{ (needs.what-to-make.outputs.make-mac == 'true') && 'ON' || 'OFF' }}  \
-            -DENABLE_QT=${{ (needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }}  \
+            -DENABLE_MAC=${{ (needs.what-to-make.outputs.make-mac == 'true') && 'ON' || 'OFF' }} \
+            -DENABLE_QT=${{ (needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }} \
             -DENABLE_UTILS=${{ (needs.what-to-make.outputs.make-utils == 'true') && 'ON' || 'OFF' }} \
-            -DREBUILD_WEB=${{ (needs.what-to-make.outputs.make-web == 'true') && 'ON' || 'OFF' }} \
-            -DENABLE_WERROR=ON \
-            -DRUN_CLANG_TIDY=OFF \
-            -DUSE_SYSTEM_DEFAULT=OFF
+            -DREBUILD_WEB=${{ (needs.what-to-make.outputs.make-web == 'true') && 'ON' || 'OFF' }}
       - name: Make
         run: cmake --build obj --config RelWithDebInfo
       - name: Test
