@@ -1,0 +1,274 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "ci-base",
+      "hidden": true,
+      "description": "Shared CI defaults. dht, sigslot, small, utp, and wide-integer are packaged by (almost) no distro, so look for system copies only where a preset opts back in.",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "ENABLE_MAC": "OFF",
+        "RUN_CLANG_TIDY": "OFF",
+        "USE_SYSTEM_DHT": "OFF",
+        "USE_SYSTEM_SIGSLOT": "OFF",
+        "USE_SYSTEM_SMALL": "OFF",
+        "USE_SYSTEM_UTP": "OFF",
+        "USE_SYSTEM_WIDE_INTEGER": "OFF"
+      }
+    },
+    {
+      "name": "ci-ubuntu",
+      "hidden": true,
+      "inherits": "ci-base",
+      "description": "simdutf: TODO use the system copy once CI runs on Ubuntu 26.04.",
+      "cacheVariables": {
+        "USE_SYSTEM_DEFAULT": "ON",
+        "USE_SYSTEM_SIMDUTF": "OFF"
+      }
+    },
+    {
+      "name": "ci-linux-release",
+      "inherits": "ci-ubuntu",
+      "description": "clang instead of gcc to work around https://gcc.gnu.org/bugzilla/show_bug.cgi?id=109717",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=mold",
+        "ENABLE_WERROR": "ON"
+      }
+    },
+    {
+      "name": "ci-sanitizer-linux",
+      "inherits": "ci-ubuntu",
+      "description": "asan+lsan+ubsan test build. Vendored libarchive exercises its ExternalProject scripts on Linux.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_C_FLAGS": "-gdwarf-4 -fno-omit-frame-pointer -fsanitize=address,leak,undefined",
+        "CMAKE_CXX_FLAGS": "-gdwarf-4 -fno-omit-frame-pointer -fsanitize=address,leak,undefined",
+        "ENABLE_CLI": "OFF",
+        "ENABLE_DAEMON": "OFF",
+        "ENABLE_GTK": "OFF",
+        "ENABLE_IPO": "OFF",
+        "ENABLE_QT": "ON",
+        "ENABLE_TESTS": "ON",
+        "ENABLE_UTILS": "ON",
+        "REBUILD_WEB": "OFF",
+        "USE_SYSTEM_ARCHIVE": "OFF"
+      }
+    },
+    {
+      "name": "ci-clang-tidy-linux",
+      "inherits": "ci-ubuntu",
+      "description": "Generates compile_commands.json for the ctcache-backed clang-tidy run; nothing is fully built.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "ci-utp-disabled",
+      "inherits": "ci-linux-release",
+      "description": "Builds the core with ENABLE_UTP=OFF to keep the no-utp configuration compiling.",
+      "cacheVariables": {
+        "ENABLE_CLI": "OFF",
+        "ENABLE_DAEMON": "OFF",
+        "ENABLE_GTK": "OFF",
+        "ENABLE_QT": "OFF",
+        "ENABLE_TESTS": "OFF",
+        "ENABLE_UTILS": "ON",
+        "ENABLE_UTP": "OFF",
+        "REBUILD_WEB": "OFF"
+      }
+    },
+    {
+      "name": "ci-crypto",
+      "inherits": "ci-linux-release",
+      "description": "Core + tests against an alternative crypto backend; pass -DWITH_CRYPTO=<backend>.",
+      "cacheVariables": {
+        "ENABLE_CLI": "OFF",
+        "ENABLE_DAEMON": "OFF",
+        "ENABLE_GTK": "OFF",
+        "ENABLE_QT": "OFF",
+        "ENABLE_TESTS": "ON",
+        "ENABLE_UTILS": "ON",
+        "REBUILD_WEB": "OFF"
+      }
+    },
+    {
+      "name": "ci-alpine",
+      "inherits": "ci-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=mold",
+        "ENABLE_WERROR": "ON",
+        "USE_SYSTEM_DEFAULT": "ON"
+      }
+    },
+    {
+      "name": "ci-fedora",
+      "inherits": "ci-base",
+      "description": "ENABLE_WERROR is off because rawhide's fresh toolchains routinely add new warnings.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=mold",
+        "ENABLE_WERROR": "OFF",
+        "USE_SYSTEM_DEFAULT": "ON"
+      }
+    },
+    {
+      "name": "ci-macos",
+      "hidden": true,
+      "inherits": "ci-base",
+      "description": "--system-header-prefix=fmt/ suppresses warnings from brewed fmt headers.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_C_FLAGS": "--system-header-prefix=fmt/",
+        "CMAKE_CXX_FLAGS": "--system-header-prefix=fmt/",
+        "ENABLE_WERROR": "ON"
+      }
+    },
+    {
+      "name": "ci-macos-from-git-and-brew",
+      "inherits": "ci-macos",
+      "description": "Build from a git checkout against brew-provided dependencies.",
+      "cacheVariables": {
+        "USE_SYSTEM_DEFAULT": "ON"
+      }
+    },
+    {
+      "name": "ci-macos-from-tarball",
+      "inherits": "ci-macos",
+      "description": "Build from the source tarball with fully vendored dependencies, validating that the tarball builds standalone.",
+      "cacheVariables": {
+        "USE_SYSTEM_DEFAULT": "OFF"
+      }
+    },
+    {
+      "name": "ci-sanitizer-macos",
+      "inherits": "ci-base",
+      "description": "asan+ubsan test build (no lsan on macOS).",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_C_FLAGS": "-gdwarf-4 -fno-omit-frame-pointer -fsanitize=address,undefined",
+        "CMAKE_CXX_FLAGS": "-gdwarf-4 -fno-omit-frame-pointer -fsanitize=address,undefined",
+        "ENABLE_CLI": "OFF",
+        "ENABLE_DAEMON": "OFF",
+        "ENABLE_GTK": "OFF",
+        "ENABLE_IPO": "OFF",
+        "ENABLE_QT": "OFF",
+        "ENABLE_TESTS": "ON",
+        "ENABLE_UTILS": "ON",
+        "REBUILD_WEB": "OFF",
+        "USE_SYSTEM_DEFAULT": "ON"
+      }
+    },
+    {
+      "name": "ci-windows-base",
+      "hidden": true,
+      "inherits": "ci-base",
+      "description": "Dependencies come prebuilt from prepare-deps-win32 via $env{DEPS_PREFIX}; everything else is vendored.",
+      "cacheVariables": {
+        "CMAKE_PREFIX_PATH": "$env{DEPS_PREFIX}",
+        "USE_SYSTEM_DEFAULT": "OFF"
+      }
+    },
+    {
+      "name": "ci-windows",
+      "inherits": "ci-windows-base",
+      "description": "ccache cannot cache /Zi debug info, so store it in the objects (/Z7) instead.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+        "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "Embedded",
+        "CMAKE_POLICY_DEFAULT_CMP0141": "NEW",
+        "ENABLE_GTK": "OFF",
+        "ENABLE_UTILS": "ON",
+        "ENABLE_WERROR": "ON"
+      }
+    },
+    {
+      "name": "ci-sanitizer-windows",
+      "inherits": "ci-windows-base",
+      "description": "MSVC ASan build. RelWithDebInfo avoids Debug's /RTC1, which is incompatible with ASan; Qt is on so the Qt unit tests run under ASan. Sanitizer flags come from CFLAGS/CXXFLAGS in the workflow.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "ENABLE_CLI": "OFF",
+        "ENABLE_DAEMON": "OFF",
+        "ENABLE_GTK": "OFF",
+        "ENABLE_IPO": "OFF",
+        "ENABLE_QT": "ON",
+        "ENABLE_TESTS": "ON",
+        "ENABLE_UTILS": "ON",
+        "REBUILD_WEB": "OFF"
+      }
+    },
+    {
+      "name": "ci-clang-tidy-windows",
+      "inherits": "ci-windows-base",
+      "description": "Generates compile_commands.json for the ctcache-backed clang-tidy run; nothing is fully built.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ENABLE_TESTS": "ON"
+      }
+    },
+    {
+      "name": "ci-bsd",
+      "hidden": true,
+      "inherits": "ci-base",
+      "description": "Portability smoke test: GUI clients are covered on non-emulated runners, and LTO is too slow for an emulated VM.",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_GTK": "OFF",
+        "ENABLE_IPO": "OFF",
+        "ENABLE_QT": "OFF",
+        "ENABLE_WERROR": "ON",
+        "REBUILD_WEB": "OFF",
+        "USE_SYSTEM_DEFAULT": "ON"
+      }
+    },
+    {
+      "name": "ci-freebsd",
+      "inherits": "ci-bsd",
+      "description": "FreeBSD is the one platform that packages dht.",
+      "cacheVariables": {
+        "USE_SYSTEM_DHT": "ON",
+        "WITH_CRYPTO": "openssl"
+      }
+    },
+    {
+      "name": "ci-openbsd",
+      "inherits": "ci-bsd"
+    },
+    {
+      "name": "ci-netbsd",
+      "inherits": "ci-bsd",
+      "description": "Builds with pkgsrc gcc14; natpmp and simdutf are not packaged.",
+      "cacheVariables": {
+        "CMAKE_BUILD_RPATH": "/usr/pkg/gcc14/lib",
+        "CMAKE_C_COMPILER": "/usr/pkg/gcc14/bin/gcc",
+        "CMAKE_CXX_COMPILER": "/usr/pkg/gcc14/bin/g++",
+        "CMAKE_PREFIX_PATH": "/usr/pkg",
+        "USE_SYSTEM_NATPMP": "OFF",
+        "USE_SYSTEM_SIMDUTF": "OFF"
+      }
+    }
+  ]
+}
