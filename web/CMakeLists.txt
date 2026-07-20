@@ -5,14 +5,15 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
     project(transmission-web NONE)
     set(TR_NAME transmission)
-    set(ESBUILD_MINIMUM 0.25.0) # keep in sync with the root CMakeLists.txt
-    find_program(ESBUILD esbuild REQUIRED)
-    execute_process(COMMAND "${ESBUILD}" --version
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        OUTPUT_VARIABLE ESBUILD_VERSION_STRING)
-    if("${ESBUILD_VERSION_STRING}" VERSION_LESS "${ESBUILD_MINIMUM}")
-        message(FATAL_ERROR "Found esbuild: ${ESBUILD} Found unsuitable version \"${ESBUILD_VERSION_STRING}\", but required is at least \"${ESBUILD_MINIMUM}\"")
-    endif()
+endif()
+
+set(ESBUILD_MINIMUM 0.25.0) # 0.25.0 fixed the lowering of native CSS nesting
+find_program(ESBUILD esbuild REQUIRED)
+execute_process(COMMAND "${ESBUILD}" --version
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    OUTPUT_VARIABLE ESBUILD_VERSION_STRING)
+if("${ESBUILD_VERSION_STRING}" VERSION_LESS "${ESBUILD_MINIMUM}")
+    message(FATAL_ERROR "Found esbuild: ${ESBUILD} Found unsuitable version \"${ESBUILD_VERSION_STRING}\", but required is at least \"${ESBUILD_MINIMUM}\"")
 endif()
 
 set(WEB_SOURCES
