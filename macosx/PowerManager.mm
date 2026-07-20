@@ -15,8 +15,6 @@
 @property(nonatomic, readonly) os_log_t log;
 @property(getter=isListening) BOOL listening;
 
-@property(nonatomic) id<NSObject> noNapActivity;
-
 - (void)systemWillSleep:(NSNotification*)notification;
 - (void)systemDidWakeUp:(NSNotification*)notification;
 
@@ -25,6 +23,9 @@
 @end
 
 @implementation PowerManager {
+    // held for the app's lifetime so macOS doesn't App-Nap the process
+    woke::NapInhibitor _napInhibitor;
+
     // held while torrents are active and the "prevent sleep" default is on
     woke::SleepInhibitor _sleepInhibitor;
 }
@@ -73,11 +74,7 @@
         self.listening = YES;
     }
 
-    if (self.noNapActivity == nil) {
-        os_log_debug(self.log, "Starting no-nap activity");
-        self.noNapActivity = [NSProcessInfo.processInfo beginActivityWithOptions:NSActivityUserInitiatedAllowingIdleSystemSleep
-                                                                          reason:@TR_PROJ_APPNAME_CAPITALIZED ": Application is active"];
-    }
+    _napInhibitor.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Application is running");
 }
 
 - (void)stop
@@ -93,12 +90,7 @@
         self.listening = NO;
     }
 
-    if (self.noNapActivity != nil) {
-        os_log_debug(self.log, "Ending no-nap activity");
-        [NSProcessInfo.processInfo endActivity:self.noNapActivity];
-        self.noNapActivity = nil;
-    }
-
+    _napInhibitor.uninhibit();
     _sleepInhibitor.uninhibit();
 }
 
