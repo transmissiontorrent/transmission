@@ -2,6 +2,12 @@
    It may be used under GPLv2 (SPDX: GPL-2.0-only), GPLv3 (SPDX: GPL-3.0-only),
    or any future license endorsed by Mnemosaic LLC.
    License text can be found in the licenses/ folder. */
+/*! fast-deep-equal - v3.1.3
+ https://github.com/epoberezkin/fast-deep-equal
+ Copyright (c) 2017 Evgeny Poberezkin; Licensed MIT */
 /* @license This file Copyright © Charles Kerr, Dave Perrett, Malcolm Jarvis and Bruno Bierbaumer
    It may be used under GPLv2 (SPDX: GPL-2.0-only).
    License text can be found in the licenses/ folder. */
+/*! Clusterize.js - v1.0.0 - 2023-01-22
+ http://NeXTs.github.com/Clusterize.js/
+ Copyright (c) 2015 Denis Lukov; Licensed MIT */
