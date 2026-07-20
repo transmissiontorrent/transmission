@@ -689,6 +689,16 @@ tr_add_external_auto_library(SIMDUTF simdutf
         -DSIMDUTF_ICONV:BOOL=OFF
         -DSIMDUTF_CXX_STANDARD=${CMAKE_CXX_STANDARD})
 
+# libwoke: desktop-sleep and App-Nap inhibition for the GUI clients.
+set(BUILD_SHARED_LIBS OFF)
+tr_add_external_auto_library(WOKE woke
+    SUBPROJECT
+    SOURCE_DIR libwoke
+    CMAKE_ARGS
+        -DWOKE_BUILD_TESTS:BOOL=OFF
+        -DWOKE_BUILD_EXAMPLES:BOOL=OFF)
+unset(BUILD_SHARED_LIBS)
+
 tr_add_external_auto_library(SMALL small
     SUBPROJECT
     CMAKE_ARGS
