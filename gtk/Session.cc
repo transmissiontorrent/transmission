@@ -955,7 +955,7 @@ void Session::Impl::update()
 void Session::Impl::update_sleep_inhibitor()
 {
     if (gtr_pref_flag_get(TR_KEY_inhibit_desktop_hibernation) && tr_sessionGetBusyTorrentCount(session_) != 0) {
-        sleep_inhibitor_.inhibit("Transmission", "Torrents are active");
+        sleep_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Torrents are active");
     } else {
         sleep_inhibitor_.uninhibit();
     }

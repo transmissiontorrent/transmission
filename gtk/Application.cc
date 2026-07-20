@@ -684,8 +684,7 @@ Application::Impl::Impl(Application& app, std::string const& config_dir, bool st
     , start_paused_(start_paused)
     , start_iconified_(start_iconified)
 {
-    // keep this process responsive for its lifetime (no-op on Linux)
-    nap_inhibitor_.inhibit("Transmission", "Application is running");
+    nap_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Application is running");
 }
 
 void Application::Impl::on_core_busy(bool busy)

@@ -5,6 +5,7 @@
 
 #include "libtransmission-app/session.h"
 
+#include "libtransmission/macros.h"
 #include "libtransmission/quark.h"
 
 #include "libtransmission-app/prefs.h"
@@ -46,7 +47,7 @@ bool Session::should_inhibit_sleep() const
 void Session::update_sleep_inhibit()
 {
     if (should_inhibit_sleep()) {
-        sleep_inhibitor_.inhibit("Transmission", "Torrents are active");
+        sleep_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Torrents are active");
     } else {
         sleep_inhibitor_.uninhibit();
     }

@@ -154,7 +154,7 @@ Application::Application(
     initUnits();
 
     // keep this process responsive for its lifetime (no-op on Linux)
-    nap_inhibitor_.inhibit("Transmission", "Application is running");
+    nap_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Application is running");
 
     setWindowIcon(makeWindowIcon());
 
