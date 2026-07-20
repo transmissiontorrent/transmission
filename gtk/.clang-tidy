@@ -18,6 +18,7 @@ Checks:
   - -cppcoreguidelines-pro-bounds-constant-array-index
   - -cppcoreguidelines-use-enum-class
   - hicpp-*
+  - -hicpp-braces-around-statements # alias of `readability-braces-around-statements`
   - -hicpp-no-array-decay # alias of `cppcoreguidelines-pro-bounds-array-to-pointer-decay`
   - -hicpp-special-member-functions # alias of `cppcoreguidelines-special-member-functions`
   - -hicpp-use-nullptr # alias of `modernize-use-nullptr`
@@ -45,4 +46,5 @@ CheckOptions:
   - { key: cppcoreguidelines-avoid-do-while.IgnoreMacros, value: true }
   - { key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic, value: true }
   - { key: modernize-pass-by-value.ValuesOnly, value: true }
+  - { key: readability-braces-around-statements.ShortStatementLines, value: 2 }
   - { key: readability-implicit-bool-conversion.UseUpperCaseLiteralSuffix, value: true }
