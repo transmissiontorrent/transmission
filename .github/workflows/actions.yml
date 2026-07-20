@@ -248,27 +248,7 @@ jobs:
           CFLAGS: /fsanitize=address /D_DISABLE_STRING_ANNOTATION /D_DISABLE_VECTOR_ANNOTATION
           CXXFLAGS: /fsanitize=address /D_DISABLE_STRING_ANNOTATION /D_DISABLE_VECTOR_ANNOTATION
         run: |
-          $CmakeArgs = @(
-            '-S .'
-            '-B obj'
-            '-G Ninja'
-            # RelWithDebInfo avoids Debug's /RTC1, which is incompatible with ASan.
-            '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
-            "-DCMAKE_PREFIX_PATH=`"$Env:DEPS_PREFIX`""
-            '-DENABLE_CLI=OFF'
-            '-DENABLE_DAEMON=OFF'
-            '-DENABLE_GTK=OFF'
-            '-DENABLE_IPO=OFF'
-            '-DENABLE_MAC=OFF'
-            # Qt must be ON so the Qt unit tests are built and exercised under ASan.
-            '-DENABLE_QT=ON'
-            '-DENABLE_TESTS=ON'
-            '-DENABLE_UTILS=ON'
-            '-DREBUILD_WEB=OFF'
-            '-DRUN_CLANG_TIDY=OFF'
-            '-DUSE_SYSTEM_DEFAULT=OFF'
-          )
-          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake $($CmakeArgs -join ' ')"
+          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --preset ci-sanitizer-windows -S . -B obj"
       - name: Make
         run: |
           cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config RelWithDebInfo --target all-tests"
@@ -466,19 +446,7 @@ jobs:
       - name: Configure
         if: matrix.enabled == 'true'
         run: |
-          $CmakeArgs = @(
-            '-S .'
-            '-B obj'
-            '-G Ninja'
-            '-DCMAKE_BUILD_TYPE=Debug'
-            '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
-            "-DCMAKE_PREFIX_PATH=`"$Env:DEPS_PREFIX`""
-            '-DENABLE_QT=${{ matrix.enable-qt }}'
-            '-DENABLE_TESTS=ON'
-            '-DRUN_CLANG_TIDY=OFF'
-            '-DUSE_SYSTEM_DEFAULT=OFF'
-          )
-          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake $($CmakeArgs -join ' ')"
+          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --preset ci-clang-tidy-windows -S . -B obj -DENABLE_QT=${{ matrix.enable-qt }}"
       - name: Generate sources
         if: matrix.enabled == 'true'
         run: |
@@ -736,30 +704,14 @@ jobs:
       - name: Configure
         run: |
           $CmakeArgs = @(
-            '-S .'
-            '-B obj'
-            '-G Ninja'
-            '-DCMAKE_C_COMPILER_LAUNCHER=ccache'
-            '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
-            # ccache cannot cache /Zi; store debug info in the objects (/Z7) instead
-            '-DCMAKE_POLICY_DEFAULT_CMP0141=NEW'
-            '-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded'
-            '-DCMAKE_BUILD_TYPE=RelWithDebInfo'
             '-DCMAKE_INSTALL_PREFIX=pfx'
-            "-DCMAKE_PREFIX_PATH=`"$Env:DEPS_PREFIX`""
             "-DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }}"
             "-DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-dist == 'true') && 'ON' || 'OFF' }}"
-            '-DENABLE_GTK=OFF'
-            '-DENABLE_MAC=OFF'
             "-DENABLE_QT=${{ (needs.what-to-make.outputs.make-dist == 'true' || needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }}"
             "-DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }}"
-            '-DENABLE_UTILS=ON'
             "-DREBUILD_WEB=${{ (needs.what-to-make.outputs.make-web == 'true') && 'ON' || 'OFF' }}"
-            '-DENABLE_WERROR=ON'
-            '-DRUN_CLANG_TIDY=OFF'
-            '-DUSE_SYSTEM_DEFAULT=OFF'
           )
-          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake $($CmakeArgs -join ' ')"
+          cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --preset ci-windows -S . -B obj $($CmakeArgs -join ' ')"
       - name: Make
         run: |
           cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config RelWithDebInfo"
