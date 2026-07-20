@@ -271,6 +271,9 @@ void Session::stop()
         session_ = nullptr;
     }
 
+    // the closed session has no torrents; clear the busy state so the next
+    // session doesn't inherit it before its first stats poll arrives
+    set_has_busy_torrents(false);
     updateType();
 }
 
