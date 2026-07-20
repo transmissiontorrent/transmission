@@ -56,6 +56,7 @@
 #include <gtkmm/window.h>
 
 #include <small/set.hpp>
+#include <woke/woke.hpp>
 
 #if GTKMM_CHECK_VERSION(4, 0, 0)
 #include <gtkmm/droptarget.h>
@@ -212,6 +213,8 @@ private:
     bool const start_iconified_;
     bool is_iconified_ = false;
     bool is_closing_ = false;
+
+    woke::NapInhibitor nap_inhibitor_;
 
     Glib::RefPtr<Gtk::Builder> ui_builder_;
 
@@ -681,6 +684,8 @@ Application::Impl::Impl(Application& app, std::string const& config_dir, bool st
     , start_paused_(start_paused)
     , start_iconified_(start_iconified)
 {
+    // keep this process responsive for its lifetime (no-op on Linux)
+    nap_inhibitor_.inhibit("Transmission", "Application is running");
 }
 
 void Application::Impl::on_core_busy(bool busy)

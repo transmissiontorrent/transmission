@@ -184,6 +184,7 @@ target_link_libraries(${TR_NAME}-gtk
     PRIVATE
         ${TR_NAME}-app
         ${TR_NAME}
+        woke::woke
         transmission::gtk_impl
         transmission::fmt-header-only
         $<$<BOOL:${WITH_APPINDICATOR}>:${APPINDICATOR_LIBRARIES}>)
