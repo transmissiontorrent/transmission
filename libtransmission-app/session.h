@@ -22,7 +22,7 @@ public:
     Session(Session const&) = delete;
     Session& operator=(Session&&) = delete;
     Session& operator=(Session const&) = delete;
-    ~Session() = default;
+    virtual ~Session() = default;
 
     [[nodiscard]] bool should_inhibit_sleep() const;
 
