@@ -26,7 +26,6 @@
 #include <libtransmission/web-utils.h> // tr_urlIsValid()
 
 #include <giomm/asyncresult.h>
-#include <giomm/dbusconnection.h>
 #include <giomm/fileinfo.h>
 #include <giomm/filemonitor.h>
 #include <giomm/liststore.h>
@@ -36,7 +35,6 @@
 #include <glibmm/main.h>
 #include <glibmm/miscutils.h>
 #include <glibmm/stringutils.h>
-#include <glibmm/variant.h>
 
 #include <woke/woke.hpp>
 
