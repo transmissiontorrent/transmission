@@ -963,6 +963,5 @@ std::optional<Session::Type> computeType(tr_session const* const session, std::o
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 void Session::updateType(std::optional<std::string> session_id)
 {
-    type_ = computeType(session_, session_id);
-    set_session_is_local(isLocalFilesystem());
+    set_session_type(computeType(session_, session_id));
 }

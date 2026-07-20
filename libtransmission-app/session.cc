@@ -23,18 +23,19 @@ Session::Session(Prefs& prefs)
     });
 }
 
-void Session::set_session_is_local(bool const is_local)
+void Session::set_session_type(std::optional<Type> const type)
 {
     // should_inhibit_sleep() ignores the busy count once we're non-local, so a
     // non-local session's remembered activity is meaningless -- drop it here so
     // a later switch back to a local session starts from a clean slate.
-    if (!is_local) {
+    if (type.value_or(Type::Remote) == Type::Remote) {
         has_busy_torrents_ = false;
     }
 
-    if (session_is_local_ != is_local) {
-        session_is_local_ = is_local;
+    if (session_type_ != type) {
+        session_type_ = type;
         update_sleep_inhibit();
+        update_nap_inhibit();
     }
 }
 
@@ -48,7 +49,7 @@ void Session::set_has_busy_torrents(bool const has_busy)
 
 bool Session::should_inhibit_sleep() const
 {
-    return session_is_local_ && has_busy_torrents_ && prefs_.get<bool>(TR_KEY_inhibit_desktop_hibernation);
+    return is_local_filesystem() && has_busy_torrents_ && prefs_.get<bool>(TR_KEY_inhibit_desktop_hibernation);
 }
 
 void Session::update_sleep_inhibit()
@@ -57,6 +58,15 @@ void Session::update_sleep_inhibit()
         sleep_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Torrents are active");
     } else {
         sleep_inhibitor_.uninhibit();
+    }
+}
+
+void Session::update_nap_inhibit()
+{
+    if (should_inhibit_nap()) {
+        nap_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Application is running");
+    } else {
+        nap_inhibitor_.uninhibit();
     }
 }
 

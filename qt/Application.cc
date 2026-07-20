@@ -153,9 +153,6 @@ Application::Application(
     loadTranslations();
     initUnits();
 
-    // keep this process responsive for its lifetime (no-op on Linux)
-    nap_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Application is running");
-
     setWindowIcon(makeWindowIcon());
 
 #ifdef __APPLE__

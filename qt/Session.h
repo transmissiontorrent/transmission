@@ -44,12 +44,6 @@ class Session
     Q_OBJECT
 
 public:
-    enum class Type : uint8_t {
-        InProcess, // tr_session exists in the same process
-        Local, // tr_session exists in a daemon running on this box
-        Remote, // tr_session exists in a daemon running somewhere else
-    };
-
     Session(QString config_dir, Prefs& prefs, RpcClient& rpc);
     Session(Session&&) = delete;
     Session(Session const&) = delete;
@@ -95,11 +89,6 @@ public:
     void copyMagnetLinkToClipboard(int torrent_id);
 
     [[nodiscard]] bool portTestPending(PortTestIpProtocol ip_protocol) const noexcept;
-
-    [[nodiscard]] constexpr std::optional<Type> type() const noexcept
-    {
-        return type_;
-    }
 
     // returns true iff the session is in-process
     [[nodiscard]] constexpr bool isServer() const noexcept
@@ -231,7 +220,6 @@ private:
     tr_session_stats stats_ = EmptyStats;
     tr_session_stats cumulative_stats_ = EmptyStats;
     QString session_version_;
-    std::optional<Type> type_;
     RpcClient& rpc_;
     Tag next_tag_ = {};
 
