@@ -28,7 +28,7 @@ public:
 
 protected:
     void set_session_is_local(bool is_local);
-    void set_has_active_torrents(bool has_active);
+    void set_has_busy_torrents(bool has_busy);
 
 private:
     void update_sleep_inhibit();
@@ -36,7 +36,7 @@ private:
     Prefs& prefs_;
     woke::SleepInhibitor sleep_inhibitor_;
     bool session_is_local_ = false;
-    bool has_active_torrents_ = false;
+    bool has_busy_torrents_ = false;
     sigslot::scoped_connection prefs_connection_;
 };
 

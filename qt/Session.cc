@@ -715,6 +715,10 @@ void Session::updateStats(tr_variant* dict)
         updateStats(*var, cumulative_stats_);
     }
 
+    if (auto const busy = dictFind<int64_t>(dict, TR_KEY_busy_torrent_count); busy) {
+        set_has_busy_torrents(*busy > 0);
+    }
+
     emit statsUpdated();
 }
 
@@ -752,10 +756,6 @@ void Session::updateInfo(tr_variant* args_dict)
     }
 
     updateType(dictFind<std::string>(args_dict, TR_KEY_session_id));
-
-    if (auto const active = dictFind<bool>(args_dict, TR_KEY_has_active_torrents); active) {
-        set_has_active_torrents(*active);
-    }
 
     connect(&prefs_, qOverload<tr_quark>(&Prefs::changed), this, &Session::updatePref);
 

@@ -87,6 +87,7 @@ auto constexpr MyStatic = std::array<std::string_view, TR_N_KEYS>{
     "blocklist_updates_enabled"sv, // gtk app, qt app
     "blocklist_url"sv, // rpc, tr_session::Settings
     "blocks"sv, // .resume
+    "busy_torrent_count"sv, // rpc
     "bytesCompleted"sv, // rpc
     "bytes_completed"sv, // rpc
     "bytes_to_client"sv, // rpc
@@ -224,7 +225,6 @@ auto constexpr MyStatic = std::array<std::string_view, TR_N_KEYS>{
     "group_set"sv, // rpc
     "hasAnnounced"sv, // rpc
     "hasScraped"sv, // rpc
-    "has_active_torrents"sv, // rpc
     "has_announced"sv, // rpc
     "has_scraped"sv, // rpc
     "hashString"sv, // rpc
@@ -698,6 +698,7 @@ auto constexpr MyStatic = std::array<std::string_view, TR_N_KEYS>{
     "trash_original_torrent_files"sv, // gtk app, rpc, tr_session::Settings
     "umask"sv, // tr_session::Settings
     "units"sv, // rpc
+    "unpaused_torrent_count"sv, // rpc
     "upload-slots-per-torrent"sv, // tr_session::Settings
     "uploadLimit"sv, // rpc
     "uploadLimited"sv, // rpc

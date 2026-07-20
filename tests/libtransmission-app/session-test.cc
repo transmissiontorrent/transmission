@@ -20,7 +20,7 @@ class TestSession : public Session
 {
 public:
     using Session::Session;
-    using Session::set_has_active_torrents;
+    using Session::set_has_busy_torrents;
     using Session::set_session_is_local;
 };
 
@@ -35,7 +35,7 @@ TEST(AppSessionTest, inhibitsOnlyWhenLocalActiveAndEnabled)
     session.set_session_is_local(true);
     EXPECT_FALSE(session.should_inhibit_sleep()); // still nothing active
 
-    session.set_has_active_torrents(true);
+    session.set_has_busy_torrents(true);
     EXPECT_TRUE(session.should_inhibit_sleep()); // local + active + enabled
 
     // toggling the preference is honored immediately

@@ -944,15 +944,12 @@ public:
 
     [[nodiscard]] size_t count_queue_free_slots(tr_direction dir) const noexcept;
 
-    // True if any torrent is actively transferring -- downloading, seeding, or
-    // verifying -- and is not stalled or locally errored: the "should the
-    // desktop stay awake" predicate. Reads a cache refreshed on the session
-    // thread (see on_now_timer), so it is safe from any thread; GUI clients read
-    // it over RPC (the has_active_torrents session-get field) or in-process via
-    // tr_sessionHasActiveTorrents().
-    [[nodiscard]] bool has_active_torrents() const noexcept
+    // Number of torrents actively downloading, seeding, verifying, and which
+    // are not stalled or locally errored: the "should desktop stay awake" count.
+    // Safe to call from any thread.
+    [[nodiscard]] size_t busy_torrent_count() const noexcept
     {
-        return has_active_torrents_.load(std::memory_order_relaxed);
+        return busy_torrent_count_.load(std::memory_order_relaxed);
     }
 
     [[nodiscard]] bool has_ip_protocol(tr_address_type type) const noexcept
@@ -1107,8 +1104,8 @@ private:
     void on_queue_timer();
     void on_save_timer();
 
-    // the uncached predicate behind has_active_torrents(); session thread only
-    [[nodiscard]] bool compute_has_active_torrents() const noexcept;
+    // the uncached count behind busy_torrent_count(); session thread only
+    [[nodiscard]] size_t compute_busy_torrent_count() const noexcept;
 
     static void onIncomingPeerConnection(tr_socket_t fd, void* vsession);
 
@@ -1351,9 +1348,9 @@ private:
     // depends-on: alt_speeds_, udp_core_, torrents_
     std::unique_ptr<tr::Timer> now_timer_;
 
-    // cached has_active_torrents(), refreshed on the session thread in
+    // cached busy_torrent_count(), refreshed on the session thread in
     // on_now_timer() so it is readable from any thread (GUI clients, C API)
-    std::atomic<bool> has_active_torrents_{ false };
+    std::atomic<size_t> busy_torrent_count_{ 0U };
 
     // depends-on: torrents_
     std::unique_ptr<tr::Timer> queue_timer_;

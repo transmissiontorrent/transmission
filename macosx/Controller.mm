@@ -2146,7 +2146,7 @@ static void removeKeRangerRansomware()
         anyCompleted |= torrent.finishedSeeding;
     }
 
-    BOOL anyActive = tr_sessionHasActiveTorrents(self.fLib);
+    BOOL anyActive = tr_sessionGetBusyTorrentCount(self.fLib) != 0;
     PowerManager.shared.shouldPreventSleep = anyActive && [self.fDefaults boolForKey:@"SleepPrevent"];
 
     if (!NSApp.hidden) {

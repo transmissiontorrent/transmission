@@ -30,17 +30,17 @@ void Session::set_session_is_local(bool const is_local)
     }
 }
 
-void Session::set_has_active_torrents(bool const has_active)
+void Session::set_has_busy_torrents(bool const has_busy)
 {
-    if (has_active_torrents_ != has_active) {
-        has_active_torrents_ = has_active;
+    if (has_busy_torrents_ != has_busy) {
+        has_busy_torrents_ = has_busy;
         update_sleep_inhibit();
     }
 }
 
 bool Session::should_inhibit_sleep() const
 {
-    return session_is_local_ && has_active_torrents_ && prefs_.get<bool>(TR_KEY_inhibit_desktop_hibernation);
+    return session_is_local_ && has_busy_torrents_ && prefs_.get<bool>(TR_KEY_inhibit_desktop_hibernation);
 }
 
 void Session::update_sleep_inhibit()
