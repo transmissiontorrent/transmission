@@ -38,7 +38,22 @@ namespace
 class TestPrefs final : public tr::app::Prefs
 {
 public:
-    using tr::app::Prefs::Prefs;
+    TestPrefs()
+    {
+        record_changes();
+    }
+
+    explicit TestPrefs(tr::Settings const& settings)
+        : tr::app::Prefs{ settings }
+    {
+        record_changes();
+    }
+
+    explicit TestPrefs(std::string_view config_dir)
+        : tr::app::Prefs{ config_dir }
+    {
+        record_changes();
+    }
 
     [[nodiscard]] std::vector<tr_quark> const& changed_keys() const noexcept
     {
@@ -51,12 +66,13 @@ public:
     }
 
 private:
-    void on_changed(tr_quark const key) override
+    void record_changes()
     {
-        changed_keys_.push_back(key);
+        changed_connection_ = observe_changes([this](tr_quark const key) { changed_keys_.push_back(key); });
     }
 
     std::vector<tr_quark> changed_keys_;
+    sigslot::scoped_connection changed_connection_;
 };
 
 // Sets `key` to `a` then `b`, asserting the round-trip through get/set for each.

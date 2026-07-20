@@ -86,7 +86,7 @@ void Prefs::save(std::string_view const config_dir, std::optional<tr::Settings> 
 void Prefs::set(tr_quark const key, tr_variant const& var)
 {
     if (tr::serializer::set_from_variant(key, var, app_prefs_, session_prefs_)) {
-        on_changed(key);
+        changed_(key);
     }
 }
 } // namespace tr::app

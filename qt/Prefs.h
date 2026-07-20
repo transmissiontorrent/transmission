@@ -12,6 +12,8 @@
 
 #include <libtransmission-app/prefs.h>
 
+#include <sigslot/signal.hpp>
+
 #include "UserMetaType.h"
 #include "VariantHelpers.h"
 
@@ -48,9 +50,7 @@ public:
 signals:
     void changed(tr_quark key);
 
-protected:
-    void on_changed(tr_quark const key) override
-    {
-        emit changed(key);
-    }
+private:
+    // re-emit tr::app::Prefs's sigslot change notifications as a Qt signal
+    sigslot::scoped_connection changed_connection_ = observe_changes([this](tr_quark const key) { emit changed(key); });
 };
