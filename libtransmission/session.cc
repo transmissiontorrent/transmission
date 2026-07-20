@@ -597,6 +597,39 @@ size_t tr_session::count_queue_free_slots(tr_direction dir) const noexcept
     return max - active_count;
 }
 
+bool tr_session::has_active_torrents() const noexcept
+{
+    auto const stalled_enabled = queueStalledEnabled();
+    auto const stalled_if_idle_for_n_seconds = static_cast<time_t>(queueStalledMinutes() * 60);
+    auto const now = tr_time();
+
+    for (auto const* const tor : torrents()) {
+        switch (tor->activity()) {
+        case TR_STATUS_DOWNLOAD:
+        case TR_STATUS_SEED:
+        case TR_STATUS_CHECK:
+            break; // an actively-transferring state
+        default:
+            continue; // stopped, queued, or waiting to verify
+        }
+
+        // don't keep the machine awake for a locally-errored or stalled torrent
+        if (tor->error().is_local_error()) {
+            continue;
+        }
+
+        if (stalled_enabled) {
+            if (auto const idle = tor->idle_seconds(now); idle && *idle >= stalled_if_idle_for_n_seconds) {
+                continue;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 void tr_session::on_queue_timer()
 {
     using namespace queue_helpers;

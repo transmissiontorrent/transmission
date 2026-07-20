@@ -603,6 +603,7 @@ TEST_F(RpcTest, sessionGet)
         TR_KEY_download_queue_enabled,
         TR_KEY_download_queue_size,
         TR_KEY_encryption,
+        TR_KEY_has_active_torrents,
         TR_KEY_idle_seeding_limit,
         TR_KEY_idle_seeding_limit_enabled,
         TR_KEY_incomplete_dir,

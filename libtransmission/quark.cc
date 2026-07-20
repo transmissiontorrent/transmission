@@ -224,6 +224,7 @@ auto constexpr MyStatic = std::array<std::string_view, TR_N_KEYS>{
     "group_set"sv, // rpc
     "hasAnnounced"sv, // rpc
     "hasScraped"sv, // rpc
+    "has_active_torrents"sv, // rpc
     "has_announced"sv, // rpc
     "has_scraped"sv, // rpc
     "hashString"sv, // rpc

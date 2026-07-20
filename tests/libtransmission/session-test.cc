@@ -383,4 +383,23 @@ TEST_F(SessionTest, loadTorrentsThenMagnets)
     EXPECT_TRUE(tor->has_metainfo());
 }
 
+TEST_F(SessionTest, hasActiveTorrents)
+{
+    // no torrents -> nothing active
+    EXPECT_FALSE(session_->has_active_torrents());
+
+    // a complete torrent added paused -> still not active
+    auto* const tor = zeroTorrentInit(ZeroTorrentState::Complete);
+    ASSERT_NE(nullptr, tor);
+    EXPECT_FALSE(session_->has_active_torrents());
+
+    // once started it seeds (the seed queue is off by default) -> active
+    tr_torrentStart(tor);
+    EXPECT_TRUE(waitFor([this]() { return session_->has_active_torrents(); }, 5s));
+
+    // stopping it -> not active again
+    tr_torrentStop(tor);
+    EXPECT_TRUE(waitFor([this]() { return !session_->has_active_torrents(); }, 5s));
+}
+
 } // namespace tr::test

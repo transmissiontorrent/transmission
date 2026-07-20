@@ -2076,6 +2076,11 @@ using SessionAccessors = std::pair<SessionGetter, SessionSetter>;
         });
 
     map.try_emplace(
+        TR_KEY_has_active_torrents,
+        [](tr_session const& src) -> tr_variant { return src.has_active_torrents(); },
+        nullptr);
+
+    map.try_emplace(
         TR_KEY_idle_seeding_limit,
         [](tr_session const& src) -> tr_variant { return src.idleLimitMinutes(); },
         [](tr_session& tgt, tr_variant const& src, ErrorInfo& /*err*/) {

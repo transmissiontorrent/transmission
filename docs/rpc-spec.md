@@ -592,6 +592,7 @@ Response parameters: `path`, `name`, and `id`, holding the torrent ID integer
 | `download_queue_enabled` | boolean | if true, limit how many torrents can be downloaded at once
 | `download_queue_size` | number | max number of torrents to download at once (see `download_queue_enabled`)
 | `encryption` | string | `required`, `preferred`, `allowed`
+| `has_active_torrents` | boolean | true if any torrent is actively downloading, seeding, or verifying and is not stalled or errored. *read-only*
 | `idle_seeding_limit` | number | torrents we're seeding will be stopped if they're idle for this long
 | `idle_seeding_limit_enabled` | boolean | true if the seeding inactivity limit is honored by default
 | `incomplete_dir` | string | path for incomplete torrents, when enabled
@@ -657,6 +658,7 @@ except:
 
 * `blocklist_size`
 * `config_dir`
+* `has_active_torrents`
 * `recent_download_paths`
 * `recent_relocate_paths`
 * `rpc_version_minimum`,
@@ -1134,4 +1136,5 @@ Transmission 4.2.0 (`rpc_version_semver` 6.1.0, `rpc_version`: 20)
 | `session_get` | new arg `recent_relocate_paths`
 | `session_get` | new arg `torrent_complete_verify_enabled`
 | `session_set` | new arg `torrent_complete_verify_enabled`
+| `session_get` | new arg `has_active_torrents`
 | `session_get` | **DEPRECATED** `cache_size_mib`. The memory cache is being removed, making this setting moot. The setting will still be gettable and settable via RPC `session_get` and `session_set` until Transmission 5.0.0 to avoid client breakage, but it will be otherwise unused in libtransmission. Clients should stop using this key.

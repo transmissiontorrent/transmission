@@ -944,6 +944,12 @@ public:
 
     [[nodiscard]] size_t count_queue_free_slots(tr_direction dir) const noexcept;
 
+    // True if any torrent is actively transferring -- downloading, seeding, or
+    // verifying -- and is not stalled or locally errored. This is the "should
+    // the desktop stay awake" predicate; the GUI clients read it over RPC (the
+    // has_active_torrents session-get field) or the C API.
+    [[nodiscard]] bool has_active_torrents() const noexcept;
+
     [[nodiscard]] bool has_ip_protocol(tr_address_type type) const noexcept
     {
         TR_ASSERT(tr_address::is_valid(type));
