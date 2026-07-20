@@ -591,6 +591,9 @@ auto constexpr Clients = std::to_array<Client>({
     { .begins_with = "martini", .name = "Martini Man", .formatter = no_version_formatter },
 });
 
+// the equal_range() lookup below requires this ordering
+static_assert(std::ranges::is_sorted(Clients, {}, &Client::begins_with));
+
 } // namespace
 
 void tr_clientForId(char* buf, size_t buflen, tr_peer_id_t peer_id)
@@ -621,8 +624,11 @@ void tr_clientForId(char* buf, size_t buflen, tr_peer_id_t peer_id)
 
     // NOLINTNEXTLINE(modernize-use-ranges)
     if (auto const [eq_begin, eq_end] = std::equal_range(std::begin(Clients), std::end(Clients), key, Compare{});
-        eq_begin != std::end(Clients) && eq_begin != eq_end) {
-        eq_begin->formatter(buf, buflen, eq_begin->name, peer_id);
+        eq_begin != eq_end) {
+        // multiple entries can match when one's prefix extends another's,
+        // e.g. "-WT" and "-WT-"; they're sorted, so the longest match is last
+        auto const& client = *std::prev(eq_end);
+        client.formatter(buf, buflen, client.name, peer_id);
         return;
     }
 
