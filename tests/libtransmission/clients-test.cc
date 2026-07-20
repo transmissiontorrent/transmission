@@ -42,6 +42,7 @@ TEST(Client, clientForId)
           .expected_client = "Free Download Manager 5.1.x"sv }, // Free Download Manager 5.1.38.7312 (79f26aa)
         { .peer_id = "-FL51FF-"sv, .expected_client = "Folx 5.x"sv }, // Folx v5.2.1.13690
         { .peer_id = "-FW6830-"sv, .expected_client = "FrostWire 6.8.3"sv },
+        { .peer_id = "---------"sv, .expected_client = "--------"sv }, // all-dashes id must not crash the Shad0w decoder
         { .peer_id = "-IIO\x10\x2D\x04-"sv, .expected_client = "-IIO%10-%04-"sv },
         { .peer_id = "-I\05O\x08\x03\x01-"sv, .expected_client = "-I%05O%08%03%01-"sv },
         { .peer_id = "-KT33D1-"sv, .expected_client = "KTorrent 3.3 Dev 1"sv },

@@ -145,6 +145,9 @@ bool decodeShad0wClient(char* buf, size_t buflen, std::string_view in)
     while (!std::empty(peer_id) && peer_id.back() == '-') {
         peer_id.remove_suffix(1);
     }
+    if (std::empty(peer_id)) { // e.g. an all-dashes id
+        return false;
+    }
     auto vals = std::vector<int>{};
     while (std::size(peer_id) > 1) {
         auto const num = get_shad0w_int(peer_id.back());
