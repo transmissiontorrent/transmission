@@ -60,6 +60,7 @@
 #define TR_PROJ_URL_DONATE TR_PROJ_URL_HOMEPAGE "/donate"
 #define TR_PROJ_URL_HELP TR_PROJ_URL_HOMEPAGE "/help"
 #define TR_PROJ_URL_GIT "https://github.com/retransmission/retransmission"
+#define TR_PROJ_URL_FORUM "https://forum." TR_PROJ_DOMAIN_APEX
 
 #define TR_PROJ_URL_IPV4 "https://ipv4." TR_PROJ_DOMAIN_APEX
 #define TR_PROJ_URL_IPV6 "https://ipv6." TR_PROJ_DOMAIN_APEX
