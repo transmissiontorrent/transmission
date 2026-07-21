@@ -537,14 +537,12 @@ endif()
 # CMAKE_* variables. Only the tar/zip/raw formats + the gzip (zlib) filter are
 # enabled; everything else is turned off to keep it lean. Its gzip support needs
 # zlib, so forward our prefix path (where the Windows build stages zlib) to the
-# sub-build's find_package(ZLIB). Escape the list separator for
-# ExternalProject so the whole prefix path survives as one -D value.
-string(REPLACE ";" "$<SEMICOLON>" ARCHIVE_CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}")
+# sub-build's find_package(ZLIB).
 tr_add_external_auto_library(ARCHIVE libarchive
     LIBNAME archive
     TARGET libarchive::libarchive
     CMAKE_ARGS
-        "-DCMAKE_PREFIX_PATH:STRING=${ARCHIVE_CMAKE_PREFIX_PATH}"
+        "-DCMAKE_PREFIX_PATH:STRING=${CMAKE_PREFIX_PATH}"
         -DBUILD_SHARED_LIBS:BOOL=OFF
         -DENABLE_INSTALL:BOOL=ON
         -DENABLE_TEST:BOOL=OFF
