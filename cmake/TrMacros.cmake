@@ -157,12 +157,11 @@ function(tr_process_list_conditions VAR_PREFIX)
     set(${VAR_PREFIX}_DISALLOWED "${DISALLOWED_ITEMS}" PARENT_SCOPE)
 endfunction()
 
-macro(tr_add_external_auto_library ID PACKAGENAME)
-    cmake_parse_arguments(_TAEAL_ARG
+function(tr_add_external_auto_library ID PACKAGENAME)
+    cmake_parse_arguments(PARSE_ARGV 2 _TAEAL_ARG
         "SUBPROJECT;HEADER_ONLY"
         "LIBNAME;SOURCE_DIR;TARGET"
-        "CMAKE_ARGS;COMPONENTS"
-        ${ARGN})
+        "CMAKE_ARGS;COMPONENTS")
 
     set(_TAEAL_SOURCE_DIR "${TR_THIRD_PARTY_SOURCE_DIR}")
     set(_TAEAL_BINARY_DIR "${TR_THIRD_PARTY_BINARY_DIR}")
@@ -302,7 +301,7 @@ macro(tr_add_external_auto_library ID PACKAGENAME)
     if(_TAEAL_ARG_TARGET AND NOT TARGET ${_TAEAL_ARG_TARGET})
         message(FATAL_ERROR "Build system is misconfigured, this shouldn't happen! Can't find target '${_TAEAL_ARG_TARGET}'")
     endif()
-endmacro()
+endfunction()
 
 function(tr_append_target_property TGT PROP VAL)
     get_target_property(OVAL ${TGT} ${PROP})
