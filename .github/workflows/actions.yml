@@ -789,6 +789,9 @@ jobs:
           - arch: arm64
             runner: windows-11-arm
     runs-on: ${{ matrix.runner }}
+    env:
+      # /Z7 debug info compresses well; the default zstd level overflows the cache cap
+      CCACHE_COMPRESSLEVEL: '8'
     steps:
       - name: Show Configuration
         run: |
@@ -811,6 +814,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}
+          max-size: 600M
           save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
