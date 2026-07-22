@@ -814,7 +814,9 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}
-          max-size: 600M
+          # must exceed a full build (~450M) + a few days of churn, else
+          # ccache's mid-build LRU cleanup evicts live entries near-randomly
+          max-size: 1G
           save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
@@ -868,8 +870,10 @@ jobs:
           name: binaries-${{ github.job }}-${{ matrix.arch }}-msi
           path: obj/dist/msi/*.msi
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
+        # A successful build refreshes every live entry's timestamp, so
+        # anything older than a few days is stale; trim to stay under max-size.
+        if: ${{ success() && github.event_name == 'push' }}
+        run: ccache --evict-older-than 3d
 
   make-source-tarball:
     runs-on: ubuntu-latest
