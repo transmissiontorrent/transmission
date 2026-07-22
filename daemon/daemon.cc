@@ -373,9 +373,7 @@ void periodic_update(evutil_socket_t /*fd*/, short /*what*/, void* arg)
 
 [[nodiscard]] auto load_settings(std::string_view const config_dir)
 {
-    auto settings = tr_sessionLoadSettings(config_dir);
-    settings.merge(get_default_settings());
-    return settings;
+    return tr_sessionLoadSettings(config_dir, get_default_settings());
 }
 
 } // namespace

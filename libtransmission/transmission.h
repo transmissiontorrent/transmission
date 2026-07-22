@@ -73,8 +73,9 @@ namespace tr::platform
 [[nodiscard]] tr::Settings tr_sessionGetSettings(tr_session const* session);
 
 // Load settings from disk.
-// Fills in any missing settings with defaults from `tr_sessionGetDefaultSettings()`.
-[[nodiscard]] tr::Settings tr_sessionLoadSettings(std::string_view config_dir);
+// Fills in any missing settings with `app_defaults`,
+// then with defaults from `tr_sessionGetDefaultSettings()`.
+[[nodiscard]] tr::Settings tr_sessionLoadSettings(std::string_view config_dir, tr::Settings const& app_defaults = {});
 
 // Save `session`'s settings to disk.
 void tr_sessionSaveSettings(tr_session* session, std::string_view config_dir, tr::Settings const& app_settings);
