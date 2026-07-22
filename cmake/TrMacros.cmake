@@ -157,12 +157,11 @@ function(tr_process_list_conditions VAR_PREFIX)
     set(${VAR_PREFIX}_DISALLOWED "${DISALLOWED_ITEMS}" PARENT_SCOPE)
 endfunction()
 
-macro(tr_add_external_auto_library ID PACKAGENAME)
-    cmake_parse_arguments(_TAEAL_ARG
+function(tr_add_external_auto_library ID PACKAGENAME)
+    cmake_parse_arguments(PARSE_ARGV 2 _TAEAL_ARG
         "SUBPROJECT;HEADER_ONLY"
         "LIBNAME;SOURCE_DIR;TARGET"
-        "CMAKE_ARGS;COMPONENTS"
-        ${ARGN})
+        "CMAKE_ARGS;COMPONENTS")
 
     set(_TAEAL_SOURCE_DIR "${TR_THIRD_PARTY_SOURCE_DIR}")
     set(_TAEAL_BINARY_DIR "${TR_THIRD_PARTY_BINARY_DIR}")
@@ -248,6 +247,14 @@ macro(tr_add_external_auto_library ID PACKAGENAME)
                 "-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT:STRING=${CMAKE_MSVC_DEBUG_INFORMATION_FORMAT}")
         endif()
 
+        set(_TAEAL_ESCAPED_CMAKE_ARGS)
+        foreach(ARG IN LISTS _TAEAL_ARG_CMAKE_ARGS)
+            # ExternalProject_Add() forwards CMAKE_ARGS as a list, so preserve
+            # semicolons that belong to individual -D values.
+            string(REPLACE ";" "$<SEMICOLON>" _TAEAL_ESCAPED_ARG "${ARG}")
+            list(APPEND _TAEAL_ESCAPED_CMAKE_ARGS "${_TAEAL_ESCAPED_ARG}")
+        endforeach()
+
         ExternalProject_Add(
             ${${PACKAGENAME}_UPSTREAM_TARGET}
             PREFIX "${_TAEAL_BINARY_DIR}"
@@ -272,7 +279,7 @@ macro(tr_add_external_auto_library ID PACKAGENAME)
                 "-DCMAKE_INSTALL_LIBDIR:STRING=lib"
                 "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=${CMAKE_INTERPROCEDURAL_OPTIMIZATION}"
                 ${${PACKAGENAME}_EXT_PROJ_CMAKE_ARGS}
-                ${_TAEAL_ARG_CMAKE_ARGS}
+                ${_TAEAL_ESCAPED_CMAKE_ARGS}
             BUILD_BYPRODUCTS "${${PACKAGENAME}_LIBRARY}")
 
         set_property(TARGET ${${PACKAGENAME}_UPSTREAM_TARGET} PROPERTY FOLDER "${TR_THIRD_PARTY_DIR_NAME}")
@@ -302,7 +309,7 @@ macro(tr_add_external_auto_library ID PACKAGENAME)
     if(_TAEAL_ARG_TARGET AND NOT TARGET ${_TAEAL_ARG_TARGET})
         message(FATAL_ERROR "Build system is misconfigured, this shouldn't happen! Can't find target '${_TAEAL_ARG_TARGET}'")
     endif()
-endmacro()
+endfunction()
 
 function(tr_append_target_property TGT PROP VAL)
     get_target_property(OVAL ${TGT} ${PROP})
