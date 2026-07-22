@@ -145,6 +145,9 @@ bool decodeShad0wClient(char* buf, size_t buflen, std::string_view in)
     while (!std::empty(peer_id) && peer_id.back() == '-') {
         peer_id.remove_suffix(1);
     }
+    if (std::empty(peer_id)) { // e.g. an all-dashes id
+        return false;
+    }
     auto vals = std::vector<int>{};
     while (std::size(peer_id) > 1) {
         auto const num = get_shad0w_int(peer_id.back());
@@ -448,7 +451,7 @@ constexpr void xfplay_formatter(char* buf, size_t buflen, std::string_view name,
 void xtorrent_formatter(char* buf, size_t buflen, std::string_view name, tr_peer_id_t id)
 {
     std::tie(buf, buflen) = buf_append(buf, buflen, name, ' ', base62str(id[3]), '.', base62str(id[4]), " ("sv);
-    *fmt::format_to_n(buf, buflen - 1, "{:d}", strint(&id[5], 2)).out = '\0';
+    *fmt::format_to_n(buf, buflen - 1, "{:d})", strint(&id[5], 2)).out = '\0';
 }
 
 struct Client {
@@ -591,6 +594,12 @@ auto constexpr Clients = std::to_array<Client>({
     { .begins_with = "martini", .name = "Martini Man", .formatter = no_version_formatter },
 });
 
+// the equal_range() lookup below requires this ordering
+static_assert(std::ranges::is_sorted(Clients, {}, &Client::begins_with));
+
+auto constexpr MaxPrefixLen = std::ranges::max(
+    Clients | std::views::transform([](Client const& client) { return std::size(client.begins_with); }));
+
 } // namespace
 
 void tr_clientForId(char* buf, size_t buflen, tr_peer_id_t peer_id)
@@ -608,22 +617,14 @@ void tr_clientForId(char* buf, size_t buflen, tr_peer_id_t peer_id)
         return;
     }
 
-    struct Compare {
-        bool operator()(std::string_view const& key, Client const& client) const
-        {
-            return key.substr(0, std::min(std::size(key), std::size(client.begins_with))) < client.begins_with;
+    // find the longest `begins_with` that starts `key`, e.g. an id matching
+    // both "-WT" and "-WT-" is formatted by the "-WT-" entry
+    for (auto len = MaxPrefixLen; len > 0U; --len) {
+        auto const [eq_begin, eq_end] = std::ranges::equal_range(Clients, key.substr(0, len), {}, &Client::begins_with);
+        if (eq_begin != eq_end) {
+            eq_begin->formatter(buf, buflen, eq_begin->name, peer_id);
+            return;
         }
-        bool operator()(Client const& client, std::string_view const& key) const
-        {
-            return client.begins_with < key.substr(0, std::min(std::size(key), std::size(client.begins_with)));
-        }
-    };
-
-    // NOLINTNEXTLINE(modernize-use-ranges)
-    if (auto const [eq_begin, eq_end] = std::equal_range(std::begin(Clients), std::end(Clients), key, Compare{});
-        eq_begin != std::end(Clients) && eq_begin != eq_end) {
-        eq_begin->formatter(buf, buflen, eq_begin->name, peer_id);
-        return;
     }
 
     // no match
