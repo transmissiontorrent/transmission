@@ -13,15 +13,15 @@ concurrency:
 
 env:
   # See .github/CACHE_POLICY.md for cache classes, lifecycle, and budget.
+  # Bumping CACHE_SCHEMA re-keys every ccache family; the janitor deletes
+  # keys that do not carry the current value.
+  CACHE_SCHEMA: cache-v2
   CCACHE_COMPRESSLEVEL: '5'
   CCACHE_DIR: ${{ github.workspace }}/.ccache
   GTEST_OUTPUT: xml:./
 jobs:
   what-to-make:
     runs-on: ubuntu-slim
-    permissions:
-      actions: write
-      contents: read
     outputs:
       make-core: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.core-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' }}
       make-android: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.android-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' }}
@@ -89,15 +89,6 @@ jobs:
           get_changes utils      CMakeLists.txt cmake third-party libtransmission utils
           get_changes ci-actions .github/workflows/actions.yml .github/actions release
           cat "$GITHUB_OUTPUT"
-      - name: Prune incompatible cache schemas
-        # Unreachable predecessors must leave before replacement uploads fan out.
-        if: ${{ github.event_name == 'push' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
-            --jq '.actions_caches[] | select(((.key | startswith("ccache-")) and ((.key | contains("-cache-v2-")) | not)) or (.key | test("^win-deps-(x86|x64|arm64)-[0-9a-f]{40}$"))) | .id' |
-            xargs --no-run-if-empty -P 4 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
 
   code-style:
     runs-on: ubuntu-26.04
@@ -1933,60 +1924,50 @@ jobs:
   prune-caches:
     # Build jobs supersede their own snapshots as they save, so this sweep
     # collects what those steps miss: snapshots orphaned by failed or
-    # cancelled runs, and families whose job no longer exists. Sweep every
-    # ref and keep just the newest snapshot per key prefix.
+    # cancelled runs, keys from retired schemas, and branch copies shadowed
+    # by main. Families that stop being produced age out through the
+    # provider's 7-day unused-entry eviction.
     # Runs only on pushes to main: PR runs from forks get a read-only token.
     needs: [ android, clang-tidy-linux, clang-tidy-windows, crypto, cxx23, debian, fedora, freebsd, macos, macos-cmake-universal, netbsd, openbsd, sanitizer-tests-linux, sanitizer-tests-macos, ubuntu-24-04-arm64, utp-disabled, windows ]
     if: ${{ always() && github.event_name == 'push' }}
     runs-on: ubuntu-slim
     permissions:
       actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      INVENTORY: ${{ runner.temp }}/caches.json
     steps:
-      - name: Prune superseded ccache and ctcache snapshots
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Fetch cache inventory
         run: |
-          gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
-            --jq '.actions_caches[] | select(.key | startswith("ccache-") or startswith("ctcache-")) | [.id, .ref, .key, .created_at] | @tsv' |
-            sort -t $'\t' -k 4,4r |
-            awk -F '\t' '{
-              prefix = $3
-              # strip the per-run suffix: ccache-action appends an ISO
-              # timestamp, explicit save steps append a run id. Numeric
-              # matrix parts like "-2022" belong to the prefix and stay.
-              if (!sub(/-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9:.]*Z$/, "", prefix)) {
-                sub(/-[0-9]+$/, "", prefix)
-              }
-              if (seen[$2 "\t" prefix]++) {
-                print $1
-              }
-            }' |
-            xargs --no-run-if-empty -P 4 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
-      - name: Prune cache copies shadowed by main
-        # Branch-scoped dependency and VM caches are redundant once main holds
-        # the same key and cache version.
-        env:
-          GH_TOKEN: ${{ github.token }}
+          gh api --paginate --slurp 'repos/${{ github.repository }}/actions/caches?per_page=100' \
+            --jq '[ .[].actions_caches[] ]' > "$INVENTORY"
+      - name: Prune redundant cache entries
+        # Selector 1: a "-<run id>" suffix is the only per-run part of a
+        # ccache/ctcache key, so keep just the newest snapshot per
+        # (ref, family). Selector 2: ccache keys lacking the current
+        # CACHE_SCHEMA can never be restored again. Selector 3: the
+        # content-addressed families (win-deps, vcpkg, and vmactions' VM
+        # images, whose freebsd/openbsd/netbsd prefixes are that action's
+        # own naming) are byte-identical per key+version, and every branch
+        # can restore main's copy through the base-branch fallback, so
+        # branch copies are redundant once main holds the key.
         run: |
-          gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
-            --jq '.actions_caches[] | select((.key | startswith("win-deps-")) or (.key | test("^(freebsd|openbsd|netbsd)-"))) | [.id, .ref, .key, .version] | @tsv' |
-            awk -F '\t' '
-              $2 == "refs/heads/main" { on_main[$3 SUBSEP $4] = 1 }
-              { id[NR] = $1; ref[NR] = $2; key[NR] = $3; version[NR] = $4 }
-              END {
-                for (i = 1; i <= NR; i++) {
-                  if (ref[i] != "refs/heads/main" && on_main[key[i] SUBSEP version[i]]) {
-                    print id[i]
-                  }
-                }
-              }' |
+          {
+            jq -r 'map(select(.key | startswith("ccache-") or startswith("ctcache-")))
+                   | group_by([.ref, (.key | sub("-[0-9]+$"; ""))])[]
+                   | sort_by(.created_at) | .[:-1][].id' "$INVENTORY"
+            jq -r --arg schema "-${{ env.CACHE_SCHEMA }}-" \
+              '.[] | select((.key | startswith("ccache-")) and ((.key | contains($schema)) | not)).id' "$INVENTORY"
+            jq -r 'map(select(.key | test("^(win-deps|vcpkg)-") or test("^(freebsd|openbsd|netbsd)-")))
+                   | group_by([.key, .version])[]
+                   | select(any(.[]; .ref == "refs/heads/main"))
+                   | .[] | select(.ref != "refs/heads/main").id' "$INVENTORY"
+          } |
+            sort -u |
             xargs --no-run-if-empty -P 4 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
       - name: Check cache headroom
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          bytes=$(gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
-            --jq '.actions_caches[].size_in_bytes' | awk '{ total += $1 } END { print total + 0 }')
+          bytes=$(gh api 'repos/${{ github.repository }}/actions/cache/usage' --jq '.active_caches_size_in_bytes')
           if [ "$bytes" -gt $((9 * 1024 * 1024 * 1024)) ]; then
             gib=$(awk -v bytes="$bytes" 'BEGIN { printf "%.2f", bytes / 1024 / 1024 / 1024 }')
             echo "::warning title=Actions cache near capacity::${gib} GiB of the 10 GiB repository limit is in use"
