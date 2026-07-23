@@ -127,6 +127,8 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
+    env:
+      CCACHE_COMPRESSLEVEL: '5'
     steps:
       - name: Show Configuration
         run: |
@@ -211,6 +213,8 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
+    env:
+      CCACHE_COMPRESSLEVEL: '5'
     steps:
       - name: Show Configuration
         run: |
@@ -638,6 +642,8 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
+    env:
+      CCACHE_COMPRESSLEVEL: '5'
     steps:
       - name: Show Configuration
         run: |
@@ -981,6 +987,8 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
+    env:
+      CCACHE_COMPRESSLEVEL: '5'
     steps:
       - name: Show Configuration
         run: |
@@ -1080,6 +1088,7 @@ jobs:
       # headroom over a full build so mid-build cleanup never fires; the
       # post-build trim governs the actual size
       CCACHE_MAXSIZE: 1G
+      CCACHE_COMPRESSLEVEL: '5'
     strategy:
       fail-fast: false
       matrix:
@@ -1229,6 +1238,7 @@ jobs:
       # headroom over a full build so mid-build cleanup never fires; the
       # post-build trim governs the actual size
       CCACHE_MAXSIZE: 1G
+      CCACHE_COMPRESSLEVEL: '5'
     strategy:
       fail-fast: false
       matrix:
@@ -1346,6 +1356,8 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
+    env:
+      CCACHE_COMPRESSLEVEL: '5'
     steps:
       - name: Show Configuration
         run: |
@@ -1501,6 +1513,8 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
+    env:
+      CCACHE_COMPRESSLEVEL: '5'
     steps:
       - name: Show Configuration
         run: |
@@ -1583,6 +1597,8 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
+    env:
+      CCACHE_COMPRESSLEVEL: '5'
     steps:
       - name: Show Configuration
         run: |
@@ -1759,6 +1775,8 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
+    env:
+      CCACHE_COMPRESSLEVEL: '5'
     strategy:
       fail-fast: false
       matrix:
