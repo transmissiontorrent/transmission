@@ -2055,7 +2055,7 @@ jobs:
     # cancelled runs, and families whose job no longer exists. Sweep every
     # ref and keep just the newest snapshot per key prefix.
     # Runs only on pushes to main: PR runs from forks get a read-only token.
-    needs: [ crypto, cxx23, debian, fedora, macos, macos-cmake-universal, sanitizer-tests-linux, sanitizer-tests-macos, ubuntu-24-04-arm64, utp-disabled, windows ]
+    needs: [ android, clang-tidy-linux, clang-tidy-windows, crypto, cxx23, debian, fedora, freebsd, macos, macos-cmake-universal, netbsd, openbsd, sanitizer-tests-linux, sanitizer-tests-macos, ubuntu-24-04-arm64, utp-disabled, windows ]
     if: ${{ always() && github.event_name == 'push' }}
     runs-on: ubuntu-slim
     permissions:
@@ -2081,24 +2081,32 @@ jobs:
               }
             }' |
             xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
-      - name: Prune win-deps copies shadowed by main
-        # A branch whose deps hash is absent from main builds the deps itself
-        # and saves the result on its own ref. Once a push saves that key on
-        # main, every branch restores main's copy via the base-branch
-        # fallback, so the per-ref copies only count against the cache quota.
+      - name: Prune cache copies shadowed by main
+        # Branch-scoped dependency and VM caches are redundant once main holds
+        # the same key and cache version.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
-            --jq '.actions_caches[] | select(.key | startswith("win-deps-")) | [.id, .ref, .key] | @tsv' |
+            --jq '.actions_caches[] | select((.key | startswith("win-deps-")) or (.key | test("^(freebsd|openbsd|netbsd)-"))) | [.id, .ref, .key, .version] | @tsv' |
             awk -F '\t' '
-              $2 == "refs/heads/main" { on_main[$3] = 1 }
-              { id[NR] = $1; ref[NR] = $2; key[NR] = $3 }
+              $2 == "refs/heads/main" { on_main[$3 SUBSEP $4] = 1 }
+              { id[NR] = $1; ref[NR] = $2; key[NR] = $3; version[NR] = $4 }
               END {
                 for (i = 1; i <= NR; i++) {
-                  if (ref[i] != "refs/heads/main" && on_main[key[i]]) {
+                  if (ref[i] != "refs/heads/main" && on_main[key[i] SUBSEP version[i]]) {
                     print id[i]
                   }
                 }
               }' |
             xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
+      - name: Check cache headroom
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bytes=$(gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
+            --jq '.actions_caches[].size_in_bytes' | awk '{ total += $1 } END { print total + 0 }')
+          if [ "$bytes" -gt $((9 * 1024 * 1024 * 1024)) ]; then
+            gib=$(awk -v bytes="$bytes" 'BEGIN { printf "%.2f", bytes / 1024 / 1024 / 1024 }')
+            echo "::warning title=Actions cache near capacity::${gib} GiB of the 10 GiB repository limit is in use"
+          fi
