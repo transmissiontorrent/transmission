@@ -13,20 +13,20 @@ runs:
   using: composite
   steps:
     - name: Trim ccache
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.ref == 'refs/heads/main' }}
       shell: bash
       env:
         IGNORE_TRIM_ERRORS: ${{ inputs.ignore-trim-errors }}
         TRIM_AGE: ${{ inputs.trim-age }}
       run: ccache --evict-older-than "$TRIM_AGE" || [ "$IGNORE_TRIM_ERRORS" = 'true' ]
     - name: Save replacement snapshot
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.ref == 'refs/heads/main' }}
       uses: actions/cache/save@v5
       with:
         path: ${{ env.CCACHE_DIR }}
         key: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
     - name: Delete superseded snapshots
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.ref == 'refs/heads/main' }}
       shell: bash
       env:
         GH_TOKEN: ${{ github.token }}
