@@ -1914,7 +1914,12 @@ jobs:
             sort -t $'\t' -k 4,4r |
             awk -F '\t' '{
               prefix = $3
-              sub(/-[0-9][0-9TZ:.-]*$/, "", prefix) # strip the timestamp / run-id suffix
+              # strip the per-run suffix: ccache-action appends an ISO
+              # timestamp, explicit save steps append a run id. Numeric
+              # matrix parts like "-2022" belong to the prefix and stay.
+              if (!sub(/-[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9:.]*Z$/, "", prefix)) {
+                sub(/-[0-9]+$/, "", prefix)
+              }
               if (seen[$2 "\t" prefix]++) {
                 print $1
               }
