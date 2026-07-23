@@ -821,14 +821,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # IPO only on the x64 reference cell: it carries the LTO coverage
+        # and the release-shaped artifacts. The other cells build without
+        # it -- no /LTCG time on throwaway binaries, and since the flag is
+        # the same on push and PR, main's ccache snapshots warm PR builds.
         include:
           - arch: x86
+            ipo: 'OFF'
             runner: windows-2022
           - arch: x64
+            ipo: 'ON'
             runner: windows-2022
           - arch: x64
+            ipo: 'OFF'
             runner: windows-2025-vs2026
           - arch: arm64
+            ipo: 'OFF'
             runner: windows-11-arm
     runs-on: ${{ matrix.runner }}
     permissions:
@@ -880,6 +888,7 @@ jobs:
             "-DENABLE_CLI=${{ (needs.what-to-make.outputs.make-cli == 'true') && 'ON' || 'OFF' }}"
             "-DENABLE_DAEMON=${{ (needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-dist == 'true') && 'ON' || 'OFF' }}"
             '-DENABLE_GTK=OFF'
+            "-DENABLE_IPO=${{ matrix.ipo }}"
             '-DENABLE_MAC=OFF'
             "-DENABLE_QT=${{ (needs.what-to-make.outputs.make-dist == 'true' || needs.what-to-make.outputs.make-qt == 'true') && 'ON' || 'OFF' }}"
             "-DENABLE_TESTS=${{ (needs.what-to-make.outputs.make-tests == 'true') && 'ON' || 'OFF' }}"
