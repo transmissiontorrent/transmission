@@ -1925,3 +1925,24 @@ jobs:
               }
             }' |
             xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
+      - name: Prune win-deps copies shadowed by main
+        # A branch whose deps hash is absent from main builds the deps itself
+        # and saves the result on its own ref. Once a push saves that key on
+        # main, every branch restores main's copy via the base-branch
+        # fallback, so the per-ref copies only count against the cache quota.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
+            --jq '.actions_caches[] | select(.key | startswith("win-deps-")) | [.id, .ref, .key] | @tsv' |
+            awk -F '\t' '
+              $2 == "refs/heads/main" { on_main[$3] = 1 }
+              { id[NR] = $1; ref[NR] = $2; key[NR] = $3 }
+              END {
+                for (i = 1; i <= NR; i++) {
+                  if (ref[i] != "refs/heads/main" && on_main[key[i]]) {
+                    print id[i]
+                  }
+                }
+              }' |
+            xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
