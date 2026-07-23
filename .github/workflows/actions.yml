@@ -1117,7 +1117,7 @@ jobs:
       - name: Finalize ccache
         uses: ./.github/actions/finalize-ccache
         with:
-          ignore-trim-errors: true
+          ignore-trim-errors: ${{ matrix.use-legacy-packages }}
           trim-age: 3d
       - name: Show ccache stats
         if: always()
@@ -1212,7 +1212,6 @@ jobs:
       - name: Finalize ccache
         uses: ./.github/actions/finalize-ccache
         with:
-          ignore-trim-errors: true
           trim-age: 3d
       - name: Show ccache stats
         if: always()
