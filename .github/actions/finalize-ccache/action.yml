@@ -18,12 +18,7 @@ runs:
       env:
         IGNORE_TRIM_ERRORS: ${{ inputs.ignore-trim-errors }}
         TRIM_AGE: ${{ inputs.trim-age }}
-      run: |
-        if ! ccache --evict-older-than "$TRIM_AGE"; then
-          if [ "$IGNORE_TRIM_ERRORS" != 'true' ]; then
-            exit 1
-          fi
-        fi
+      run: ccache --evict-older-than "$TRIM_AGE" || [ "$IGNORE_TRIM_ERRORS" = 'true' ]
     - name: Save replacement snapshot
       if: ${{ github.event_name == 'push' }}
       uses: actions/cache/save@v5
@@ -32,31 +27,17 @@ runs:
         key: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
     - name: Delete superseded snapshots
       if: ${{ github.event_name == 'push' }}
-      uses: actions/github-script@v8
+      shell: bash
       env:
+        GH_TOKEN: ${{ github.token }}
         KEEP: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
         PREFIX: ccache-${{ env.CCACHE_KEY }}-
-      with:
-        script: |
-          const caches = await github.paginate(github.rest.actions.getActionsCacheList, {
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            key: process.env.PREFIX,
-            ref: 'refs/heads/main',
-            per_page: 100,
-          });
-          if (!caches.some(cache => cache.key === process.env.KEEP)) {
-            core.warning(`replacement ${process.env.KEEP} is not visible; keeping superseded snapshots`);
-            return;
-          }
-          for (const cache of caches) {
-            if (cache.key === process.env.KEEP) {
-              continue;
-            }
-            core.info(`deleting ${cache.key} (${(cache.size_in_bytes / 1048576).toFixed(1)} MB)`);
-            await github.rest.actions.deleteActionsCacheById({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              cache_id: cache.id,
-            });
-          }
+      run: |
+        listing=$(gh api --paginate "repos/${{ github.repository }}/actions/caches?key=$PREFIX&ref=refs/heads/main&per_page=100" \
+          --jq '.actions_caches[] | [.id, .key] | @tsv')
+        if ! awk -F '\t' -v keep="$KEEP" '$2 == keep { found = 1 } END { exit !found }' <<< "$listing"; then
+          echo "::warning::replacement $KEEP is not visible; keeping superseded snapshots"
+          exit 0
+        fi
+        awk -F '\t' -v keep="$KEEP" '$2 != keep { print $1 }' <<< "$listing" |
+          xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
