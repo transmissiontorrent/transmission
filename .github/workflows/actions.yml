@@ -1004,11 +1004,6 @@ jobs:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-tests == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ubuntu-latest
-    env:
-      # headroom over a full build so mid-build cleanup never fires; the
-      # post-build trim governs the actual size
-      CCACHE_MAXSIZE: 1G
-      CCACHE_KEY: ${{ github.job }}-${{ matrix.version }}-cache-v2
     strategy:
       fail-fast: false
       matrix:
@@ -1057,15 +1052,10 @@ jobs:
           enable-mold: ${{ matrix.use-legacy-packages != true }}
           enable-ccache: true
       - name: Setup ccache
-        # resolve the workspace path from inside the container
-        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
-      - name: Restore ccache
-        uses: actions/cache/restore@v5
+        uses: ./.github/actions/setup-ccache
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
-          restore-keys: |
-            ccache-${{ env.CCACHE_KEY }}-
+          in-container: 'true'
+          key-suffix: ${{ matrix.version }}
       - name: Get Source
         uses: actions/download-artifact@v7
         with:
@@ -1137,11 +1127,6 @@ jobs:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-tests == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ubuntu-latest
-    env:
-      # headroom over a full build so mid-build cleanup never fires; the
-      # post-build trim governs the actual size
-      CCACHE_MAXSIZE: 1G
-      CCACHE_KEY: ${{ github.job }}-${{ matrix.version }}-cache-v2
     strategy:
       fail-fast: false
       matrix:
@@ -1173,15 +1158,10 @@ jobs:
           enable-mold: true
           enable-ccache: true
       - name: Setup ccache
-        # resolve the workspace path from inside the container
-        run: echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> "$GITHUB_ENV"
-      - name: Restore ccache
-        uses: actions/cache/restore@v5
+        uses: ./.github/actions/setup-ccache
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
-          restore-keys: |
-            ccache-${{ env.CCACHE_KEY }}-
+          in-container: 'true'
+          key-suffix: ${{ matrix.version }}
       - name: Get Source
         uses: actions/download-artifact@v7
         with:
