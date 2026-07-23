@@ -17,6 +17,9 @@ env:
 jobs:
   what-to-make:
     runs-on: ubuntu-slim
+    permissions:
+      actions: write
+      contents: read
     outputs:
       make-core: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.core-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' }}
       make-android: ${{ steps.check-main-push.outputs.is-main-push == '1' || steps.check-diffs.outputs.android-changed == '1' || steps.check-diffs.outputs.ci-actions-changed == '1' }}
@@ -84,6 +87,18 @@ jobs:
           get_changes utils      CMakeLists.txt cmake third-party libtransmission utils
           get_changes ci-actions .github/workflows/actions.yml .github/actions release
           cat "$GITHUB_OUTPUT"
+      - name: Prune incompatible cache schemas
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
+            --jq '.actions_caches[] | [.id, .key] | @tsv' |
+            awk -F '\t' '
+              $2 ~ /^ccache-/ && $2 !~ /-cache-v2-/ { print $1; next }
+              $2 ~ /^win-deps-(x86|x64|arm64)-[0-9a-f]{40}$/ { print $1; next }
+            ' |
+            xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
 
   code-style:
     runs-on: ubuntu-26.04
@@ -149,7 +164,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}
+          key: ${{ github.job }}-cache-v2
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
           save: false
@@ -204,8 +219,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-
+          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-cache-v2-
 
   sanitizer-tests-macos:
     runs-on: macos-26
@@ -233,7 +248,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}
+          key: ${{ github.job }}-cache-v2
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
           save: false
@@ -281,8 +296,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-
+          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-cache-v2-
 
   sanitizer-tests-windows:
     runs-on: windows-2022
@@ -664,7 +679,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}-${{ matrix.os }}
+          key: ${{ github.job }}-${{ matrix.os }}-cache-v2
           # must exceed a full build (~470M) + a few days of churn, else
           # ccache's mid-build cleanup evicts entries the build has not
           # reached yet
@@ -725,8 +740,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.os }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.os }}-
+          key: ccache-${{ github.job }}-${{ matrix.os }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-${{ matrix.os }}-cache-v2-
 
   alpine-musl:
     needs: [ what-to-make ]
@@ -867,7 +882,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}
+          key: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}-cache-v2
           # must exceed a full build (~450M) + a few days of churn, else
           # ccache's mid-build LRU cleanup evicts live entries near-randomly
           max-size: 1G
@@ -934,8 +949,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-
+          key: ccache-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}-cache-v2-
 
   make-source-tarball:
     runs-on: ubuntu-latest
@@ -1024,7 +1039,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}-${{ matrix.os }}
+          key: ${{ github.job }}-${{ matrix.os }}-cache-v2
           # must exceed a full build (~470M) + a few days of churn, else
           # ccache's mid-build cleanup evicts entries the build has not
           # reached yet
@@ -1080,8 +1095,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.os }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.os }}-
+          key: ccache-${{ github.job }}-${{ matrix.os }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-${{ matrix.os }}-cache-v2-
 
   debian:
     needs: [ make-source-tarball, what-to-make ]
@@ -1149,9 +1164,9 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
+          key: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-${{ github.run_id }}
           restore-keys: |
-            ccache-${{ github.job }}-${{ matrix.version }}-
+            ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-
       - name: Get Source
         uses: actions/download-artifact@v7
         with:
@@ -1224,8 +1239,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.version }}-
+          key: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-
 
   fedora:
     needs: [ make-source-tarball, what-to-make ]
@@ -1276,9 +1291,9 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
+          key: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-${{ github.run_id }}
           restore-keys: |
-            ccache-${{ github.job }}-${{ matrix.version }}-
+            ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-
       - name: Get Source
         uses: actions/download-artifact@v7
         with:
@@ -1340,8 +1355,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.version }}-
+          key: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-
 
   utp-disabled:
     needs: [ make-source-tarball, what-to-make ]
@@ -1381,7 +1396,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}
+          key: ${{ github.job }}-cache-v2
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
           save: false
@@ -1438,8 +1453,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-
+          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-cache-v2-
 
   android:
     needs: [ what-to-make ]
@@ -1530,7 +1545,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}
+          key: ${{ github.job }}-cache-v2
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
           save: false
@@ -1575,8 +1590,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-
+          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-cache-v2-
 
   ubuntu-24-04-arm64:
     needs: [ make-source-tarball, what-to-make ]
@@ -1622,7 +1637,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}
+          key: ${{ github.job }}-cache-v2
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
           save: false
@@ -1678,8 +1693,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-
+          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-cache-v2-
 
   freebsd:
     needs: [ make-source-tarball, what-to-make ]
@@ -1810,7 +1825,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
-          key: ${{ github.job }}-${{ matrix.crypto.cmake }}
+          key: ${{ github.job }}-${{ matrix.crypto.cmake }}-cache-v2
           save: false
       - name: Configure
         run: |
@@ -1864,8 +1879,8 @@ jobs:
         uses: ./.github/actions/supersede-cache
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.crypto.cmake }}-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.crypto.cmake }}-
+          key: ccache-${{ github.job }}-${{ matrix.crypto.cmake }}-cache-v2-${{ github.run_id }}
+          prefix: ccache-${{ github.job }}-${{ matrix.crypto.cmake }}-cache-v2-
 
   openbsd:
     needs: [ make-source-tarball, what-to-make ]
