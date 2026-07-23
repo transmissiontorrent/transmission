@@ -12,6 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  CCACHE_DIR: ${{ github.workspace }}/.ccache
   GTEST_OUTPUT: xml:./
 jobs:
   what-to-make:
@@ -151,7 +152,7 @@ jobs:
           key: ${{ github.job }}
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           cmake \
@@ -198,12 +199,12 @@ jobs:
       - name: Trim ccache
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-
 
   sanitizer-tests-macos:
@@ -235,7 +236,7 @@ jobs:
           key: ${{ github.job }}
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           cmake \
@@ -275,12 +276,12 @@ jobs:
       - name: Trim ccache
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-
 
   sanitizer-tests-windows:
@@ -668,7 +669,7 @@ jobs:
           # ccache's mid-build cleanup evicts entries the build has not
           # reached yet
           max-size: 1G
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           cmake \
@@ -719,12 +720,12 @@ jobs:
         # anything older than a few days is stale; trim to stay under max-size.
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 3d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ matrix.os }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-${{ matrix.os }}-
 
   alpine-musl:
@@ -870,7 +871,7 @@ jobs:
           # must exceed a full build (~450M) + a few days of churn, else
           # ccache's mid-build LRU cleanup evicts live entries near-randomly
           max-size: 1G
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           $CmakeArgs = @(
@@ -928,12 +929,12 @@ jobs:
         # anything older than a few days is stale; trim to stay under max-size.
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 3d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-
 
   make-source-tarball:
@@ -1028,7 +1029,7 @@ jobs:
           # ccache's mid-build cleanup evicts entries the build has not
           # reached yet
           max-size: 1G
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           cmake \
@@ -1074,12 +1075,12 @@ jobs:
         # anything older than a few days is stale; trim to stay under max-size.
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 3d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ matrix.os }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-${{ matrix.os }}-
 
   debian:
@@ -1147,7 +1148,7 @@ jobs:
       - name: Restore ccache
         uses: actions/cache/restore@v5
         with:
-          path: .ccache
+          path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
           restore-keys: |
             ccache-${{ github.job }}-${{ matrix.version }}-
@@ -1218,19 +1219,13 @@ jobs:
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
-      - name: Save ccache
-        if: ${{ always() && github.event_name == 'push' }}
-        uses: actions/cache/save@v5
-        with:
-          path: .ccache
-          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
-      - name: Supersede ccache snapshots
-        # `keep` protects the snapshot the save step above just wrote
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-${{ matrix.version }}-
-          keep: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
 
   fedora:
     needs: [ make-source-tarball, what-to-make ]
@@ -1280,7 +1275,7 @@ jobs:
       - name: Restore ccache
         uses: actions/cache/restore@v5
         with:
-          path: .ccache
+          path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
           restore-keys: |
             ccache-${{ github.job }}-${{ matrix.version }}-
@@ -1340,19 +1335,13 @@ jobs:
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
-      - name: Save ccache
-        if: ${{ always() && github.event_name == 'push' }}
-        uses: actions/cache/save@v5
-        with:
-          path: .ccache
-          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
-      - name: Supersede ccache snapshots
-        # `keep` protects the snapshot the save step above just wrote
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-${{ matrix.version }}-
-          keep: ccache-${{ github.job }}-${{ matrix.version }}-${{ github.run_id }}
 
   utp-disabled:
     needs: [ make-source-tarball, what-to-make ]
@@ -1395,7 +1384,7 @@ jobs:
           key: ${{ github.job }}
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           cmake \
@@ -1444,12 +1433,12 @@ jobs:
       - name: Trim ccache
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-
 
   android:
@@ -1544,7 +1533,7 @@ jobs:
           key: ${{ github.job }}
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           cmake \
@@ -1581,12 +1570,12 @@ jobs:
       - name: Trim ccache
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-
 
   ubuntu-24-04-arm64:
@@ -1636,7 +1625,7 @@ jobs:
           key: ${{ github.job }}
           # only main's snapshots are saved; PR runs restore them via the
           # base-branch fallback but must not multiply them per-ref
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           cmake \
@@ -1684,12 +1673,12 @@ jobs:
       - name: Trim ccache
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-
 
   freebsd:
@@ -1822,7 +1811,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.crypto.cmake }}
-          save: ${{ github.event_name == 'push' }}
+          save: false
       - name: Configure
         run: |
           cmake \
@@ -1870,12 +1859,12 @@ jobs:
       - name: Trim ccache
         if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
-      - name: Supersede ccache snapshots
-        # runs before ccache-action's post-job save, so that save leaves
-        # exactly one snapshot for this key family on main
+      - name: Save and supersede ccache snapshot
         if: ${{ github.event_name == 'push' }}
         uses: ./.github/actions/supersede-cache
         with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ github.job }}-${{ matrix.crypto.cmake }}-${{ github.run_id }}
           prefix: ccache-${{ github.job }}-${{ matrix.crypto.cmake }}-
 
   openbsd:

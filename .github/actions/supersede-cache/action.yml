@@ -1,22 +1,30 @@
-name: Supersede cache snapshots
+name: Save and supersede cache snapshot
 description: >
-  Delete the refs/heads/main cache entries whose key starts with `prefix`,
-  except an optional `keep` key. Run beside the save of a replacement
-  snapshot so at most one snapshot per key family persists between runs.
+  Save a replacement cache snapshot, verify it is visible, then delete older
+  refs/heads/main entries whose key starts with `prefix`.
 inputs:
+  path:
+    description: Files or directories to cache
+    required: true
+  key:
+    description: Exact key for the replacement snapshot
+    required: true
   prefix:
     description: Cache-key prefix selecting the snapshot family
     required: true
-  keep:
-    description: Exact key to leave in place (e.g. a snapshot saved earlier in the job)
-    default: ''
 runs:
   using: composite
   steps:
-    - uses: actions/github-script@v8
+    - name: Save replacement snapshot
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ inputs.key }}
+    - name: Delete superseded snapshots
+      uses: actions/github-script@v8
       env:
         PREFIX: ${{ inputs.prefix }}
-        KEEP: ${{ inputs.keep }}
+        KEEP: ${{ inputs.key }}
       with:
         script: |
           const caches = await github.paginate(github.rest.actions.getActionsCacheList, {
@@ -26,6 +34,10 @@ runs:
             ref: 'refs/heads/main',
             per_page: 100,
           });
+          if (!caches.some(cache => cache.key === process.env.KEEP)) {
+            core.warning(`replacement ${process.env.KEEP} is not visible; keeping superseded snapshots`);
+            return;
+          }
           for (const cache of caches) {
             if (cache.key === process.env.KEEP) {
               continue;
