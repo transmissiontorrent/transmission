@@ -933,17 +933,10 @@ jobs:
           path: obj/transmission*.tar.*
 
   macos:
-    strategy:
-      fail-fast: false
-      # This job covers source tarballs and bundled dependencies on Tahoe.
-      # macos-cmake-universal covers Intel with system dependencies; the
-      # Intel/tarball/bundled combination is intentionally omitted.
-      matrix:
-        os: [
-          # Tahoe preview. Added Sept 2025.
-          # Xref https://github.com/actions/runner-images/pull/13007
-          macos-26
-        ]
+    # This job covers source tarballs and bundled dependencies on Tahoe
+    # (runner notes: https://github.com/actions/runner-images/pull/13007).
+    # macos-cmake-universal covers Intel with system dependencies; the
+    # Intel/tarball/bundled combination is intentionally omitted.
     needs: [make-source-tarball, what-to-make]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' ||
             needs.what-to-make.outputs.make-daemon == 'true' ||
@@ -952,12 +945,12 @@ jobs:
             needs.what-to-make.outputs.make-qt == 'true' ||
             needs.what-to-make.outputs.make-tests == 'true' ||
             needs.what-to-make.outputs.make-utils == 'true' }}
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-26
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_KEY: ${{ github.job }}-${{ matrix.os }}-cache-v2
+      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1029,7 +1022,7 @@ jobs:
         run: cmake --install obj --config RelWithDebInfo --strip
       - uses: actions/upload-artifact@v6
         with:
-          name: binaries-${{ matrix.os }}
+          name: binaries-${{ github.job }}
           path: pfx/**/*
       - name: Finalize ccache
         uses: ./.github/actions/finalize-ccache
