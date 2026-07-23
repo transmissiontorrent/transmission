@@ -1,0 +1,14 @@
+name: Setup ccache
+description: Restore this job's ccache snapshot without scheduling a post-job save
+inputs:
+  max-size:
+    description: Local ccache size limit
+    default: 500MB
+runs:
+  using: composite
+  steps:
+    - uses: hendrikmuhs/ccache-action@v1.2.23
+      with:
+        key: ${{ env.CCACHE_KEY }}
+        max-size: ${{ inputs.max-size }}
+        save: false

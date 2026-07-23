@@ -12,6 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  CCACHE_COMPRESSLEVEL: '5'
   CCACHE_DIR: ${{ github.workspace }}/.ccache
   GTEST_OUTPUT: xml:./
 jobs:
@@ -144,7 +145,7 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -162,12 +163,7 @@ jobs:
           enable-qt: qt6
           use-sudo: true
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
-        with:
-          key: ${{ github.job }}-cache-v2
-          # only main's snapshots are saved; PR runs restore them via the
-          # base-branch fallback but must not multiply them per-ref
-          save: false
+        uses: ./.github/actions/setup-ccache
       - name: Configure
         run: |
           cmake \
@@ -211,16 +207,8 @@ jobs:
           # disable container-overflow reports to avoid false errors
           # that are caused by Qt libraries not being asan instrumented
           extra-asan-options: detect_container_overflow=0
-      - name: Trim ccache
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-cache-v2-
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
 
   sanitizer-tests-macos:
     runs-on: macos-26
@@ -230,7 +218,7 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -246,12 +234,7 @@ jobs:
         with:
           compiler: clang
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
-        with:
-          key: ${{ github.job }}-cache-v2
-          # only main's snapshots are saved; PR runs restore them via the
-          # base-branch fallback but must not multiply them per-ref
-          save: false
+        uses: ./.github/actions/setup-ccache
       - name: Configure
         run: |
           cmake \
@@ -288,16 +271,8 @@ jobs:
           build-dir: obj
           build-config: Debug
           enable-sanitizers: true
-      - name: Trim ccache
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-cache-v2-
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
 
   sanitizer-tests-windows:
     runs-on: windows-2022
@@ -659,7 +634,7 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-${{ matrix.os }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -677,14 +652,12 @@ jobs:
           enable-gtk: ${{ needs.what-to-make.outputs.make-gtk == 'true' && 'gtk4' || 'false' }}
           enable-qt: ${{ needs.what-to-make.outputs.make-qt == 'true' && 'qt6' || 'false' }}
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
+        uses: ./.github/actions/setup-ccache
         with:
-          key: ${{ github.job }}-${{ matrix.os }}-cache-v2
           # must exceed a full build (~470M) + a few days of churn, else
           # ccache's mid-build cleanup evicts entries the build has not
           # reached yet
           max-size: 1G
-          save: false
       - name: Configure
         run: |
           cmake \
@@ -730,18 +703,10 @@ jobs:
         with:
           name: binaries-${{ matrix.os }}-cmake-universal
           path: pfx/**/*
-      - name: Trim ccache
-        # A successful build refreshes every live entry's timestamp, so
-        # anything older than a few days is stale; trim to stay under max-size.
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 3d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.os }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.os }}-cache-v2-
+          trim-age: 3d
 
   alpine-musl:
     needs: [ what-to-make ]
@@ -861,6 +826,7 @@ jobs:
     env:
       # /Z7 debug info compresses well; the default zstd level overflows the cache cap
       CCACHE_COMPRESSLEVEL: '8'
+      CCACHE_KEY: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -880,13 +846,11 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
+        uses: ./.github/actions/setup-ccache
         with:
-          key: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}-cache-v2
           # must exceed a full build (~450M) + a few days of churn, else
           # ccache's mid-build LRU cleanup evicts live entries near-randomly
           max-size: 1G
-          save: false
       - name: Configure
         run: |
           $CmakeArgs = @(
@@ -939,18 +903,10 @@ jobs:
         with:
           name: binaries-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-msi
           path: obj/dist/msi/*.msi
-      - name: Trim ccache
-        # A successful build refreshes every live entry's timestamp, so
-        # anything older than a few days is stale; trim to stay under max-size.
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 3d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}-cache-v2-
+          trim-age: 3d
 
   make-source-tarball:
     runs-on: ubuntu-latest
@@ -1012,7 +968,7 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-${{ matrix.os }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1040,14 +996,12 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
+        uses: ./.github/actions/setup-ccache
         with:
-          key: ${{ github.job }}-${{ matrix.os }}-cache-v2
           # must exceed a full build (~470M) + a few days of churn, else
           # ccache's mid-build cleanup evicts entries the build has not
           # reached yet
           max-size: 1G
-          save: false
       - name: Configure
         run: |
           cmake \
@@ -1088,18 +1042,10 @@ jobs:
         with:
           name: binaries-${{ matrix.os }}
           path: pfx/**/*
-      - name: Trim ccache
-        # A successful build refreshes every live entry's timestamp, so
-        # anything older than a few days is stale; trim to stay under max-size.
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 3d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.os }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.os }}-cache-v2-
+          trim-age: 3d
 
   debian:
     needs: [ make-source-tarball, what-to-make ]
@@ -1112,7 +1058,7 @@ jobs:
       # headroom over a full build so mid-build cleanup never fires; the
       # post-build trim governs the actual size
       CCACHE_MAXSIZE: 1G
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-${{ matrix.version }}-cache-v2
     strategy:
       fail-fast: false
       matrix:
@@ -1167,9 +1113,9 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-${{ github.run_id }}
+          key: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
           restore-keys: |
-            ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-
+            ccache-${{ env.CCACHE_KEY }}-
       - name: Get Source
         uses: actions/download-artifact@v7
         with:
@@ -1228,22 +1174,14 @@ jobs:
         with:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
-      - name: Trim ccache
-        # A successful build refreshes every live entry's timestamp, so
-        # anything older than a few days is stale; trim to stay under max-size.
-        if: ${{ github.event_name == 'push' }}
-        # `|| true`: Debian 11's ccache predates --evict-older-than
-        run: ccache --evict-older-than 3d || true
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
+        with:
+          ignore-trim-errors: true
+          trim-age: 3d
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-
 
   fedora:
     needs: [ make-source-tarball, what-to-make ]
@@ -1256,7 +1194,7 @@ jobs:
       # headroom over a full build so mid-build cleanup never fires; the
       # post-build trim governs the actual size
       CCACHE_MAXSIZE: 1G
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-${{ matrix.version }}-cache-v2
     strategy:
       fail-fast: false
       matrix:
@@ -1294,9 +1232,9 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-${{ github.run_id }}
+          key: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
           restore-keys: |
-            ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-
+            ccache-${{ env.CCACHE_KEY }}-
       - name: Get Source
         uses: actions/download-artifact@v7
         with:
@@ -1344,22 +1282,14 @@ jobs:
         with:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
-      - name: Trim ccache
-        # A successful build refreshes every live entry's timestamp, so
-        # anything older than a few days is stale; trim to stay under max-size.
-        if: ${{ github.event_name == 'push' }}
-        # `|| true`: Debian 11's ccache predates --evict-older-than
-        run: ccache --evict-older-than 3d || true
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
+        with:
+          ignore-trim-errors: true
+          trim-age: 3d
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.version }}-cache-v2-
 
   utp-disabled:
     needs: [ make-source-tarball, what-to-make ]
@@ -1369,7 +1299,7 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1397,12 +1327,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
-        with:
-          key: ${{ github.job }}-cache-v2
-          # only main's snapshots are saved; PR runs restore them via the
-          # base-branch fallback but must not multiply them per-ref
-          save: false
+        uses: ./.github/actions/setup-ccache
       - name: Configure
         run: |
           cmake \
@@ -1448,16 +1373,8 @@ jobs:
         with:
           name: binaries-${{ github.job }}-without-utp
           path: pfx/**/*
-      - name: Trim ccache
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-cache-v2-
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
 
   android:
     needs: [ what-to-make ]
@@ -1526,7 +1443,7 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1546,12 +1463,7 @@ jobs:
           use-sudo: true
           enable-mold: true
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
-        with:
-          key: ${{ github.job }}-cache-v2
-          # only main's snapshots are saved; PR runs restore them via the
-          # base-branch fallback but must not multiply them per-ref
-          save: false
+        uses: ./.github/actions/setup-ccache
       - name: Configure
         run: |
           cmake \
@@ -1585,16 +1497,8 @@ jobs:
             -DUSE_SYSTEM_WIDE_INTEGER=OFF `# Not packaged in Ubuntu`
       - name: Make
         run: cmake --build obj --config Release -- "-k 0"
-      - name: Trim ccache
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-cache-v2-
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
 
   ubuntu-24-04-arm64:
     needs: [ make-source-tarball, what-to-make ]
@@ -1610,7 +1514,7 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1638,12 +1542,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
-        with:
-          key: ${{ github.job }}-cache-v2
-          # only main's snapshots are saved; PR runs restore them via the
-          # base-branch fallback but must not multiply them per-ref
-          save: false
+        uses: ./.github/actions/setup-ccache
       - name: Configure
         run: |
           cmake \
@@ -1688,16 +1587,8 @@ jobs:
         with:
           name: binaries-${{ github.job }}
           path: pfx/**/*
-      - name: Trim ccache
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-cache-v2-
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
 
   freebsd:
     needs: [ make-source-tarball, what-to-make ]
@@ -1788,7 +1679,7 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_COMPRESSLEVEL: '5'
+      CCACHE_KEY: ${{ github.job }}-${{ matrix.crypto.cmake }}-cache-v2
     strategy:
       fail-fast: false
       matrix:
@@ -1826,10 +1717,7 @@ jobs:
       - name: Extract Source
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
-        with:
-          key: ${{ github.job }}-${{ matrix.crypto.cmake }}-cache-v2
-          save: false
+        uses: ./.github/actions/setup-ccache
       - name: Configure
         run: |
           cmake \
@@ -1874,16 +1762,8 @@ jobs:
         with:
           name: binaries-${{ github.job }}-${{ matrix.crypto.cmake }}
           path: pfx/**/*
-      - name: Trim ccache
-        if: ${{ github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
-      - name: Save and supersede ccache snapshot
-        if: ${{ github.event_name == 'push' }}
-        uses: ./.github/actions/supersede-cache
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ github.job }}-${{ matrix.crypto.cmake }}-cache-v2-${{ github.run_id }}
-          prefix: ccache-${{ github.job }}-${{ matrix.crypto.cmake }}-cache-v2-
+      - name: Finalize ccache
+        uses: ./.github/actions/finalize-ccache
 
   openbsd:
     needs: [ make-source-tarball, what-to-make ]

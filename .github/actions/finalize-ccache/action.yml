@@ -1,30 +1,41 @@
-name: Save and supersede cache snapshot
+name: Finalize ccache
 description: >
-  Save a replacement cache snapshot, verify it is visible, then delete older
-  refs/heads/main entries whose key starts with `prefix`.
+  Trim ccache, save a successful main-branch snapshot, verify it is visible,
+  then delete older snapshots from the same cache family.
 inputs:
-  path:
-    description: Files or directories to cache
-    required: true
-  key:
-    description: Exact key for the replacement snapshot
-    required: true
-  prefix:
-    description: Cache-key prefix selecting the snapshot family
-    required: true
+  trim-age:
+    description: Age passed to ccache --evict-older-than
+    default: 7d
+  ignore-trim-errors:
+    description: Continue saving when the installed ccache cannot trim by age
+    default: 'false'
 runs:
   using: composite
   steps:
+    - name: Trim ccache
+      if: ${{ github.event_name == 'push' }}
+      shell: bash
+      env:
+        IGNORE_TRIM_ERRORS: ${{ inputs.ignore-trim-errors }}
+        TRIM_AGE: ${{ inputs.trim-age }}
+      run: |
+        if ! ccache --evict-older-than "$TRIM_AGE"; then
+          if [ "$IGNORE_TRIM_ERRORS" != 'true' ]; then
+            exit 1
+          fi
+        fi
     - name: Save replacement snapshot
+      if: ${{ github.event_name == 'push' }}
       uses: actions/cache/save@v5
       with:
-        path: ${{ inputs.path }}
-        key: ${{ inputs.key }}
+        path: ${{ env.CCACHE_DIR }}
+        key: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
     - name: Delete superseded snapshots
+      if: ${{ github.event_name == 'push' }}
       uses: actions/github-script@v8
       env:
-        PREFIX: ${{ inputs.prefix }}
-        KEEP: ${{ inputs.key }}
+        KEEP: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
+        PREFIX: ccache-${{ env.CCACHE_KEY }}-
       with:
         script: |
           const caches = await github.paginate(github.rest.actions.getActionsCacheList, {
