@@ -1,46 +1,54 @@
 # CI cache policy
 
-GitHub Actions gives this repository 10 GiB of cache storage. Cache entries
-must remain useful without allowing one main-branch generation plus its
-replacements to cross that limit.
+GitHub Actions gives this repository 10 GiB of cache storage. The goal is
+one generation of every cache family, small enough that a generation plus
+the replacements briefly coexisting with it stays under that limit.
 
 ## Cache classes
 
-### Compiler output
+### Compiler output (ccache)
 
-Each ccache-producing job declares one `CCACHE_KEY`. Pull requests restore the
-latest matching snapshot from `main` but never save one. On successful pushes,
-`finalize-ccache` trims stale objects, saves a run-ID snapshot, verifies it is
-visible, and deletes its predecessor.
-
-The five job families whose working sets reached 500 MB use a 1 GB local limit
-and a three-day trim. Smaller families use the action's 500 MB default and a
-seven-day trim. The limit provides build-time headroom; trimming controls the
+`setup-ccache` derives one key per job from the job name, an optional
+matrix suffix, and the workflow-level `CACHE_SCHEMA`; `finalize-ccache`
+trims, saves, verifies, and deletes the snapshots it supersedes. Pull
+requests restore main's newest snapshot and never save. Jobs whose working
+set outgrows the trim window pass a shorter `trim-age`; the local size
+limit is deliberately generous because trimming, not the limit, governs
 persisted size.
 
-### Incremental analysis
+Jobs delete their own superseded snapshots rather than leaving them all to
+the janitor so that, within a push, the cache never holds much more than
+one generation -- the janitor alone would let two full generations coexist
+until the last build finished.
 
-Clang-tidy uses ctcache snapshots keyed by toolkit and configuration hash. The
-repository janitor keeps the newest snapshot per ref and key family, so a pull
-request can reuse its own previous analysis without accumulating every run.
+### Incremental analysis (ctcache)
+
+clang-tidy results are keyed by toolkit and configuration hash and saved
+on every run, pull requests included: PR-side reuse is the point, and fork
+PRs' read-only tokens could not supersede anyway, so the janitor collapses
+each family to its newest snapshot instead.
 
 ### Content-addressed dependencies
 
-Windows dependencies, Android vcpkg binaries, Gradle data, and BSD VM images
-use keys derived from their inputs. Branch-scoped Windows and BSD entries are
-removed once `main` has the same key and cache version.
+Windows dependency prefixes, Android vcpkg binaries, and the BSD VM images
+are keyed by their inputs, so identical keys hold identical bytes. Branch
+copies are deleted once main holds the same key and version; every branch
+can restore main's copy through the base-branch fallback. Gradle's caches
+are excluded: gradle/actions manages its own rotation.
 
 ## Repository maintenance
 
-Before jobs fan out, cache schemas that current jobs cannot restore are removed.
-After all cache producers finish, the janitor removes superseded snapshots and
-branch copies shadowed by `main`, then warns if usage remains above 9 GiB.
+After all cache producers finish, the janitor (`prune-caches`) removes
+superseded snapshots, keys from retired `CACHE_SCHEMA` generations, and
+branch copies shadowed by main, then warns when usage crosses 9 GiB.
+Families that stop being produced age out through the provider's 7-day
+unused-entry eviction.
 
 When adding a cache:
 
-1. Include every compiler, platform, configuration, or dependency input that
-   changes whether an entry can be reused.
+1. Include every compiler, platform, configuration, or dependency input
+   that changes whether an entry can be reused.
 2. Use a content-addressed key for immutable dependencies.
-3. Use `CCACHE_KEY` and `finalize-ccache` for evolving compiler output.
+3. Use `setup-ccache`/`finalize-ccache` for evolving compiler output.
 4. Add the producing job to the janitor's `needs` list.
 5. Account for its steady-state size within the 9 GiB warning threshold.
