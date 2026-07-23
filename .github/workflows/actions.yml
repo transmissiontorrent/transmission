@@ -11,6 +11,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  # ccache jobs and the cache janitor delete superseded cache entries
+  actions: write
+
 env:
   # See .github/CACHE_POLICY.md for cache classes, lifecycle, and budget.
   # Bumping CACHE_SCHEMA re-keys every ccache family; the janitor deletes
@@ -130,9 +135,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     steps:
       - name: Show Configuration
         run: |
@@ -201,9 +203,6 @@ jobs:
     runs-on: macos-26
     needs: [ what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-tests == 'true' }}
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     steps:
       - name: Show Configuration
         run: |
@@ -615,9 +614,6 @@ jobs:
             needs.what-to-make.outputs.make-tests == 'true' ||
             needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     steps:
       - name: Show Configuration
         run: |
@@ -804,9 +800,6 @@ jobs:
             ipo: 'OFF'
             runner: windows-11-arm
     runs-on: ${{ matrix.runner }}
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     env:
       # /Z7 debug info compresses well; the default zstd level overflows the cache cap
       CCACHE_COMPRESSLEVEL: '8'
@@ -941,9 +934,6 @@ jobs:
             needs.what-to-make.outputs.make-tests == 'true' ||
             needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: macos-26
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     steps:
       - name: Show Configuration
         run: |
@@ -1026,9 +1016,6 @@ jobs:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-tests == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     env:
       # headroom over a full build so mid-build cleanup never fires; the
       # post-build trim governs the actual size
@@ -1162,9 +1149,6 @@ jobs:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-tests == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     env:
       # headroom over a full build so mid-build cleanup never fires; the
       # post-build trim governs the actual size
@@ -1270,9 +1254,6 @@ jobs:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-core == 'true' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     steps:
       - name: Show Configuration
         run: |
@@ -1412,9 +1393,6 @@ jobs:
     needs: [ what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-cli == 'true' || needs.what-to-make.outputs.make-daemon == 'true' || needs.what-to-make.outputs.make-gtk == 'true' || needs.what-to-make.outputs.make-qt == 'true' || needs.what-to-make.outputs.make-utils == 'true' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     steps:
       - name: Show Configuration
         run: |
@@ -1481,9 +1459,6 @@ jobs:
       needs.what-to-make.outputs.make-tests == 'true' ||
       needs.what-to-make.outputs.make-utils == 'true'
     runs-on: ubuntu-24.04-arm
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     steps:
       - name: Show Configuration
         run: |
@@ -1644,9 +1619,6 @@ jobs:
     needs: [ make-source-tarball, what-to-make ]
     if: ${{ needs.what-to-make.outputs.make-core == 'true' && needs.what-to-make.outputs.make-tests == 'true' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write # supersede this job's ccache snapshots
     strategy:
       fail-fast: false
       matrix:
@@ -1911,8 +1883,6 @@ jobs:
     needs: [ android, clang-tidy-linux, clang-tidy-windows, crypto, cxx23, debian, fedora, freebsd, macos, macos-cmake-universal, netbsd, openbsd, sanitizer-tests-linux, sanitizer-tests-macos, ubuntu-24-04-arm64, utp-disabled, windows ]
     if: ${{ always() && github.event_name == 'push' }}
     runs-on: ubuntu-slim
-    permissions:
-      actions: write
     env:
       GH_TOKEN: ${{ github.token }}
       INVENTORY: ${{ runner.temp }}/caches.json
