@@ -634,10 +634,6 @@ jobs:
         uses: ./.github/actions/setup-ccache
         with:
           key-suffix: ${{ matrix.os }}
-          # must exceed a full build (~470M) + a few days of churn, else
-          # ccache's mid-build cleanup evicts entries the build has not
-          # reached yet
-          max-size: 1G
       - name: Configure
         run: |
           cmake \
@@ -825,9 +821,6 @@ jobs:
         uses: ./.github/actions/setup-ccache
         with:
           key-suffix: ${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}
-          # must exceed a full build (~450M) + a few days of churn, else
-          # ccache's mid-build LRU cleanup evicts live entries near-randomly
-          max-size: 1G
       - name: Configure
         run: |
           $CmakeArgs = @(
@@ -962,11 +955,6 @@ jobs:
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
         uses: ./.github/actions/setup-ccache
-        with:
-          # must exceed a full build (~470M) + a few days of churn, else
-          # ccache's mid-build cleanup evicts entries the build has not
-          # reached yet
-          max-size: 1G
       - name: Configure
         run: |
           cmake \
