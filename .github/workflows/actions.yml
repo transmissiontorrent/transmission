@@ -1905,12 +1905,12 @@ jobs:
     permissions:
       actions: write
     steps:
-      - name: Prune superseded ccache snapshots
+      - name: Prune superseded ccache and ctcache snapshots
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
-            --jq '.actions_caches[] | select(.key | startswith("ccache-")) | [.id, .ref, .key, .created_at] | @tsv' |
+            --jq '.actions_caches[] | select(.key | startswith("ccache-") or startswith("ctcache-")) | [.id, .ref, .key, .created_at] | @tsv' |
             sort -t $'\t' -k 4,4r |
             awk -F '\t' '{
               prefix = $3
