@@ -933,11 +933,11 @@ jobs:
           cmd /c "`"$Env:VCVARSALL`" $Env:VC_ARCH >nul && cmake --build obj --config RelWithDebInfo --target pack-msi"
       - uses: actions/upload-artifact@v6
         with:
-          name: binaries-${{ github.job }}-${{ matrix.arch }}
+          name: binaries-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}
           path: pfx/**/*
       - uses: actions/upload-artifact@v6
         with:
-          name: binaries-${{ github.job }}-${{ matrix.arch }}-msi
+          name: binaries-${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-msi
           path: obj/dist/msi/*.msi
       - name: Trim ccache
         # A successful build refreshes every live entry's timestamp, so
