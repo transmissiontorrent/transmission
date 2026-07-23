@@ -89,17 +89,14 @@ jobs:
           get_changes ci-actions .github/workflows/actions.yml .github/actions release
           cat "$GITHUB_OUTPUT"
       - name: Prune incompatible cache schemas
+        # Unreachable predecessors must leave before replacement uploads fan out.
         if: ${{ github.event_name == 'push' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh api --paginate 'repos/${{ github.repository }}/actions/caches?per_page=100' \
-            --jq '.actions_caches[] | [.id, .key] | @tsv' |
-            awk -F '\t' '
-              $2 ~ /^ccache-/ && $2 !~ /-cache-v2-/ { print $1; next }
-              $2 ~ /^win-deps-(x86|x64|arm64)-[0-9a-f]{40}$/ { print $1; next }
-            ' |
-            xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
+            --jq '.actions_caches[] | select(((.key | startswith("ccache-")) and ((.key | contains("-cache-v2-")) | not)) or (.key | test("^win-deps-(x86|x64|arm64)-[0-9a-f]{40}$"))) | .id' |
+            xargs --no-run-if-empty -P 4 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
 
   code-style:
     runs-on: ubuntu-26.04
@@ -1932,7 +1929,7 @@ jobs:
           name: binaries-${{ github.job }}
           path: pfx/**/*
 
-  prune-ccache:
+  prune-caches:
     # Build jobs supersede their own snapshots as they save, so this sweep
     # collects what those steps miss: snapshots orphaned by failed or
     # cancelled runs, and families whose job no longer exists. Sweep every
@@ -1963,7 +1960,7 @@ jobs:
                 print $1
               }
             }' |
-            xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
+            xargs --no-run-if-empty -P 4 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
       - name: Prune cache copies shadowed by main
         # Branch-scoped dependency and VM caches are redundant once main holds
         # the same key and cache version.
@@ -1982,7 +1979,7 @@ jobs:
                   }
                 }
               }' |
-            xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
+            xargs --no-run-if-empty -P 4 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
       - name: Check cache headroom
         env:
           GH_TOKEN: ${{ github.token }}
