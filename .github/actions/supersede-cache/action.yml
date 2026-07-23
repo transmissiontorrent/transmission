@@ -1,0 +1,39 @@
+name: Supersede cache snapshots
+description: >
+  Delete the refs/heads/main cache entries whose key starts with `prefix`,
+  except an optional `keep` key. Run beside the save of a replacement
+  snapshot so at most one snapshot per key family persists between runs.
+inputs:
+  prefix:
+    description: Cache-key prefix selecting the snapshot family
+    required: true
+  keep:
+    description: Exact key to leave in place (e.g. a snapshot saved earlier in the job)
+    default: ''
+runs:
+  using: composite
+  steps:
+    - uses: actions/github-script@v8
+      env:
+        PREFIX: ${{ inputs.prefix }}
+        KEEP: ${{ inputs.keep }}
+      with:
+        script: |
+          const caches = await github.paginate(github.rest.actions.getActionsCacheList, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            key: process.env.PREFIX,
+            ref: 'refs/heads/main',
+            per_page: 100,
+          });
+          for (const cache of caches) {
+            if (cache.key === process.env.KEEP) {
+              continue;
+            }
+            core.info(`deleting ${cache.key} (${(cache.size_in_bytes / 1048576).toFixed(1)} MB)`);
+            await github.rest.actions.deleteActionsCacheById({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              cache_id: cache.id,
+            });
+          }
