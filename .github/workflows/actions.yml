@@ -872,7 +872,7 @@ jobs:
       - name: Trim ccache
         # A successful build refreshes every live entry's timestamp, so
         # anything older than a few days is stale; trim to stay under max-size.
-        if: ${{ success() && github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 3d
 
   make-source-tarball:
