@@ -111,6 +111,7 @@ private:
     std::unordered_set<QString> interned_strings_;
 
     Prefs& prefs_;
+
     std::unique_ptr<Session> session_;
     std::unique_ptr<TorrentModel> model_;
     std::unique_ptr<MainWindow> window_;

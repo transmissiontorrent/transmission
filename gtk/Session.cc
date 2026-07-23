@@ -26,7 +26,6 @@
 #include <libtransmission/web-utils.h> // tr_urlIsValid()
 
 #include <giomm/asyncresult.h>
-#include <giomm/dbusconnection.h>
 #include <giomm/fileinfo.h>
 #include <giomm/filemonitor.h>
 #include <giomm/liststore.h>
@@ -36,7 +35,8 @@
 #include <glibmm/main.h>
 #include <glibmm/miscutils.h>
 #include <glibmm/stringutils.h>
-#include <glibmm/variant.h>
+
+#include <woke/woke.hpp>
 
 #if GTKMM_CHECK_VERSION(4, 0, 0)
 #include <gtkmm/sortlistmodel.h>
@@ -81,7 +81,7 @@ public:
 
     std::pair<Glib::RefPtr<Torrent>, guint> find_torrent_by_id(tr_torrent_id_t torrent_id) const;
 
-    size_t get_active_torrent_count() const;
+    size_t get_unpaused_torrent_count() const;
 
     bool get_port_test_pending(PortTestIpProtocol ip_protocol);
     void set_port_test_pending(bool pending, PortTestIpProtocol ip_protocol);
@@ -158,8 +158,7 @@ private:
 
     Glib::RefPtr<Torrent> create_new_torrent(tr_ctor* ctor);
 
-    void maybe_inhibit_hibernation();
-    void set_hibernation_allowed(bool allowed);
+    void update_sleep_inhibitor();
 
     void watchdir_update();
     void watchdir_scan();
@@ -193,11 +192,9 @@ private:
     sigc::connection monitor_idle_tag_;
 
     bool adding_from_watch_dir_ = false;
-    bool inhibit_allowed_ = false;
-    bool have_inhibit_cookie_ = false;
-    bool dbus_error_ = false;
     std::array<bool, NUM_PORT_TEST_IP_PROTOCOL> port_test_pending_ = {};
-    guint inhibit_cookie_ = 0;
+
+    woke::SleepInhibitor sleep_inhibitor_;
     gint busy_count_ = 0;
     Glib::RefPtr<Gio::ListStore<Torrent>> raw_model_;
     Glib::RefPtr<SortListModel<Torrent>> sorted_model_;
@@ -472,7 +469,7 @@ void Session::Impl::on_pref_changed(tr_quark const key)
         break;
 
     case TR_KEY_inhibit_desktop_hibernation:
-        maybe_inhibit_hibernation();
+        update_sleep_inhibitor();
         break;
 
     case TR_KEY_watch_dir:
@@ -942,8 +939,7 @@ void Session::Impl::update()
         }
     }
 
-    /* update hibernation */
-    maybe_inhibit_hibernation();
+    update_sleep_inhibitor();
 
     if (changes.any()) {
         signal_torrents_changed_.emit(torrent_ids, changes);
@@ -951,103 +947,16 @@ void Session::Impl::update()
 }
 
 /**
-***  Hibernate
+***  Sleep inhibition
 **/
 
-namespace
+void Session::Impl::update_sleep_inhibitor()
 {
-
-auto const SessionManagerServiceName = "org.gnome.SessionManager"sv; // TODO(C++20): Use ""s
-auto const SessionManagerInterface = "org.gnome.SessionManager"sv; // TODO(C++20): Use ""s
-auto const SessionManagerObjectPath = "/org/gnome/SessionManager"sv; // TODO(C++20): Use ""s
-
-bool gtr_inhibit_hibernation(guint32& cookie)
-{
-    bool success = false;
-    char const* const app_id = TR_PROJ_APPNAME_RDNS;
-    char const* const reason = "BitTorrent Activity";
-    int const toplevel_xid = 0;
-    int const flags = 4; /* Inhibit suspending the session or computer */
-
-    try {
-        auto const connection = Gio::DBus::Connection::get_sync(TR_GIO_DBUS_BUS_TYPE(SESSION));
-
-        auto response = connection->call_sync(
-            std::string(SessionManagerObjectPath),
-            std::string(SessionManagerInterface),
-            "Inhibit",
-            Glib::VariantContainerBase::create_tuple(
-                {
-                    Glib::Variant<Glib::ustring>::create(app_id),
-                    Glib::Variant<guint32>::create(toplevel_xid),
-                    Glib::Variant<Glib::ustring>::create(reason),
-                    Glib::Variant<guint32>::create(flags),
-                }),
-            std::string(SessionManagerServiceName),
-            1000);
-
-        cookie = Glib::VariantBase::cast_dynamic<Glib::Variant<guint32>>(response.get_child(0)).get();
-
-        /* logging */
-        tr_logAddInfo(_("Inhibiting desktop hibernation"));
-
-        success = true;
-    } catch (Glib::Error const& e) {
-        tr_logAddError(
-            fmt::format(fmt::runtime(_("Couldn't inhibit desktop hibernation: {error}")), fmt::arg("error", e.what())));
+    if (gtr_pref_flag_get(TR_KEY_inhibit_desktop_hibernation) && tr_sessionGetBusyTorrentCount(session_) != 0) {
+        sleep_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Torrents are active");
+    } else {
+        sleep_inhibitor_.uninhibit();
     }
-
-    return success;
-}
-
-void gtr_uninhibit_hibernation(guint inhibit_cookie)
-{
-    try {
-        auto const connection = Gio::DBus::Connection::get_sync(TR_GIO_DBUS_BUS_TYPE(SESSION));
-
-        connection->call_sync(
-            std::string(SessionManagerObjectPath),
-            std::string(SessionManagerInterface),
-            "Uninhibit",
-            Glib::VariantContainerBase::create_tuple({ Glib::Variant<guint32>::create(inhibit_cookie) }),
-            std::string(SessionManagerServiceName),
-            1000);
-
-        /* logging */
-        tr_logAddInfo(_("Allowing desktop hibernation"));
-    } catch (Glib::Error const& e) {
-        tr_logAddError(
-            fmt::format(fmt::runtime(_("Couldn't inhibit desktop hibernation: {error}")), fmt::arg("error", e.what())));
-    }
-}
-
-} // namespace
-
-void Session::Impl::set_hibernation_allowed(bool allowed)
-{
-    inhibit_allowed_ = allowed;
-
-    if (allowed && have_inhibit_cookie_) {
-        gtr_uninhibit_hibernation(inhibit_cookie_);
-        have_inhibit_cookie_ = false;
-    }
-
-    if (!allowed && !have_inhibit_cookie_ && !dbus_error_) {
-        if (gtr_inhibit_hibernation(inhibit_cookie_)) {
-            have_inhibit_cookie_ = true;
-        } else {
-            dbus_error_ = true;
-        }
-    }
-}
-
-void Session::Impl::maybe_inhibit_hibernation()
-{
-    /* hibernation is allowed if EITHER
-     * (a) the "inhibit" pref is turned off OR
-     * (b) there aren't any active torrents */
-    bool const hibernation_allowed = !gtr_pref_flag_get(TR_KEY_inhibit_desktop_hibernation) || get_active_torrent_count() == 0;
-    set_hibernation_allowed(hibernation_allowed);
 }
 
 /***
@@ -1272,12 +1181,12 @@ size_t Session::get_torrent_count() const
     return impl_->get_raw_model()->get_n_items();
 }
 
-size_t Session::get_active_torrent_count() const
+size_t Session::get_unpaused_torrent_count() const
 {
-    return impl_->get_active_torrent_count();
+    return impl_->get_unpaused_torrent_count();
 }
 
-size_t Session::Impl::get_active_torrent_count() const
+size_t Session::Impl::get_unpaused_torrent_count() const
 {
     size_t activeCount = 0;
 

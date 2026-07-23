@@ -238,7 +238,8 @@ void Session::updatePref(tr_quark key)
 ***/
 
 Session::Session(QString config_dir, Prefs& prefs, RpcClient& rpc)
-    : config_dir_{ std::move(config_dir) }
+    : tr::app::Session{ prefs }
+    , config_dir_{ std::move(config_dir) }
     , prefs_{ prefs }
     , rpc_{ rpc }
 {
@@ -714,6 +715,10 @@ void Session::updateStats(tr_variant* dict)
         updateStats(*var, cumulative_stats_);
     }
 
+    if (auto const busy = dictFind<int64_t>(dict, TR_KEY_busy_torrent_count); busy) {
+        set_has_busy_torrents(*busy > 0);
+    }
+
     emit statsUpdated();
 }
 
@@ -958,5 +963,5 @@ std::optional<Session::Type> computeType(tr_session const* const session, std::o
 // NOLINTNEXTLINE(performance-unnecessary-value-param)
 void Session::updateType(std::optional<std::string> session_id)
 {
-    type_ = computeType(session_, session_id);
+    set_session_type(computeType(session_, session_id));
 }

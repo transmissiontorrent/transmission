@@ -18,7 +18,9 @@ target_sources(${LIBNAME}
         prefs.h
         rpc-client.cc
         rpc-client.h
-        rpc-queue.h)
+        rpc-queue.h
+        session.cc
+        session.h)
 
 target_include_directories(${LIBNAME}
     PUBLIC
@@ -29,4 +31,5 @@ target_link_libraries(${LIBNAME}
     PUBLIC
         transmission::fmt-header-only
         Pal::Sigslot
-        transmission::small)
+        transmission::small
+        woke::woke)

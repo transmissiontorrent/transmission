@@ -526,6 +526,7 @@ void tr_session::on_now_timer()
     // tr_session upkeep tasks to perform once per second
     tr_timeUpdate(std::chrono::system_clock::to_time_t(now));
     alt_speeds_.check_scheduler();
+    busy_torrent_count_.store(compute_busy_torrent_count(), std::memory_order_relaxed);
 
     // set the timer to kick again right after (10ms after) the next second
     auto const target_time = std::chrono::time_point_cast<std::chrono::seconds>(now) + 1s + 10ms;
@@ -596,6 +597,47 @@ size_t tr_session::count_queue_free_slots(tr_direction dir) const noexcept
     }
 
     return max - active_count;
+}
+
+size_t tr_session::compute_busy_torrent_count() const noexcept
+{
+    auto const stalled_enabled = queueStalledEnabled();
+    auto const stalled_if_idle_for_n_seconds = static_cast<time_t>(queueStalledMinutes() * 60);
+    auto const now = tr_time();
+
+    auto count = size_t{ 0U };
+    for (auto const* const tor : torrents()) {
+        switch (tor->activity()) {
+        case TR_STATUS_DOWNLOAD:
+        case TR_STATUS_SEED:
+        case TR_STATUS_CHECK:
+            break; // an actively-transferring state
+        default:
+            continue; // stopped, queued, or waiting to verify
+        }
+
+        // don't count a locally-errored or stalled torrent as busy
+        if (tor->error().is_local_error()) {
+            continue;
+        }
+
+        if (stalled_enabled) {
+            if (auto const idle = tor->idle_seconds(now); idle && *idle >= stalled_if_idle_for_n_seconds) {
+                continue;
+            }
+        }
+
+        ++count;
+    }
+
+    return count;
+}
+
+size_t tr_sessionGetBusyTorrentCount(tr_session const* session)
+{
+    TR_ASSERT(session != nullptr);
+
+    return session->busy_torrent_count();
 }
 
 void tr_session::on_queue_timer()

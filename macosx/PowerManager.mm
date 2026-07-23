@@ -8,13 +8,12 @@
 
 #include <os/log.h>
 
+#include <woke/woke.hpp>
+
 @interface PowerManager ()
 
 @property(nonatomic, readonly) os_log_t log;
 @property(getter=isListening) BOOL listening;
-
-@property(nonatomic) id<NSObject> noNapActivity;
-@property(nonatomic) id<NSObject> noSleepActivity;
 
 - (void)systemWillSleep:(NSNotification*)notification;
 - (void)systemDidWakeUp:(NSNotification*)notification;
@@ -23,7 +22,13 @@
 
 @end
 
-@implementation PowerManager
+@implementation PowerManager {
+    // held for the app's lifetime so macOS doesn't App-Nap the process
+    woke::NapInhibitor _napInhibitor;
+
+    // held while torrents are active and the "prevent sleep" default is on
+    woke::SleepInhibitor _sleepInhibitor;
+}
 
 + (instancetype)shared
 {
@@ -69,11 +74,7 @@
         self.listening = YES;
     }
 
-    if (self.noNapActivity == nil) {
-        os_log_debug(self.log, "Starting no-nap activity");
-        self.noNapActivity = [NSProcessInfo.processInfo beginActivityWithOptions:NSActivityUserInitiatedAllowingIdleSystemSleep
-                                                                          reason:@TR_PROJ_APPNAME_CAPITALIZED ": Application is active"];
-    }
+    _napInhibitor.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Application is running");
 }
 
 - (void)stop
@@ -89,17 +90,8 @@
         self.listening = NO;
     }
 
-    if (self.noNapActivity != nil) {
-        os_log_debug(self.log, "Ending no-nap activity");
-        [NSProcessInfo.processInfo endActivity:self.noNapActivity];
-        self.noNapActivity = nil;
-    }
-
-    if (self.noSleepActivity != nil) {
-        os_log_debug(self.log, "Ending no-sleep activity");
-        [NSProcessInfo.processInfo endActivity:self.noSleepActivity];
-        self.noSleepActivity = nil;
-    }
+    _napInhibitor.uninhibit();
+    _sleepInhibitor.uninhibit();
 }
 
 - (void)systemWillSleep:(NSNotification*)notification
@@ -132,27 +124,15 @@
     }
 
     if (shouldPreventSleep) {
-        if (self.noSleepActivity != nil) {
-            return;
-        }
-
-        os_log_info(self.log, "Starting no-sleep activity");
-        self.noSleepActivity = [NSProcessInfo.processInfo beginActivityWithOptions:NSActivityIdleSystemSleepDisabled
-                                                                            reason:@TR_PROJ_APPNAME_CAPITALIZED ": Active Torrents"];
+        _sleepInhibitor.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Torrents are active");
     } else {
-        if (self.noSleepActivity == nil) {
-            return;
-        }
-
-        os_log_info(self.log, "Ending no-sleep activity");
-        [NSProcessInfo.processInfo endActivity:self.noSleepActivity];
-        self.noSleepActivity = nil;
+        _sleepInhibitor.uninhibit();
     }
 }
 
 - (BOOL)shouldPreventSleep
 {
-    return self.noSleepActivity != nil;
+    return _sleepInhibitor.active();
 }
 
 @end

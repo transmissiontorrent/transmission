@@ -15,6 +15,8 @@
 #include <utility>
 #include <vector>
 
+#include <sigslot/signal.hpp>
+
 #include "libtransmission/constants.h"
 #include "libtransmission/converters.h"
 #include "libtransmission/macros.h"
@@ -65,7 +67,7 @@ struct AppPrefs {
     bool complete_sound_enabled_ = true;
     bool dir_watch_enabled_ = false;
     bool filterbar_ = true;
-    bool inhibit_hibernation_ = false;
+    bool inhibit_hibernation_ = true;
     bool main_window_is_maximized_ = false;
     bool options_prompt_ = true;
     bool read_clipboard_ = false;
@@ -284,7 +286,7 @@ public:
     void set(tr_quark const key, T const& val)
     {
         if (tr::serializer::set(key, val, app_prefs_, session_prefs_)) {
-            on_changed(key);
+            changed_(key);
         }
     }
 
@@ -300,10 +302,17 @@ public:
 
     void save(std::string_view config_dir, std::optional<tr::Settings> const& local_session_settings) const;
 
-protected:
-    virtual void on_changed(tr_quark key) = 0;
+    // Fires when a pref value actually changes (a no-op set does not fire).
+    // Connect with connect_scoped(); the Qt client bridges this to a Qt signal
+    // and tr::app::Session listens to it to drive the sleep inhibitor.
+    template<typename Observer>
+    [[nodiscard]] sigslot::scoped_connection observe_changes(Observer observer) const
+    {
+        return changed_.connect_scoped(std::move(observer));
+    }
 
 private:
+    mutable sigslot::signal<tr_quark> changed_;
     AppPrefs app_prefs_;
     SessionPrefs session_prefs_;
 };

@@ -56,6 +56,7 @@
 #include <gtkmm/window.h>
 
 #include <small/set.hpp>
+#include <woke/woke.hpp>
 
 #if GTKMM_CHECK_VERSION(4, 0, 0)
 #include <gtkmm/droptarget.h>
@@ -213,6 +214,8 @@ private:
     bool is_iconified_ = false;
     bool is_closing_ = false;
 
+    woke::NapInhibitor nap_inhibitor_;
+
     Glib::RefPtr<Gtk::Builder> ui_builder_;
 
     unsigned int activation_count_ = 0;
@@ -316,7 +319,7 @@ bool Application::Impl::refresh_actions()
 {
     if (!is_closing_) {
         size_t const total = core_->get_torrent_count();
-        size_t const active = core_->get_active_torrent_count();
+        size_t const unpaused = core_->get_unpaused_torrent_count();
         auto const torrent_count = core_->get_model()->get_n_items();
 
         auto const sel_counts = get_selected_torrent_counts();
@@ -324,8 +327,8 @@ bool Application::Impl::refresh_actions()
 
         gtr_action_set_sensitive("select-all", torrent_count != 0);
         gtr_action_set_sensitive("deselect-all", torrent_count != 0);
-        gtr_action_set_sensitive("pause-all-torrents", active != 0);
-        gtr_action_set_sensitive("start-all-torrents", active != total);
+        gtr_action_set_sensitive("pause-all-torrents", unpaused != 0);
+        gtr_action_set_sensitive("start-all-torrents", unpaused != total);
 
         gtr_action_set_sensitive("torrent-stop", (sel_counts.stopped_count < sel_counts.total_count));
         gtr_action_set_sensitive("torrent-start", (sel_counts.stopped_count) > 0);
@@ -681,6 +684,7 @@ Application::Impl::Impl(Application& app, std::string const& config_dir, bool st
     , start_paused_(start_paused)
     , start_iconified_(start_iconified)
 {
+    nap_inhibitor_.inhibit(TR_PROJ_APPNAME_CAPITALIZED, "Application is running");
 }
 
 void Application::Impl::on_core_busy(bool busy)

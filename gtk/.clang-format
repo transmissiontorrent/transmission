@@ -15,7 +15,7 @@ IncludeCategories:
     Priority: 5
   - Regex: '^<sigc\+\+([-./]|config)'
     Priority: 6
-  - Regex: '^<(fmt|small)/'
+  - Regex: '^<(fmt|small|woke)/'
     Priority: 6
   - Regex: '^<(cairo|gdk|gio|glib|gtk|pango)[-./]'
     Priority: 8

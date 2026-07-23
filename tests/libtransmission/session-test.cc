@@ -413,4 +413,23 @@ TEST_F(SessionTest, loadTorrentsThenMagnets)
     EXPECT_TRUE(tor->has_metainfo());
 }
 
+TEST_F(SessionTest, busyTorrentCount)
+{
+    // no torrents -> none busy
+    EXPECT_EQ(0U, session_->busy_torrent_count());
+
+    // a complete torrent added paused -> still none busy
+    auto* const tor = zeroTorrentInit(ZeroTorrentState::Complete);
+    ASSERT_NE(nullptr, tor);
+    EXPECT_EQ(0U, session_->busy_torrent_count());
+
+    // once started it seeds (the seed queue is off by default) -> one busy
+    tr_torrentStart(tor);
+    EXPECT_TRUE(waitFor([this]() { return session_->busy_torrent_count() == 1U; }, 5s));
+
+    // stopping it -> none busy again
+    tr_torrentStop(tor);
+    EXPECT_TRUE(waitFor([this]() { return session_->busy_torrent_count() == 0U; }, 5s));
+}
+
 } // namespace tr::test

@@ -944,6 +944,14 @@ public:
 
     [[nodiscard]] size_t count_queue_free_slots(tr_direction dir) const noexcept;
 
+    // Number of torrents actively downloading, seeding, verifying, and which
+    // are not stalled or locally errored: the "should desktop stay awake" count.
+    // Safe to call from any thread.
+    [[nodiscard]] size_t busy_torrent_count() const noexcept
+    {
+        return busy_torrent_count_.load(std::memory_order_relaxed);
+    }
+
     [[nodiscard]] bool has_ip_protocol(tr_address_type type) const noexcept
     {
         TR_ASSERT(tr_address::is_valid(type));
@@ -1095,6 +1103,9 @@ private:
     void on_now_timer();
     void on_queue_timer();
     void on_save_timer();
+
+    // the uncached count behind busy_torrent_count(); session thread only
+    [[nodiscard]] size_t compute_busy_torrent_count() const noexcept;
 
     static void onIncomingPeerConnection(tr_socket_t fd, void* vsession);
 
@@ -1336,6 +1347,10 @@ private:
 
     // depends-on: alt_speeds_, udp_core_, torrents_
     std::unique_ptr<tr::Timer> now_timer_;
+
+    // cached busy_torrent_count(), refreshed on the session thread in
+    // on_now_timer() so it is readable from any thread (GUI clients, C API)
+    std::atomic<size_t> busy_torrent_count_{ 0U };
 
     // depends-on: torrents_
     std::unique_ptr<tr::Timer> queue_timer_;
