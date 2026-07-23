@@ -194,7 +194,7 @@ jobs:
           # that are caused by Qt libraries not being asan instrumented
           extra-asan-options: detect_container_overflow=0
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
       - name: Supersede ccache snapshots
         # runs before ccache-action's post-job save, so that save leaves
@@ -269,7 +269,7 @@ jobs:
           build-config: Debug
           enable-sanitizers: true
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
       - name: Supersede ccache snapshots
         # runs before ccache-action's post-job save, so that save leaves
@@ -658,6 +658,10 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.os }}
+          # must exceed a full build (~470M) + a few days of churn, else
+          # ccache's mid-build cleanup evicts entries the build has not
+          # reached yet
+          max-size: 1G
           save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
@@ -705,8 +709,10 @@ jobs:
           name: binaries-${{ matrix.os }}-cmake-universal
           path: pfx/**/*
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
+        # A successful build refreshes every live entry's timestamp, so
+        # anything older than a few days is stale; trim to stay under max-size.
+        if: ${{ github.event_name == 'push' }}
+        run: ccache --evict-older-than 3d
       - name: Supersede ccache snapshots
         # runs before ccache-action's post-job save, so that save leaves
         # exactly one snapshot for this key family on main
@@ -1005,6 +1011,10 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.23
         with:
           key: ${{ github.job }}-${{ matrix.os }}
+          # must exceed a full build (~470M) + a few days of churn, else
+          # ccache's mid-build cleanup evicts entries the build has not
+          # reached yet
+          max-size: 1G
           save: ${{ github.event_name == 'push' }}
       - name: Configure
         run: |
@@ -1047,8 +1057,10 @@ jobs:
           name: binaries-${{ matrix.os }}
           path: pfx/**/*
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
-        run: ccache --evict-older-than 7d
+        # A successful build refreshes every live entry's timestamp, so
+        # anything older than a few days is stale; trim to stay under max-size.
+        if: ${{ github.event_name == 'push' }}
+        run: ccache --evict-older-than 3d
       - name: Supersede ccache snapshots
         # runs before ccache-action's post-job save, so that save leaves
         # exactly one snapshot for this key family on main
@@ -1065,7 +1077,9 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_MAXSIZE: 500M
+      # headroom over a full build so mid-build cleanup never fires; the
+      # post-build trim governs the actual size
+      CCACHE_MAXSIZE: 1G
     strategy:
       fail-fast: false
       matrix:
@@ -1182,9 +1196,11 @@ jobs:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
+        # A successful build refreshes every live entry's timestamp, so
+        # anything older than a few days is stale; trim to stay under max-size.
+        if: ${{ github.event_name == 'push' }}
         # `|| true`: Debian 11's ccache predates --evict-older-than
-        run: ccache --evict-older-than 7d || true
+        run: ccache --evict-older-than 3d || true
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
@@ -1210,7 +1226,9 @@ jobs:
       contents: read
       actions: write # supersede this job's ccache snapshots
     env:
-      CCACHE_MAXSIZE: 500M
+      # headroom over a full build so mid-build cleanup never fires; the
+      # post-build trim governs the actual size
+      CCACHE_MAXSIZE: 1G
     strategy:
       fail-fast: false
       matrix:
@@ -1299,9 +1317,11 @@ jobs:
           name: binaries-${{ github.job }}-${{ matrix.version }}
           path: pfx/**/*
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
+        # A successful build refreshes every live entry's timestamp, so
+        # anything older than a few days is stale; trim to stay under max-size.
+        if: ${{ github.event_name == 'push' }}
         # `|| true`: Debian 11's ccache predates --evict-older-than
-        run: ccache --evict-older-than 7d || true
+        run: ccache --evict-older-than 3d || true
       - name: Show ccache stats
         if: always()
         run: ccache --show-stats
@@ -1405,7 +1425,7 @@ jobs:
           name: binaries-${{ github.job }}-without-utp
           path: pfx/**/*
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
       - name: Supersede ccache snapshots
         # runs before ccache-action's post-job save, so that save leaves
@@ -1540,7 +1560,7 @@ jobs:
       - name: Make
         run: cmake --build obj --config Release -- "-k 0"
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
       - name: Supersede ccache snapshots
         # runs before ccache-action's post-job save, so that save leaves
@@ -1641,7 +1661,7 @@ jobs:
           name: binaries-${{ github.job }}
           path: pfx/**/*
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
       - name: Supersede ccache snapshots
         # runs before ccache-action's post-job save, so that save leaves
@@ -1825,7 +1845,7 @@ jobs:
           name: binaries-${{ github.job }}-${{ matrix.crypto.cmake }}
           path: pfx/**/*
       - name: Trim ccache
-        if: ${{ always() && github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' }}
         run: ccache --evict-older-than 7d
       - name: Supersede ccache snapshots
         # runs before ccache-action's post-job save, so that save leaves
