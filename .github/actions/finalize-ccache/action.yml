@@ -40,4 +40,6 @@ runs:
           exit 0
         fi
         awk -F '\t' -v keep="$KEEP" '$2 != keep { print $1 }' <<< "$listing" |
-          xargs --no-run-if-empty -n 1 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
+          # entries can vanish between the listing and the delete (TTL, the
+          # janitor, a re-run), so a 404 on one id must not fail the build
+          xargs --no-run-if-empty -n 1 -I '{}' bash -c 'gh api -X DELETE "repos/${{ github.repository }}/actions/caches/$1" || true' _ '{}'

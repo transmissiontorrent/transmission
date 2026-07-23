@@ -1860,9 +1860,11 @@ jobs:
       INVENTORY: ${{ runner.temp }}/caches.json
     steps:
       - name: Fetch cache inventory
+        # gh rejects --slurp combined with --jq, so flatten with jq itself
         run: |
-          gh api --paginate --slurp 'repos/${{ github.repository }}/actions/caches?per_page=100' \
-            --jq '[ .[].actions_caches[] ]' > "$INVENTORY"
+          set -euo pipefail
+          gh api --paginate --slurp 'repos/${{ github.repository }}/actions/caches?per_page=100' |
+            jq '[ .[].actions_caches[] ]' > "$INVENTORY"
       - name: Prune redundant cache entries
         # Selector 1: a "-<run id>" suffix is the only per-run part of a
         # ccache/ctcache key, so keep just the newest snapshot per
@@ -1874,6 +1876,7 @@ jobs:
         # can restore main's copy through the base-branch fallback, so
         # branch copies are redundant once main holds the key.
         run: |
+          set -euo pipefail
           {
             jq -r 'map(select(.key | startswith("ccache-") or startswith("ctcache-")))
                    | group_by([.ref, (.key | sub("-[0-9]+$"; ""))])[]
@@ -1886,8 +1889,11 @@ jobs:
                    | .[] | select(.ref != "refs/heads/main").id' "$INVENTORY"
           } |
             sort -u |
-            xargs --no-run-if-empty -P 4 -I '{}' gh api -X DELETE 'repos/${{ github.repository }}/actions/caches/{}'
+            # entries can vanish mid-run (TTL, a re-run's finalize), so a 404
+            # on one id must not abort the sweep
+            xargs --no-run-if-empty -P 4 -I '{}' bash -c 'gh api -X DELETE "repos/${{ github.repository }}/actions/caches/$1" || true' _ '{}'
       - name: Check cache headroom
+        if: ${{ always() }}
         run: |
           bytes=$(gh api 'repos/${{ github.repository }}/actions/cache/usage' --jq '.active_caches_size_in_bytes')
           if [ "$bytes" -gt $((9 * 1024 * 1024 * 1024)) ]; then
