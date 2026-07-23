@@ -1,12 +1,27 @@
 name: Setup ccache
-description: Restore this job's ccache snapshot without scheduling a post-job save
+description: >
+  Derive this job's ccache key, export it as CCACHE_KEY for finalize-ccache,
+  and restore the newest matching snapshot without scheduling a post-job save.
 inputs:
+  key-suffix:
+    description: Extra key component for matrix jobs (e.g. the cell's os or arch)
+    default: ''
   max-size:
     description: Local ccache size limit
     default: 500MB
 runs:
   using: composite
   steps:
+    - name: Derive the cache key
+      shell: bash
+      env:
+        KEY_SUFFIX: ${{ inputs.key-suffix }}
+      run: |
+        if [ -z "$CACHE_SCHEMA" ]; then
+          echo '::error::CACHE_SCHEMA is unset; define it in the workflow env'
+          exit 1
+        fi
+        echo "CCACHE_KEY=${{ github.job }}${KEY_SUFFIX:+-$KEY_SUFFIX}-$CACHE_SCHEMA" >> "$GITHUB_ENV"
     - uses: hendrikmuhs/ccache-action@v1.2.23
       with:
         key: ${{ env.CCACHE_KEY }}

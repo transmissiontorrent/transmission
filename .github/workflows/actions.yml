@@ -133,8 +133,6 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
-    env:
-      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -206,8 +204,6 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
-    env:
-      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -622,8 +618,6 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
-    env:
-      CCACHE_KEY: ${{ github.job }}-${{ matrix.os }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -643,6 +637,7 @@ jobs:
       - name: Setup ccache
         uses: ./.github/actions/setup-ccache
         with:
+          key-suffix: ${{ matrix.os }}
           # must exceed a full build (~470M) + a few days of churn, else
           # ccache's mid-build cleanup evicts entries the build has not
           # reached yet
@@ -815,7 +810,6 @@ jobs:
     env:
       # /Z7 debug info compresses well; the default zstd level overflows the cache cap
       CCACHE_COMPRESSLEVEL: '8'
-      CCACHE_KEY: ${{ github.job }}-${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -837,6 +831,7 @@ jobs:
       - name: Setup ccache
         uses: ./.github/actions/setup-ccache
         with:
+          key-suffix: ${{ matrix.arch }}-${{ matrix.runner }}-ipo-${{ matrix.ipo }}
           # must exceed a full build (~450M) + a few days of churn, else
           # ccache's mid-build LRU cleanup evicts live entries near-randomly
           max-size: 1G
@@ -949,8 +944,6 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
-    env:
-      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1280,8 +1273,6 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
-    env:
-      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1424,8 +1415,6 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
-    env:
-      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1495,8 +1484,6 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
-    env:
-      CCACHE_KEY: ${{ github.job }}-cache-v2
     steps:
       - name: Show Configuration
         run: |
@@ -1660,8 +1647,6 @@ jobs:
     permissions:
       contents: read
       actions: write # supersede this job's ccache snapshots
-    env:
-      CCACHE_KEY: ${{ github.job }}-${{ matrix.crypto.cmake }}-cache-v2
     strategy:
       fail-fast: false
       matrix:
@@ -1700,6 +1685,8 @@ jobs:
         run: mkdir src && tar xf transmission*.tar.* -C src --strip-components 1
       - name: Setup ccache
         uses: ./.github/actions/setup-ccache
+        with:
+          key-suffix: ${{ matrix.crypto.cmake }}
       - name: Configure
         run: |
           cmake \
