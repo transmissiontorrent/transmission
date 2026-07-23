@@ -12,6 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # See .github/CACHE_POLICY.md for cache classes, lifecycle, and budget.
   CCACHE_COMPRESSLEVEL: '5'
   CCACHE_DIR: ${{ github.workspace }}/.ccache
   GTEST_OUTPUT: xml:./
