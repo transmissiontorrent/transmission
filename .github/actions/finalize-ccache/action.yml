@@ -26,20 +26,36 @@ runs:
         path: ${{ env.CCACHE_DIR }}
         key: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
     - name: Delete superseded snapshots
+      # github-script rather than gh: this step also runs inside the debian
+      # and fedora containers, which mount node for JS actions but carry no
+      # GitHub CLI.
       if: ${{ github.ref == 'refs/heads/main' }}
-      shell: bash
+      uses: actions/github-script@v8
       env:
-        GH_TOKEN: ${{ github.token }}
         KEEP: ccache-${{ env.CCACHE_KEY }}-${{ github.run_id }}
         PREFIX: ccache-${{ env.CCACHE_KEY }}-
-      run: |
-        listing=$(gh api --paginate "repos/${{ github.repository }}/actions/caches?key=$PREFIX&ref=refs/heads/main&per_page=100" \
-          --jq '.actions_caches[] | [.id, .key] | @tsv')
-        if ! awk -F '\t' -v keep="$KEEP" '$2 == keep { found = 1 } END { exit !found }' <<< "$listing"; then
-          echo "::warning::replacement $KEEP is not visible; keeping superseded snapshots"
-          exit 0
-        fi
-        awk -F '\t' -v keep="$KEEP" '$2 != keep { print $1 }' <<< "$listing" |
-          # entries can vanish between the listing and the delete (TTL, the
-          # janitor, a re-run), so a 404 on one id must not fail the build
-          xargs --no-run-if-empty -n 1 -I '{}' bash -c 'gh api -X DELETE "repos/${{ github.repository }}/actions/caches/$1" || true' _ '{}'
+      with:
+        script: |
+          const caches = await github.paginate(github.rest.actions.getActionsCacheList, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            key: process.env.PREFIX,
+            ref: 'refs/heads/main',
+            per_page: 100,
+          });
+          if (!caches.some(cache => cache.key === process.env.KEEP)) {
+            core.warning(`replacement ${process.env.KEEP} is not visible; keeping superseded snapshots`);
+            return;
+          }
+          for (const cache of caches) {
+            if (cache.key === process.env.KEEP) {
+              continue;
+            }
+            core.info(`deleting ${cache.key} (${(cache.size_in_bytes / 1048576).toFixed(1)} MB)`);
+            // the entry can vanish between the listing and the delete
+            await github.rest.actions.deleteActionsCacheById({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              cache_id: cache.id,
+            }).catch(() => {});
+          }
