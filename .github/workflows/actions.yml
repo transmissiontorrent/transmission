@@ -990,6 +990,9 @@ jobs:
   macos:
     strategy:
       fail-fast: false
+      # This job covers source tarballs and bundled dependencies on Tahoe.
+      # macos-cmake-universal covers Intel with system dependencies; the
+      # Intel/tarball/bundled combination is intentionally omitted.
       matrix:
         os: [
           # Tahoe preview. Added Sept 2025.
