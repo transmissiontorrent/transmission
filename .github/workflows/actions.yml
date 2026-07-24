@@ -18,11 +18,11 @@ permissions:
 
 env:
   # See .github/CACHE_POLICY.md for cache classes, lifecycle, and budget.
+  CACHE_LIMIT_GIB: '10'
+  CACHE_WARNING_GIB: '9'
   # Bumping CACHE_SCHEMA re-keys every ccache family; the janitor deletes
   # keys that do not carry the current value.
-  CACHE_LIMIT_GIB: '10'
   CACHE_SCHEMA: cache-v2
-  CACHE_WARNING_GIB: '9'
   CCACHE_COMPRESSLEVEL: '5'
   CCACHE_DIR: ${{ github.workspace }}/.ccache
   GTEST_OUTPUT: xml:./
