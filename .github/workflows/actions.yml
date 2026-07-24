@@ -20,7 +20,9 @@ env:
   # See .github/CACHE_POLICY.md for cache classes, lifecycle, and budget.
   # Bumping CACHE_SCHEMA re-keys every ccache family; the janitor deletes
   # keys that do not carry the current value.
+  CACHE_LIMIT_GIB: '10'
   CACHE_SCHEMA: cache-v2
+  CACHE_WARNING_GIB: '9'
   CCACHE_COMPRESSLEVEL: '5'
   CCACHE_DIR: ${{ github.workspace }}/.ccache
   GTEST_OUTPUT: xml:./
@@ -1857,14 +1859,7 @@ jobs:
     runs-on: ubuntu-slim
     env:
       GH_TOKEN: ${{ github.token }}
-      INVENTORY: ${{ runner.temp }}/caches.json
     steps:
-      - name: Fetch cache inventory
-        # gh rejects --slurp combined with --jq, so flatten with jq itself
-        run: |
-          set -euo pipefail
-          gh api --paginate --slurp 'repos/${{ github.repository }}/actions/caches?per_page=100' |
-            jq '[ .[].actions_caches[] ]' > "$INVENTORY"
       - name: Prune redundant cache entries
         # Selector 1: a "-<run id>" suffix is the only per-run part of a
         # ccache/ctcache key, so keep just the newest snapshot per
@@ -1877,18 +1872,26 @@ jobs:
         # branch copies are redundant once main holds the key.
         run: |
           set -euo pipefail
-          {
-            jq -r 'map(select(.key | startswith("ccache-") or startswith("ctcache-")))
-                   | group_by([.ref, (.key | sub("-[0-9]+$"; ""))])[]
-                   | sort_by(.created_at) | .[:-1][].id' "$INVENTORY"
-            jq -r --arg schema "-${{ env.CACHE_SCHEMA }}-" \
-              '.[] | select((.key | startswith("ccache-")) and ((.key | contains($schema)) | not)).id' "$INVENTORY"
-            jq -r 'map(select(.key | test("^(win-deps|vcpkg)-") or test("^(freebsd|openbsd|netbsd)-")))
-                   | group_by([.key, .version])[]
-                   | select(any(.[]; .ref == "refs/heads/main"))
-                   | .[] | select(.ref != "refs/heads/main").id' "$INVENTORY"
-          } |
-            sort -u |
+          inventory="$RUNNER_TEMP/caches.json"
+          # gh rejects --slurp combined with --jq, so flatten with jq itself
+          gh api --paginate --slurp 'repos/${{ github.repository }}/actions/caches?per_page=100' |
+            jq '[ .[].actions_caches[] ]' > "$inventory"
+          jq -r --arg schema "-${{ env.CACHE_SCHEMA }}-" '
+            . as $inventory
+            | [
+                ($inventory
+                 | map(select(.key | startswith("ccache-") or startswith("ctcache-")))
+                 | group_by([.ref, (.key | sub("-[0-9]+$"; ""))])[]
+                 | sort_by(.created_at) | .[:-1][].id),
+                ($inventory[]
+                 | select((.key | startswith("ccache-")) and ((.key | contains($schema)) | not)).id),
+                ($inventory
+                 | map(select((.key | test("^(win-deps|vcpkg)-")) or (.key | test("^(freebsd|openbsd|netbsd)-"))))
+                 | group_by([.key, .version])[]
+                 | select(any(.[]; .ref == "refs/heads/main"))
+                 | .[] | select(.ref != "refs/heads/main").id)
+              ]
+            | unique[]' "$inventory" |
             # entries can vanish mid-run (TTL, a re-run's finalize), so a 404
             # on one id must not abort the sweep
             xargs --no-run-if-empty -P 4 -I '{}' bash -c 'gh api -X DELETE "repos/${{ github.repository }}/actions/caches/$1" || true' _ '{}'
@@ -1896,7 +1899,7 @@ jobs:
         if: ${{ always() }}
         run: |
           bytes=$(gh api 'repos/${{ github.repository }}/actions/cache/usage' --jq '.active_caches_size_in_bytes')
-          if [ "$bytes" -gt $((9 * 1024 * 1024 * 1024)) ]; then
+          if [ "$bytes" -gt $((CACHE_WARNING_GIB * 1024 * 1024 * 1024)) ]; then
             gib=$(awk -v bytes="$bytes" 'BEGIN { printf "%.2f", bytes / 1024 / 1024 / 1024 }')
-            echo "::warning title=Actions cache near capacity::${gib} GiB of the 10 GiB repository limit is in use"
+            echo "::warning title=Actions cache near capacity::${gib} GiB of the ${CACHE_LIMIT_GIB} GiB repository limit is in use"
           fi
