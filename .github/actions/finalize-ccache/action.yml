@@ -12,6 +12,12 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Validate ccache environment
+      if: ${{ github.ref == 'refs/heads/main' }}
+      shell: bash
+      run: |
+        : "${CCACHE_KEY:?setup-ccache did not set CCACHE_KEY}"
+        : "${CCACHE_DIR:?setup-ccache did not set CCACHE_DIR}"
     - name: Trim ccache
       if: ${{ github.ref == 'refs/heads/main' }}
       shell: bash
